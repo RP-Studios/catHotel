@@ -1,28 +1,36 @@
 # Cat Hotel Tycoon
 ## Document de Conception de Jeu (GDD)
 
-**Version:** 1.0
-**Date:** Janvier 2026
+**Version:** 1.1
+**Date:** Fevrier 2026
 **Statut:** Prototype fonctionnel
 **Sortie visée:** 1er Avril 2026
 
 ---
 
-## Table des matières
+## Documents associes
+
+| Document | Contenu |
+|----------|---------|
+| **[2d-art.md](2d-art.md)** | Liste des assets graphiques (characters, environnement, emotes, particules) |
+| **[2d-animation.md](2d-animation.md)** | Liste des animations 2D (idles, marche, actions, emotions, objets) |
+| **[ui-ux.md](ui-ux.md)** | Ecrans, cinematiques de navigation, economie F2P, pubs rewarded, daily rewards |
+| **[jalons.md](jalons.md)** | Roadmap par jalons (J1: core, J2: contenu, J3: economie F2P) |
+
+## Table des matieres
 
 1. [Vision du jeu](#1-vision-du-jeu)
 2. [Gameplay fondamental](#2-gameplay-fondamental)
-3. [Systèmes de jeu](#3-systèmes-de-jeu)
+3. [Systemes de jeu](#3-systèmes-de-jeu)
 4. [Les chats](#4-les-chats)
 5. [Les objets et services](#5-les-objets-et-services)
-6. [Économie](#6-économie)
-7. [Monétisation](#7-monétisation)
-8. [Progression et réputation](#8-progression-et-réputation)
-9. [Interface utilisateur](#9-interface-utilisateur)
-10. [Plateforme mobile](#10-plateforme-mobile)
-11. [Direction artistique](#11-direction-artistique)
-12. [Audio](#12-audio)
-13. [Références et inspirations](#13-références-et-inspirations)
+6. [Economie et currencies](#6-économie-et-currencies)
+7. [Monetisation](#7-monétisation)
+8. [Progression et reputation](#8-progression-et-réputation)
+9. [Plateforme mobile](#9-plateforme-mobile)
+10. [Direction artistique](#10-direction-artistique)
+11. [Audio](#11-audio)
+12. [References et inspirations](#12-références-et-inspirations)
 
 ---
 
@@ -100,12 +108,45 @@
 | **Détruire un mur** | Agrandir une pièce en supprimant un mur intérieur | Gratuit |
 | **Assigner un caprice** | Désigner un objet spécifique pour un chat capricieux | Gratuit |
 | **Améliorer réputation** | Payer pour passer au niveau supérieur | Variable |
+| **Collecter des pièces** | Taper sur les pièces flottantes au-dessus des chats | Gratuit |
+| **Ramasser tout** | Collecter toutes les pièces visibles d'un coup (cooldown) | Gratuit |
+| **Caresser un chat** | Taper sur un chat pour booster son bonheur | Cooldown par chat |
 
 ### 2.3 Conditions de victoire/défaite
 
 - **Pas de défaite définitive** - Le jeu est sandbox avec objectifs progressifs
 - **Objectifs de niveau** - Atteindre X chats heureux pour débloquer le niveau suivant
 - **Objectif final** - Atteindre le niveau "Maître des Chats" (niveau 10)
+
+### 2.4 Interactions directes (mode connecté)
+
+Quand le joueur est connecté, les revenus ne s'accumulent **pas** automatiquement dans le compteur : le joueur doit **taper sur les pièces** qui apparaissent au-dessus des chats pour les collecter. Cela crée une boucle d'engagement actif.
+
+#### Collecte de pièces (Tap-to-Collect)
+
+| Aspect | Détail |
+|--------|--------|
+| **Apparition** | Une pièce spawn au-dessus du chat qui génère du revenu (bonheur > 40%) |
+| **Fréquence** | 1 pièce par tick de revenu (chaque seconde si bonheur > 70%, chaque 2.5s si 40-70%) |
+| **Valeur** | La pièce contient le montant du tick (0.5$ ou 0.2$ × multiplicateurs race/spécial/étage) |
+| **Collection** | Tap sur la pièce → elle vole vers le compteur HUD avec animation et son |
+| **Accumulation** | Les pièces non collectées s'accumulent sans limite. Cap visuel : max ~20 pièces affichées par chat ; au-delà elles se superposent mais restent collectables |
+| **Ramasser tout** | Bouton HUD qui collecte toutes les pièces visibles en une fois. Cooldown de 60 secondes. Le cooldown peut être supprimé avec 1 gemme (achat ponctuel, durée 5 min) |
+| **Hors-ligne** | Les revenus s'accumulent automatiquement dans le rapport d'absence (plafonné à 80%) |
+
+#### Caresses (Pet)
+
+Le joueur peut taper directement sur un chat pour le caresser.
+
+| Aspect | Détail |
+|--------|--------|
+| **Action** | Tap sur un chat (hors zone de pièce flottante) |
+| **Effet** | +5 bonheur instantané, animation de caresse (coeurs), son de ronronnement |
+| **Cooldown** | 30 secondes par chat (indicateur circulaire visible autour du portrait du chat) |
+| **Suppression cooldown** | 5 gemmes → supprime le cooldown de caresses sur tous les chats pendant 5 minutes |
+| **Limite** | Un seul boost par chat par période de cooldown |
+
+> Voir [ui-ux.md](ui-ux.md) pour les détails visuels et [2d-animation.md](2d-animation.md) pour les animations de caresse.
 
 ---
 
@@ -193,6 +234,7 @@ bonheur = bonheur_base
         - (20% × caprices_non_satisfaits)
         - pénalité_combat
         + effet_confort
+        + bonus_caresse (si caressé récemment : +5, décroît sur 30s)
 ```
 
 **Seuils de bonheur:**
@@ -460,15 +502,24 @@ Si tous les noms sont utilisés, génération de noms numérotés (ex: "Minou 2"
 
 ---
 
-## 6. Économie
+## 6. Economie et currencies
+
+### 6.0 Modele dual-currency
+
+Le jeu utilise un systeme standard F2P a deux monnaies :
+
+- **Soft Currency - Pieces ($)** : gagnee en jeu (chats heureux, pension, adoption, recompenses journalieres). Depensee pour construction, objets, amelioration de reputation. Jamais achetable en IAP
+- **Hard Currency - Gemmes** : sources gratuites limitees (daily rewards, paliers de reputation, pubs rewarded rares, succes). Achetable en IAP. Depensee pour skip timers, cosmetiques exclusifs, deblocage anticipe de races
+
+> Voir [ui-ux.md](ui-ux.md) pour le detail des currencies, recompenses journalieres et points d'insertion des pubs rewarded.
 
 ### 6.1 Sources de revenus
 
 | Source | Montant | Condition |
 |--------|---------|-----------|
-| **Revenus passifs** | | |
-| Chat heureux | 0.5$/sec | Bonheur > 70% |
-| Chat neutre | 0.2$/sec | Bonheur 40-70% |
+| **Revenus actifs (tap-to-collect)** | | |
+| Chat heureux | 0.5$/tick (1 pièce/sec) | Bonheur > 70%, tap requis en ligne |
+| Chat neutre | 0.2$/tick (1 pièce/2.5s) | Bonheur 40-70%, tap requis en ligne |
 | Chat spécial | ×2 à ×3.5 | Selon la race |
 | **Pension (dépôt)** | | |
 | Paiement fin de séjour | 50-200$ | Basé sur durée × bonheur |
@@ -478,14 +529,25 @@ Si tous les noms sont utilisés, génération de noms numérotés (ex: "Minou 2"
 | Bonus réputation | +5 à +15 | Selon prestige de la race |
 | **Autre** | | |
 | Vente d'objets | 50% du prix | - |
+| **Recompenses journalieres** | | |
+| Calendrier J1-J7 | 100-1000$ + gemmes | Connexion quotidienne |
+| Bonus streak J7 | Chat special garanti | Cycle complet |
+| **Pubs rewarded** | | |
+| Bouton HUD | +50-100$ | 5/jour |
+| Doubler gains pension/adoption | x2 paiement | 1/evenement |
+| Boost revenus x2 | 30 min | 3/jour |
 
-### 6.2 Dépenses
+### 6.2 Depenses
 
 | Dépense | Coût |
 |---------|------|
 | Construction de pièce | 10$/cellule |
 | Objets | Variable (20-150$) |
-| Amélioration réputation | 100-5000$ |
+| Amelioration reputation | 100-5000$ |
+| Skip timer (gemmes) | 1-10 gemmes |
+| Deblocage anticipe race (gemmes) | 50-200 gemmes |
+| Supprimer cooldown "Ramasser tout" (gemmes) | 1 gemme (5 min sans cooldown) |
+| Supprimer cooldown caresses (gemmes) | 5 gemmes (5 min sans cooldown sur tous les chats) |
 
 ### 6.3 Équilibre économique
 
@@ -506,15 +568,19 @@ Si tous les noms sont utilisés, génération de noms numérotés (ex: "Minou 2"
 
 ---
 
-## 7. Monétisation
+## 7. Monetisation
+
+> Voir [ui-ux.md](ui-ux.md) pour les cinematiques de chaque point de monetisation, les ecrans de boutique, et les flux de pubs rewarded contextuelles.
 
 ### 7.1 Philosophie
 
-Le jeu est **Free-to-Play** avec monétisation éthique :
+Le jeu est **Free-to-Play** avec monetisation ethique :
+
 - Pas de pay-to-win
 - Progression possible sans payer
-- Les pubs rewarded sont optionnelles mais avantageuses
+- Les pubs rewarded sont toujours optionnelles mais avantageuses
 - Respect du temps du joueur
+- Jamais plus de 3 popups avant le jeu a chaque session
 
 ### 7.2 Deux modes de jeu
 
@@ -523,7 +589,8 @@ Quand le joueur est actif dans le jeu :
 - Les chats vivent leur vie en temps réel
 - Interaction directe avec tous les systèmes
 - Besoins décroissent normalement
-- Revenus générés en continu
+- **Revenus par tap-to-collect** : les pièces apparaissent au-dessus des chats et le joueur doit les taper pour les collecter (voir section 2.4)
+- **Caresses** : le joueur peut taper sur les chats pour booster leur bonheur (cooldown 30s par chat)
 
 #### Mode Hors-ligne (Idle)
 Quand le joueur quitte le jeu :
@@ -542,20 +609,48 @@ Quand le joueur quitte le jeu :
 | Cooldown objet premium | 2h | Reset | Pas de cooldown |
 | Attente nouveau chat | 30 min | Instantané | 15 min |
 
-### 7.4 Publicités Rewarded
+### 7.4 Recompenses journalieres (Daily Rewards)
 
-Les pubs sont **toujours optionnelles** et offrent des récompenses :
+Calendrier de 7 jours avec recompenses escaladantes. Se reinitialise apres J7. Si le joueur manque un jour, le cycle repart de J1 (option pub pour rattraper 1 jour).
 
-| Récompense | Fréquence max | Contexte |
+| Jour | Recompense |
+|------|------------|
+| J1 | 100$ |
+| J2 | 150$ + 2 gemmes |
+| J3 | 200$ |
+| J4 | 300$ + 5 gemmes |
+| J5 | 500$ |
+| J6 | 750$ + 10 gemmes |
+| J7 | 1000$ + 20 gemmes + chat special garanti |
+
+### 7.5 Rapport d'absence (Idle Revenue)
+
+Quand le joueur revient apres 1h+ d'absence :
+
+- Les revenus accumules sont plafonnes a 80% du revenu reel (incitation a jouer activement)
+- Le joueur peut doubler les gains avec une pub rewarded
+- Les abonnes premium ont un bonus automatique de x1.5
+
+### 7.6 Publicites Rewarded
+
+Les pubs sont **toujours optionnelles** et offrent des recompenses. 10 points d'insertion contextuels :
+
+| Recompense | Frequence max | Contexte |
 |------------|---------------|----------|
-| **+50-100 pièces** | 5/jour | Bouton dédié dans le HUD |
-| **Construction instantanée** | Illimitée | Lors d'une construction en cours |
-| **Bonus de revenus ×2** | 3/jour | Boost de 30 min |
-| **Chat bonus** | 1/jour | Chat supplémentaire immédiat |
-| **Skip cooldown objet** | Illimitée | Sur objet en cooldown |
-| **Récompense doublée** | Sur événement | Doubler un gain ponctuel |
+| **+50-100 pieces** | 5/jour | Bouton dedie dans le HUD |
+| **Doubler gains pension** | 1/evenement | Popup bilan depart |
+| **Doubler gains adoption** | 1/evenement | Popup adoption reussie |
+| **Construction instantanee** | Illimitee | Popup timer de construction |
+| **Skip cooldown objet** | Illimitee | Sur objet en cooldown |
+| **Bonus de revenus x2** | 3/jour | Boost de 30 min |
+| **Sauver un chat** | 1/chat/session | Popup chat en danger (<20% bonheur) |
+| **+50-100$ urgence** | 3/jour | Popup manque de ressources |
+| **+5 gemmes gratuites** | 1/jour | Bouton dans la Boutique Premium |
+| **Rattraper 1 jour streak** | 1/cycle | Calendrier journalier |
 
-### 7.5 Achats In-App (IAP)
+> Detail des flux et cinematiques : voir [ui-ux.md](ui-ux.md) section 8.
+
+### 7.7 Achats In-App (IAP)
 
 #### Monnaie premium (Gemmes)
 - Utilisées pour skip les timers
@@ -583,7 +678,7 @@ Les pubs sont **toujours optionnelles** et offrent des récompenses :
 - **Pack Race** (1.99€) - Débloquer une race en avance
 - **Pack Déco** (0.99€) - Set de décorations thématiques
 
-### 7.6 Économie F2P vs Payant
+### 7.8 Economie F2P vs Payant
 
 | Aspect | Joueur F2P | Joueur Payant |
 |--------|------------|---------------|
@@ -633,93 +728,13 @@ Si la réputation tombe sous le minimum requis d'une race :
 
 ---
 
-## 8. Interface utilisateur
-
-### 8.1 HUD principal
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ [⏸][x1][⏩]  $500  🐱 5/10 (3 contents)  🏨 50%  🛋️ 65         │
-│              Niveau: 2 Compétent  [Améliorer]                    │
-│              🐱 Prochain: Siamois dans 25s                       │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### 8.2 Barre d'outils
-
-```
-┌────────────────────────────────────┐
-│ [Sélection] [Pièce] [Supprimer]   │
-│ [Boutique ▼]                       │
-└────────────────────────────────────┘
-```
-
-### 8.3 Panneau de sélection (objet)
-
-```
-┌─────────────────────────────┐
-│ 🍽️ Gamelle                  │
-│ Catégorie: Nourriture       │
-│ Efficacité: 1.0×            │
-│ [Vendre: 15$] [Déplacer]    │
-│ ─────────────────────────── │
-│ Assigné à: (aucun)          │
-│ [Assigner à un chat]        │
-└─────────────────────────────┘
-```
-
-### 8.4 Panneau de sélection (chat)
-
-```
-┌─────────────────────────────┐
-│ 🐱 Luna (Siamois) ⭐        │
-│ Bonheur: ████████░░ 78%     │
-│ ─────────────────────────── │
-│ 🍽️ ███████░░░ 68%           │
-│ 😴 ████░░░░░░ 42%           │
-│ 🎾 █████████░ 91%           │
-│ 🧹 ██████░░░░ 55%           │
-│ ─────────────────────────── │
-│ 💭 Caprices:                │
-│    • Veut une Balle ↑       │
-│      [Assigner]             │
-└─────────────────────────────┘
-```
-
-### 8.5 Boutique
-
-```
-┌─────────────────────────────────────────┐
-│ BOUTIQUE                          [×]   │
-├─────────────────────────────────────────┤
-│ [Nourriture] [Sommeil] [Jeu] [Propreté] │
-│ [Décoration] [Supports] [Tapis]         │
-├─────────────────────────────────────────┤
-│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐        │
-│ │ 🍽️  │ │ 💧  │ │ 🤖  │ │ ⛲  │        │
-│ │ 30$ │ │ 25$ │ │ 80$ │ │100$ │        │
-│ └─────┘ └─────┘ └─────┘ └─────┘        │
-└─────────────────────────────────────────┘
-```
-
-### 8.6 Notifications
-
-- Position: Bas de l'écran, temporaire (2-3 secondes)
-- Types:
-  - ✅ Succès (vert): "Pièce créée!", "+50$"
-  - ⚠️ Avertissement (orange): "Luna est mécontente!"
-  - ❌ Erreur (rouge): "Pas assez d'argent!"
-  - 💭 Caprice (violet): "Minou veut un Coussin en hauteur!"
-
----
-
-## 10. Plateforme mobile
+## 9. Plateforme mobile
 
 ### 10.1 Spécifications techniques
 
 - **Plateforme:** Android uniquement (API 24+, Android 7.0 minimum)
-- **Résolution:** Adaptatif, optimisé 16:9 et 18:9
-- **Orientation:** Paysage uniquement
+- **Résolution:** Adaptatif, optimisé 16:9 et 18:9 (paysage), 9:16 et 9:18 (portrait)
+- **Orientation:** Paysage (prioritaire) + Portrait. L'interface s'adapte dynamiquement aux deux orientations. Le gameplay et la grille restent identiques, seul le layout UI se reorganise
 - **Moteur:** Unity 6 avec URP
 - **Taille app:** < 150 MB (téléchargement initial)
 
@@ -744,9 +759,11 @@ Si la réputation tombe sous le minimum requis d'une race :
 
 ---
 
-## 11. Direction artistique
+## 10. Direction artistique
 
-### 11.1 Style visuel
+> Voir [2d-art.md](2d-art.md) pour la liste complete des assets graphiques et [2d-animation.md](2d-animation.md) pour les animations.
+
+### 10.1 Style visuel
 
 - **Style:** Cartoon 2D, couleurs vives et chaleureuses
 - **Inspiration:** Animal Crossing, Neko Atsume, Two Point Hospital
@@ -754,28 +771,32 @@ Si la réputation tombe sous le minimum requis d'une race :
 
 > ⚠️ **Note:** La charte graphique et palette de couleurs sont en cours de définition par l'équipe artistique.
 
-### 11.2 Animation des chats
+### 10.2 Animation des chats
 
-- **Idle:** Respiration subtile, clignement des yeux
-- **Marche:** 4 frames de cycle
-- **Action:** Animation spécifique (manger, dormir, jouer)
-- **Heureux:** Petits cœurs, ronronnement visuel
-- **Mécontent:** Nuage sombre, oreilles baissées
-- **Combat:** Nuage de poussière avec étoiles
+> Detail complet dans [2d-animation.md](2d-animation.md) : 3 idles x 3 directions, marche, 5 actions, emotions, combats.
 
-### 11.3 Effets visuels
+- **Idle:** 3 variantes (respiration, clignement, queue) x 3 directions (face, cote, dos)
+- **Marche:** 4 frames de cycle x 3 directions
+- **Action:** Animation specifique par besoin (manger, boire, dormir, jouer, litiere) x 2 directions
+- **Heureux:** Petits coeurs, ronronnement visuel
+- **Mecontent:** Nuage sombre, oreilles baissees
+- **Combat:** Nuage de poussiere avec etoiles
 
-- Particules de bonheur (cœurs, étoiles)
-- Bulles de pensée pour les besoins
+### 10.3 Effets visuels
+
+> Detail complet dans [2d-art.md](2d-art.md) section Particules et Effets.
+
+- Particules de bonheur (coeurs, etoiles)
+- Bulles de pensee pour les besoins
 - Indicateurs flottants (+$, besoins critiques)
-- Surbrillance des objets sélectionnés
+- Surbrillance des objets selectionnes
 - Preview de placement (vert = valide, rouge = invalide)
 
 ---
 
-## 12. Audio
+## 11. Audio
 
-### 12.1 Musique
+### 11.1 Musique
 
 - **Style:** Lofi, jazzy, relaxant
 - **Pistes:**
@@ -784,7 +805,7 @@ Si la réputation tombe sous le minimum requis d'une race :
   - Gameplay nuit: Calme et apaisante
   - Événement spécial: Plus dynamique
 
-### 12.2 Effets sonores
+### 11.2 Effets sonores
 
 | Catégorie | Sons |
 |-----------|------|
@@ -794,7 +815,7 @@ Si la réputation tombe sous le minimum requis d'une race :
 | **Actions** | Manger, boire, jouer, dormir |
 | **Événements** | Arrivée chat, départ, combat, caprice |
 
-### 12.3 Feedback audio
+### 11.3 Feedback audio
 
 - Sons positifs pour récompenses (argent, chat heureux)
 - Sons d'alerte pour problèmes (chat mécontent, caprice)
@@ -802,9 +823,9 @@ Si la réputation tombe sous le minimum requis d'une race :
 
 ---
 
-## 13. Références et inspirations
+## 12. References et inspirations
 
-### 13.1 Jeux similaires
+### 12.1 Jeux similaires
 
 | Jeu | Éléments inspirants |
 |-----|---------------------|
@@ -814,7 +835,7 @@ Si la réputation tombe sous le minimum requis d'une race :
 | **Stardew Valley** | Boucle de jeu satisfaisante |
 | **The Sims** | Gestion de besoins |
 
-### 13.2 Mécaniques empruntées
+### 12.2 Mecaniques empruntees
 
 - **Neko Atsume:** Chats qui viennent et partent, personnalités
 - **Tycoon games:** Économie, expansion, objectifs progressifs
@@ -832,7 +853,7 @@ décroissance = taux_base × trait_race × demande_race × (demande_spécial ou 
 
 ### Calcul du bonheur
 ```
-bonheur = moyenne(besoins) × (1 - 0.2 × caprices_non_satisfaits) - pénalité_combat + (confort - 50) × 0.2
+bonheur = moyenne(besoins) × (1 - 0.2 × caprices_non_satisfaits) - pénalité_combat + (confort - 50) × 0.2 + bonus_caresse
 ```
 
 ### Revenu par seconde
@@ -906,4 +927,6 @@ revenu = Σ pour chaque chat:
 
 ---
 
-*Document créé pour Cat Hotel Tycoon - Janvier 2026*
+*Document cree pour Cat Hotel Tycoon - Janvier 2026, mis a jour Fevrier 2026*
+
+*Documents associes : [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*
