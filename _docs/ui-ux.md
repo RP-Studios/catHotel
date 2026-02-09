@@ -74,10 +74,10 @@ L'ecran central du jeu. Le joueur y passe 95% de son temps.
 
 **Composition :**
 
-- **HUD haut** : controles de vitesse (pause / x1 / x2), compteur pieces (avec animation +$ au tap), compteur gemmes (tap = boutique gemmes), compteur chats (actuels/max + nombre de contents), jauge confort moyen, niveau de reputation + nom du rang + bouton "Ameliorer" (avec badge notification si conditions remplies), timer prochain chat
+- **HUD haut** : controles de vitesse (pause / x1 / x2), compteur pieces (avec animation +$ au tap), compteur gemmes (tap = boutique gemmes), compteur chats (actuels/max + nombre de contents), jauge confort moyen, niveau de reputation + nom du rang + bouton "Ameliorer" (avec badge notification si conditions remplies), timer prochain chat, icone calendrier (badge point orange si recompense non collectee aujourd'hui)
 - **Zone de jeu** : grille interactive avec pieces, objets et chats animes. Pan/zoom tactile. **Pieces flottantes** au-dessus des chats generant du revenu (tap pour collecter). **Chats tappables** pour caresser (cooldown visible)
 - **Navigation etages** : boutons fleche haut/bas + indicateur etage courant, positionnes a droite de l'ecran
-- **Barre d'outils bas** : boutons Selection, Creer piece, Supprimer, Boutique, Gestion des chats. Bouton **"Ramasser tout"** (icone main + pieces, grise pendant cooldown 60s, badge gemme pour skip cooldown). Icone pub rewarded (bonus pieces) avec compteur restant
+- **Barre d'outils bas** : boutons Selection, Creer piece, Supprimer, Boutique, Gestion des chats, **Statistiques** (icone graphique). Bouton **"Ramasser tout"** (icone main + pieces, grise pendant cooldown 60s, badge gemme pour skip cooldown). Icone pub rewarded (bonus pieces) avec compteur restant
 - **Zone de notifications toast** : bannieres temporaires en bas de l'ecran (succes vert, avertissement orange, erreur rouge, caprice violet, evenement bleu)
 
 **Transitions depuis cet ecran :**
@@ -96,13 +96,15 @@ L'ecran central du jeu. Le joueur y passe 95% de son temps.
 - Tap "Ramasser tout" → toutes les pieces volent vers le HUD en cascade
 - Tap sur un chat (hors piece) → animation caresse + coeurs, boost bonheur
 - Tap sur un chat en cooldown caresse → indicateur cooldown clignote (refus)
+- Tap icone calendrier (HUD) → Popup Calendrier Recompenses
+- Tap Statistiques → Ecran Statistiques (plein ecran)
 - Notification push in-game → toast animee
 
 ### 3.3 Menu Pause
 
 - **Contexte :** Overlay semi-transparent par-dessus le jeu (le jeu est mis en pause)
-- **Contenu :** Bouton Reprendre, Parametres, Sauvegarder, Menu principal
-- **Transition :** Tap "Menu principal" → popup de confirmation ("Votre progression est sauvegardee") → ecran titre. Tap "Reprendre" → fermeture de l'overlay, le jeu reprend
+- **Contenu :** Bouton Reprendre, Recompenses, Parametres, Sauvegarder, Menu principal
+- **Transition :** Tap "Recompenses" → Popup Calendrier Recompenses (consultation seule si deja collecte). Tap "Menu principal" → popup de confirmation ("Votre progression est sauvegardee") → ecran titre. Tap "Reprendre" → fermeture de l'overlay, le jeu reprend
 
 ### 3.4 Ecran Parametres
 
@@ -207,6 +209,46 @@ Ces panneaux s'affichent par-dessus la vue hotel sans quitter le gameplay.
 - **Transition :** Achat → confirmation store natif → animation de gemmes ajoutees → retour
 - **Fermeture :** Bouton retour
 
+### 5.3 Ecran Statistiques
+
+- **Declencheur :** Tap bouton Statistiques (icone graphique) dans la barre d'outils
+- **Apparition :** Plein ecran avec transition slide
+- **Contenu :**
+
+#### Zone haute — Resume de session
+
+Bandeau recapitulatif de la session en cours :
+- Duree de session, pieces collectees cette session, chats accueillis cette session, bonheur moyen actuel
+
+#### Zone principale — Graphiques (7 derniers jours)
+
+4 graphiques en courbes, scrollables horizontalement si l'ecran est trop etroit :
+
+| Graphique | Axe Y | Detail |
+|-----------|-------|--------|
+| **Revenus quotidiens** | Pieces ($) | Barres empilees : revenus tap-to-collect + pension + adoption. Ligne de tendance |
+| **Bonheur moyen** | % (0-100) | Courbe lissee avec zone coloree (vert > 70%, orange 40-70%, rouge < 40%) |
+| **Population** | Nb chats | Courbe avec 2 lignes : chats en pension / chats au refuge. Aire remplie sous chaque courbe |
+| **Adoptions** | Nb adoptions | Barres journalieres avec annotation des races adoptees |
+
+Chaque graphique est tappable pour afficher les valeurs exactes du jour selectionne (tooltip).
+
+#### Zone basse — Statistiques globales
+
+Liste scrollable de chiffres cles depuis le debut du jeu :
+
+| Categorie | Stats |
+|-----------|-------|
+| **Hotel** | Pieces totales gagnees, pieces depensees, pieces actuelles, gemmes totales gagnees, gemmes depensees, gemmes actuelles |
+| **Chats** | Total chats accueillis, chats en pension total, chats au refuge total, adoptions reussies, chats enfuis, bonheur moyen historique, record bonheur (chat + valeur) |
+| **Construction** | Pieces construites, objets places, objets vendus, etages debloques |
+| **Progression** | Niveau de reputation, races debloquees (X/8), chats speciaux rencontres (X/8), temps de jeu total, nombre de sessions, plus longue session |
+| **Interactions** | Pieces collectees (tap), caresses donnees, "Ramasser tout" utilises, combats survenus |
+
+Chaque stat affiche un **mini indicateur de tendance** (fleche verte haut / rouge bas / gris stable) compare a la semaine precedente.
+
+- **Fermeture :** Bouton retour (fleche) en haut a gauche
+
 ---
 
 ## 6. POPUPS EVENEMENTIELLES
@@ -270,7 +312,8 @@ Declenchees par des evenements de gameplay. Elles apparaissent une par une, jama
 
 ### 7.1 Calendrier 7 jours
 
-- **Declencheur :** Automatique au premier lancement de chaque jour (apres le rapport d'absence)
+- **Declencheur principal :** Automatique au premier lancement de chaque jour (apres le rapport d'absence)
+- **Acces libre :** Le joueur peut consulter le calendrier a tout moment via l'**icone calendrier dans le HUD haut** (badge point orange si recompense non collectee) ou via le bouton **"Recompenses"** dans le Menu Pause. Si la recompense du jour a deja ete collectee, le calendrier s'affiche en mode consultation (pas de bouton "Collecter", le jour actuel est coche)
 - **Contenu :** Grille de 7 jours. Le jour actuel est mis en avant. Les jours passes sont coches. Les jours futurs sont verrouilles mais visibles (anticipation)
 - **Recompenses escaladantes :**
 
@@ -383,24 +426,25 @@ Sequence guidee pour les nouveaux joueurs. Chaque etape est un overlay sur le je
 | 11 | Panneau Info Objet | Overlay lateral | Tap sur objet |
 | 12 | Ecran Gestion des Chats | Plein ecran | Bouton gestion |
 | 13 | Ecran Boutique Premium | Plein ecran | Tap gemmes / liens internes |
-| 14 | Popup Recompense Journaliere | Popup centree | Auto quotidien |
-| 15 | Popup Rapport d'Absence | Popup centree | Auto si absence >1h |
-| 16 | Popup Offre Speciale | Popup centree | Contextuel (session start) |
-| 17 | Popup Offre de Retour | Popup centree | Retour apres 48h+ |
-| 18 | Popup Arrivee Chat | Popup centree | Evenement spawn |
-| 19 | Popup Bilan Pension | Popup centree | Evenement depart pension |
-| 20 | Popup Adoption Reussie | Popup centree | Evenement adoption |
-| 21 | Popup Timer Construction | Popup centree | Lancement construction |
-| 22 | Popup Manque de Ressources | Popup centree | Achat impossible |
-| 23 | Popup Chat en Danger | Popup centree | Bonheur <20% |
-| 24 | Popup Amelioration Reputation | Popup centree | Bouton ameliorer |
-| 25 | Popup Deblocage Etage | Popup centree | Tap etage verrouille |
-| 26 | Popup Confirmation | Popup centree | Actions irreversibles |
-| 27 | Popup Pub Rewarded | Popup centree | Tous contextes ad |
-| 28 | Overlay Tutoriel | Overlay spotlight | FTUE (8 etapes) |
-| **Total** | **28 ecrans/panneaux/popups** | | |
+| 14 | Ecran Statistiques | Plein ecran | Bouton stats dans barre d'outils |
+| 15 | Popup Recompense Journaliere | Popup centree | Auto quotidien + icone calendrier HUD + menu Pause |
+| 16 | Popup Rapport d'Absence | Popup centree | Auto si absence >1h |
+| 17 | Popup Offre Speciale | Popup centree | Contextuel (session start) |
+| 18 | Popup Offre de Retour | Popup centree | Retour apres 48h+ |
+| 19 | Popup Arrivee Chat | Popup centree | Evenement spawn |
+| 20 | Popup Bilan Pension | Popup centree | Evenement depart pension |
+| 21 | Popup Adoption Reussie | Popup centree | Evenement adoption |
+| 22 | Popup Timer Construction | Popup centree | Lancement construction |
+| 23 | Popup Manque de Ressources | Popup centree | Achat impossible |
+| 24 | Popup Chat en Danger | Popup centree | Bonheur <20% |
+| 25 | Popup Amelioration Reputation | Popup centree | Bouton ameliorer |
+| 26 | Popup Deblocage Etage | Popup centree | Tap etage verrouille |
+| 27 | Popup Confirmation | Popup centree | Actions irreversibles |
+| 28 | Popup Pub Rewarded | Popup centree | Tous contextes ad |
+| 29 | Overlay Tutoriel | Overlay spotlight | FTUE (8 etapes) |
+| **Total** | **29 ecrans/panneaux/popups** | | |
 
-> Note : les interactions tap-to-collect et caresses ne sont pas des ecrans mais des mecaniques in-game decrites en section 3.5.
+> Note : les interactions tap-to-collect et caresses ne sont pas des ecrans mais des mecaniques in-game decrites en section 3.5. Le calendrier des recompenses (popup #15) est accessible a la fois automatiquement et manuellement (section 7.1).
 
 ---
 
@@ -430,6 +474,9 @@ Sequence guidee pour les nouveaux joueurs. Chaque etape est un overlay sur le je
 | 20 | **Bouton Ramasser tout** | Icone main+pieces, normal, en cooldown (grise + barre), boost actif (dore) |
 | 21 | **Indicateur cooldown caresse** | Arc de cercle autour du chat, se remplit en 30s, clignotement refus |
 | 22 | **Badge boost caresse** | Icone "main doree" dans le HUD pendant la duree du boost gemmes |
+| 23 | **Icone calendrier HUD** | Icone calendrier avec badge point orange (non collecte) / sans badge (collecte). Tap ouvre la popup calendrier |
+| 24 | **Graphique courbe** | Courbe lissee avec zone coloree, tooltip au tap sur un jour, legende, axe Y auto-scale. 4 variantes (revenus, bonheur, population, adoptions) |
+| 25 | **Indicateur de tendance** | Mini fleche directionnelle : verte haut (amelioration), rouge bas (degradation), gris stable. Accompagne chaque stat globale |
 
 ---
 

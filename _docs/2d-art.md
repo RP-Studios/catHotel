@@ -240,6 +240,20 @@ Chaque objet necessite une **icone de boutique** (vignette carree simplifiee pou
 
 **Total : 8 effets/particules + 7 assets d'interaction = 15 assets effets/interaction**
 
+### 3.3 Icones UI supplementaires
+
+| # | Asset | Description |
+|---|-------|-------------|
+| 16 | **Icone calendrier HUD** | Icone calendrier stylisee pour le HUD haut. 2 etats : avec badge point orange (recompense disponible), sans badge (deja collectee) |
+| 17 | **Icone graphique/stats** | Icone representant un graphique en courbe (ou barres), pour le bouton Statistiques dans la barre d'outils |
+| 18 | **Fleche tendance haut** | Mini fleche verte pointant vers le haut (amelioration stat) |
+| 19 | **Fleche tendance bas** | Mini fleche rouge pointant vers le bas (degradation stat) |
+| 20 | **Tiret tendance stable** | Mini tiret gris horizontal (stat stable) |
+
+> Les graphiques eux-memes (courbes, barres, axes) sont rendus dynamiquement par le moteur (UI toolkit / shader), pas des assets fixes. Seules les icones decoratives sont des sprites.
+
+**Total section 3 : 8 effets/particules + 7 interaction + 5 icones UI = 20 assets effets/interaction/UI**
+
 ---
 
 ## RECAPITULATIF
@@ -255,7 +269,8 @@ Chaque objet necessite une **icone de boutique** (vignette carree simplifiee pou
 | Icones boutique | 24 |
 | Effets / Particules | 8 |
 | Interaction (pieces, caresses, cooldown) | 7 |
-| **TOTAL** | **~151 assets** |
+| Icones UI (calendrier, stats, tendances) | 5 |
+| **TOTAL** | **~156 assets** |
 
 ---
 

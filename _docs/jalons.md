@@ -335,12 +335,14 @@ Objets avances et decorations supplementaires pour diversifier le gameplay.
 | 2 | Popup Deblocage Etage | Popup | Cout, stats, races accessibles |
 | 3 | Popup Amelioration Reputation | Popup | Niveau, conditions, cout, deblocages |
 | 4 | Bouton "Ameliorer" dans le HUD | HUD | Badge notification si conditions remplies |
+| 5 | Ecran Statistiques | Plein ecran | Graphiques 7 jours (revenus, bonheur, population, adoptions) + stats globales cumulees. Ref ui-ux.md section 5.3 |
 
-**Total cumule J2 : 21 ecrans/panneaux/popups**
+**Total cumule J2 : 22 ecrans/panneaux/popups**
 
 #### Mise a jour des ecrans existants
 
 - **HUD haut** : ajout du niveau de reputation + nom du rang + bouton "Ameliorer"
+- **Barre d'outils bas** : ajout du bouton Statistiques (icone graphique)
 - **Panneau Boutique** : tous les objets disponibles (24), les objets verrouilles par niveau sont grises
 - **Ecran Gestion des Chats** : filtres par race, tri par etage
 - **Popup Arrivee Chat** : affichage de la race et du type (pension/refuge) avec portrait specifique
@@ -357,9 +359,10 @@ Objets avances et decorations supplementaires pour diversifier le gameplay.
 | Objets ajoutes (15 objets) | Sprites + icones boutique | 15 + 15 |
 | Animations objets supplementaires (fontaine, distributeur, litiere auto, aquarium, balle) | Sprites anim | 5 |
 | Effets supplementaires (notes de musique, gouttes de sueur) | Sprites | 2 |
-| **Total J2** | | **~88 assets** |
+| Icones UI stats (icone graphique, 3 fleches tendance) | Icones | 4 |
+| **Total J2** | | **~92 assets** |
 
-**Total cumule J1+J2 : ~151 assets** (= catalogue complet ref 2d-art.md)
+**Total cumule J1+J2 : ~155 assets**
 
 ---
 
@@ -434,6 +437,7 @@ Integrer toute la couche de monetisation Free-to-Play : gemmes, IAP, publicites 
 - J1: 100$ → J7: 1000$ + 20 gemmes + chat special garanti
 - Reset si jour manque (option pub pour rattraper 1 jour)
 - Popup automatique a chaque nouveau jour
+- **Acces libre** : icone calendrier dans le HUD haut (badge point orange si non collecte) + bouton "Recompenses" dans le Menu Pause. En mode consultation si deja collecte
 
 #### Rapport d'absence (Idle Revenue) — GDD 7.5, ui-ux.md section 11
 
@@ -513,11 +517,12 @@ Les tiles de sol supplementaires (etage 3, 4, penthouse) sont necessaires.
 | 9 | Introduction narrative (FTUE) | Plein ecran | 2-3 ecrans contexte |
 | 10 | Credits | Plein ecran | Depuis ecran titre |
 
-**Total cumule J3 : 28 ecrans/panneaux/popups** (= catalogue complet ref ui-ux.md + 3 ecrans etages optionnels)
+**Total cumule J3 : 29 ecrans/panneaux/popups** (= catalogue complet ref ui-ux.md + 3 ecrans etages optionnels)
 
 #### Mise a jour des ecrans existants
 
-- **HUD haut** : ajout du compteur gemmes (tap → boutique), bouton pub rewarded dans la barre d'outils
+- **HUD haut** : ajout du compteur gemmes (tap → boutique), icone calendrier (badge point orange si recompense non collectee), bouton pub rewarded dans la barre d'outils
+- **Menu Pause** : ajout bouton "Recompenses" (ouvre le calendrier en consultation si deja collecte)
 - **Popup Bilan Pension** : ajout bouton "Doubler les gains" (pub)
 - **Popup Adoption** : ajout bouton "Doubler la recompense" (pub)
 - **Popup Chat en Danger** : ajout bouton "Sauver ce chat" (pub)
@@ -531,7 +536,8 @@ Les tiles de sol supplementaires (etage 3, 4, penthouse) sont necessaires.
 | Categorie | Assets | Quantite |
 |-----------|--------|----------|
 | Tiles sol etage 3, 4, Penthouse (si optionnel actif) | Variantes sol | 3 |
-| Icones UI monetisation (gemmes, pub, premium, calendar) | Icones | ~6 |
+| Icones UI monetisation (gemmes, pub, premium) | Icones | ~5 |
+| Icone calendrier HUD (avec badge point orange) | Icone | 1 |
 | Mascotte tutoriel (si applicable) | Sprite | 1 |
 | **Total J3** | | **~10 assets** |
 
@@ -568,11 +574,12 @@ La majorite des assets graphiques sont deja produits en J1+J2. Le J3 ajoute prin
 | Pathfinding | x | | |
 | Etages | | x (1-2) | x (3-5 opt.) |
 | Reputation | | x | |
+| Statistiques (graphiques + stats globales) | | x | |
 | Races multiples | | x (8 races) | |
 | Gemmes (hard currency) | | | x |
 | IAP | | | x |
 | Pubs Rewarded | | | x |
-| Daily Rewards | | | x |
+| Daily Rewards (+ calendrier accessible HUD/Pause) | | | x |
 | Idle Revenue | | | x |
 | Timers construction | | | x |
 | FTUE | | | x |
@@ -583,9 +590,9 @@ La majorite des assets graphiques sont deja produits en J1+J2. Le J3 ajoute prin
 | Jalon | Assets art | Frames anim | Ecrans UI |
 |-------|------------|-------------|-----------|
 | J1 | ~63 | ~364 | 17 |
-| J2 | +88 | +1910 | +4 |
-| J3 | +10 | - | +7 |
-| **Total** | **~161** | **~2274** | **28** |
+| J2 | +92 | +1910 | +5 |
+| J3 | +11 | - | +7 |
+| **Total** | **~166** | **~2274** | **29** |
 
 ### Charge de travail estimee (art)
 

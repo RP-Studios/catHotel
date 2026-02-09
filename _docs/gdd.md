@@ -611,7 +611,7 @@ Quand le joueur quitte le jeu :
 
 ### 7.4 Recompenses journalieres (Daily Rewards)
 
-Calendrier de 7 jours avec recompenses escaladantes. Se reinitialise apres J7. Si le joueur manque un jour, le cycle repart de J1 (option pub pour rattraper 1 jour).
+Calendrier de 7 jours avec recompenses escaladantes. Se reinitialise apres J7. Si le joueur manque un jour, le cycle repart de J1 (option pub pour rattraper 1 jour). Le calendrier est consultable a tout moment via l'icone calendrier dans le HUD ou depuis le Menu Pause (en mode consultation si deja collecte).
 
 | Jour | Recompense |
 |------|------------|
