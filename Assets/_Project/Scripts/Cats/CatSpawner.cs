@@ -15,6 +15,9 @@ namespace CatHotel.Cats
         [SerializeField] private Sprite _rightSprite;
         [SerializeField] private Sprite _backSprite;
 
+        [Header("Animation")]
+        [SerializeField] private RuntimeAnimatorController _catAnimController;
+
         [Header("Spawning")]
         [SerializeField] private int _initialCatCount = 3;
         [SerializeField] private int _sortingOrder = 10;
@@ -57,6 +60,13 @@ namespace CatHotel.Cats
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _frontSprite;
             sr.sortingOrder = _sortingOrder;
+
+            if (_catAnimController != null)
+            {
+                var animator = go.AddComponent<Animator>();
+                animator.runtimeAnimatorController = _catAnimController;
+                animator.enabled = false;
+            }
 
             var cat = go.AddComponent<CatEntity>();
             cat.SetSprites(_frontSprite, _rightSprite, _backSprite);

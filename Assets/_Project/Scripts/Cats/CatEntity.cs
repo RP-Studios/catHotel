@@ -22,9 +22,12 @@ namespace CatHotel.Cats
         [SerializeField] private int   _wanderStepsMax = 6;
 
         private SpriteRenderer _sr;
+        private Animator _animator;
         private GridData _grid;
         private Vector2Int _gridPos;
         private Sequence _moveSequence;
+        private CatDirection _currentDir;
+        private bool _isWalking;
 
         public Vector2Int GridPos => _gridPos;
 
@@ -40,8 +43,11 @@ namespace CatHotel.Cats
             _grid = grid;
             _gridPos = startCell;
             _sr = GetComponent<SpriteRenderer>();
+            _animator = GetComponent<Animator>();
             transform.position = CellToWorld(startCell);
 
+            // Start idle — Animator disabled, sprite set manually
+            if (_animator != null) _animator.enabled = false;
             SetDirection(CatDirection.Front);
             ScheduleNextWander();
         }
@@ -68,6 +74,7 @@ namespace CatHotel.Cats
                 return;
             }
 
+            _isWalking = true;
             _moveSequence = DOTween.Sequence();
 
             for (int i = 0; i < path.Count; i++)
@@ -76,7 +83,6 @@ namespace CatHotel.Cats
                 Vector2Int from = i == 0 ? _gridPos : path[i - 1];
                 Vector2Int delta = target - from;
 
-                // Change sprite direction at the start of each step
                 CatDirection dir = DeltaToDirection(delta);
                 _moveSequence.AppendCallback(() => SetDirection(dir));
 
@@ -90,6 +96,10 @@ namespace CatHotel.Cats
             _moveSequence.OnComplete(() =>
             {
                 _gridPos = finalCell;
+                _isWalking = false;
+                if (_animator != null) _animator.enabled = false;
+                // Show idle sprite for last direction
+                SetDirection(_currentDir);
                 ScheduleNextWander();
             });
         }
@@ -119,7 +129,23 @@ namespace CatHotel.Cats
 
         private void SetDirection(CatDirection dir)
         {
-            _sr.flipX = false;
+            _currentDir = dir;
+            _sr.flipX = (dir == CatDirection.Left);
+
+            // Walk animation for Front direction
+            if (_isWalking && dir == CatDirection.Front && _animator != null)
+            {
+                if (!_animator.enabled)
+                {
+                    _animator.enabled = true;
+                    _animator.Play("Walk_Front", 0, 0f);
+                }
+                return;
+            }
+
+            // All other cases: disable Animator, set sprite manually
+            if (_animator != null && _animator.enabled)
+                _animator.enabled = false;
 
             switch (dir)
             {
@@ -130,11 +156,8 @@ namespace CatHotel.Cats
                     _sr.sprite = _backSprite;
                     break;
                 case CatDirection.Right:
-                    _sr.sprite = _rightSprite;
-                    break;
                 case CatDirection.Left:
                     _sr.sprite = _rightSprite;
-                    _sr.flipX = true;
                     break;
             }
         }
