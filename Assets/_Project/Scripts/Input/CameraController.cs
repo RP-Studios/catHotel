@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 namespace CatHotel.Input
@@ -7,22 +8,53 @@ namespace CatHotel.Input
     {
         [Header("Zoom")]
         [SerializeField] private float _minOrthoSize = 3f;
-        [SerializeField] private float _maxOrthoSize = 8.5f;
+        [SerializeField] private float _maxOrthoSize = 17f;
         [SerializeField] private float _zoomSpeed    = 0.5f;
+
+        [Header("Inertia")]
+        [SerializeField] private float _inertiaDamping = 8f;
 
         [Header("Bounds")]
         [SerializeField] private Vector2 _gridMin = Vector2.zero;
-        [SerializeField] private Vector2 _gridMax = new(24f, 16f);
+        [SerializeField] private Vector2 _gridMax = new(48f, 32f);
         [SerializeField] private float   _padding = 0.5f;
 
         private Camera _cam;
         private bool _isPanning;
         private Vector3 _panOrigin;
+        private Vector3 _velocity;
+
+        /// <summary>
+        /// Set to true to block pan input (e.g. during build mode).
+        /// </summary>
+        public bool PanLocked { get; set; }
+
+        public float MinOrthoSize => _minOrthoSize;
+        public float CurrentOrthoSize => _cam != null ? _cam.orthographicSize : _maxOrthoSize;
+
+        /// <summary>
+        /// Max zoom-out capped so the camera never shows more than 95% of the grid,
+        /// ensuring there is always room to pan in both landscape and portrait.
+        /// </summary>
+        public float EffectiveMaxOrthoSize
+        {
+            get
+            {
+                if (_cam == null) return _maxOrthoSize;
+                float gridW = _gridMax.x - _gridMin.x;
+                float gridH = _gridMax.y - _gridMin.y;
+                float maxByHeight = gridH * 0.95f / 2f;
+                float maxByWidth  = gridW * 0.95f / (2f * _cam.aspect);
+                return Mathf.Min(_maxOrthoSize, Mathf.Min(maxByHeight, maxByWidth));
+            }
+        }
+
+        public event System.Action OnZoomChanged;
 
         private void Awake()
         {
             _cam = GetComponent<Camera>();
-            _cam.orthographicSize = _maxOrthoSize;
+            _cam.orthographicSize = Mathf.Min(19f, EffectiveMaxOrthoSize);
         }
 
         private void Start()
@@ -35,10 +67,80 @@ namespace CatHotel.Input
 
         private void LateUpdate()
         {
+            HandlePan();
             HandleMouseZoom();
-            HandleMousePan();
-            HandleTouchPinchZoom();
-            ClampPosition();
+            HandlePinchZoom();
+            ApplyInertia();
+        }
+
+        /// <summary>
+        /// Set zoom from a normalized 0-1 value (0 = max zoom out, 1 = max zoom in).
+        /// </summary>
+        public void SetZoomNormalized(float t)
+        {
+            float effective = EffectiveMaxOrthoSize;
+            _cam.orthographicSize = Mathf.Lerp(effective, _minOrthoSize, t);
+            OnZoomChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Get current zoom as a normalized 0-1 value (0 = max zoom out, 1 = max zoom in).
+        /// </summary>
+        public float GetZoomNormalized()
+        {
+            float effective = EffectiveMaxOrthoSize;
+            if (Mathf.Approximately(effective, _minOrthoSize)) return 1f;
+            return Mathf.InverseLerp(effective, _minOrthoSize, _cam.orthographicSize);
+        }
+
+        private void HandlePan()
+        {
+            if (PanLocked)
+            {
+                _isPanning = false;
+                return;
+            }
+
+            // Skip 1-finger pan when 2 fingers are down (pinch mode)
+            var touch = Touchscreen.current;
+            if (touch != null &&
+                touch.touches[0].press.isPressed &&
+                touch.touches[1].press.isPressed)
+            {
+                _isPanning = false;
+                return;
+            }
+
+            var pointer = Pointer.current;
+            if (pointer == null) return;
+
+            Vector2 screenPos = pointer.position.ReadValue();
+            if (float.IsInfinity(screenPos.x) || float.IsNaN(screenPos.x)) return;
+
+            if (pointer.press.wasPressedThisFrame)
+            {
+                // Don't start pan if clicking on UI
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                    return;
+
+                _isPanning = true;
+                _panOrigin = ScreenToWorld(screenPos);
+                _velocity = Vector3.zero;
+            }
+
+            if (_isPanning && pointer.press.isPressed)
+            {
+                Vector3 current = ScreenToWorld(screenPos);
+                Vector3 delta = _panOrigin - current;
+                transform.position += delta;
+
+                // Smooth velocity tracking for inertia
+                if (Time.unscaledDeltaTime > 0.0001f)
+                    _velocity = Vector3.Lerp(_velocity, delta / Time.unscaledDeltaTime, 0.3f);
+            }
+
+            if (_isPanning && pointer.press.wasReleasedThisFrame)
+                _isPanning = false;
         }
 
         private void HandleMouseZoom()
@@ -51,39 +153,11 @@ namespace CatHotel.Input
 
             _cam.orthographicSize = Mathf.Clamp(
                 _cam.orthographicSize - scroll * _zoomSpeed,
-                _minOrthoSize, _maxOrthoSize);
+                _minOrthoSize, EffectiveMaxOrthoSize);
+            OnZoomChanged?.Invoke();
         }
 
-        private void HandleMousePan()
-        {
-            var mouse = Mouse.current;
-            if (mouse == null) return;
-
-            Vector2 pos = mouse.position.ReadValue();
-            if (float.IsInfinity(pos.x) || float.IsNaN(pos.x)) return;
-
-            // Right-click or middle-click to pan
-            bool panButton = mouse.rightButton.isPressed || mouse.middleButton.isPressed;
-            bool panStart  = mouse.rightButton.wasPressedThisFrame || mouse.middleButton.wasPressedThisFrame;
-            bool panEnd    = mouse.rightButton.wasReleasedThisFrame || mouse.middleButton.wasReleasedThisFrame;
-
-            if (panStart)
-            {
-                _isPanning = true;
-                _panOrigin = ScreenToWorld(pos);
-            }
-
-            if (_isPanning && panButton)
-            {
-                Vector3 current = ScreenToWorld(pos);
-                transform.position += _panOrigin - current;
-            }
-
-            if (panEnd)
-                _isPanning = false;
-        }
-
-        private void HandleTouchPinchZoom()
+        private void HandlePinchZoom()
         {
             var touch = Touchscreen.current;
             if (touch == null) return;
@@ -98,15 +172,36 @@ namespace CatHotel.Input
             Vector2 d0 = t0.delta.ReadValue();
             Vector2 d1 = t1.delta.ReadValue();
 
+            // Pinch zoom
             float prevDist = Vector2.Distance(p0 - d0, p1 - d1);
             float curDist  = Vector2.Distance(p0, p1);
 
-            if (Mathf.Abs(prevDist) < 0.01f) return;
+            if (Mathf.Abs(prevDist) > 0.01f)
+            {
+                float factor = prevDist / curDist;
+                _cam.orthographicSize = Mathf.Clamp(
+                    _cam.orthographicSize * factor,
+                    _minOrthoSize, EffectiveMaxOrthoSize);
+                OnZoomChanged?.Invoke();
+            }
 
-            float factor = prevDist / curDist;
-            _cam.orthographicSize = Mathf.Clamp(
-                _cam.orthographicSize * factor,
-                _minOrthoSize, _maxOrthoSize);
+            // 2-finger pan via midpoint
+            Vector2 midPrev = (p0 - d0 + p1 - d1) * 0.5f;
+            Vector2 midCur  = (p0 + p1) * 0.5f;
+            Vector3 worldPrev = ScreenToWorld(midPrev);
+            Vector3 worldCur  = ScreenToWorld(midCur);
+            transform.position += worldPrev - worldCur;
+        }
+
+        private void ApplyInertia()
+        {
+            if (_isPanning || _velocity.sqrMagnitude < 0.01f) return;
+
+            transform.position += _velocity * Time.unscaledDeltaTime;
+            _velocity *= Mathf.Exp(-_inertiaDamping * Time.unscaledDeltaTime);
+
+            if (_velocity.sqrMagnitude < 0.01f)
+                _velocity = Vector3.zero;
         }
 
         private void ClampPosition()

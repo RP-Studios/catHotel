@@ -9,11 +9,24 @@ namespace CatHotel.Input
         [SerializeField] private GridRenderer _gridRenderer;
         [SerializeField] private Camera _camera;
 
+        private CameraController _camController;
+        private bool _buildMode;
         private bool _isDragging;
         private Vector2Int _dragStart;
 
+        public bool BuildMode => _buildMode;
+
+        private void Start()
+        {
+            _camController = _camera.GetComponent<CameraController>();
+        }
+
         private void Update()
         {
+            HandleBuildModeToggle();
+
+            if (!_buildMode) return;
+
             var pointer = Pointer.current;
             if (pointer == null) return;
 
@@ -57,6 +70,36 @@ namespace CatHotel.Input
                 }
 
                 _gridRenderer.ClearPreview();
+            }
+        }
+
+        private void HandleBuildModeToggle()
+        {
+            var kb = Keyboard.current;
+            if (kb == null) return;
+
+            if (kb.bKey.wasPressedThisFrame)
+                SetBuildMode(!_buildMode);
+        }
+
+        public void SetBuildMode(bool active)
+        {
+            if (_buildMode == active) return;
+            _buildMode = active;
+
+            if (_buildMode)
+            {
+                _gridRenderer.ShowGrid();
+                if (_camController != null) _camController.PanLocked = true;
+                Debug.Log("[Build] Build mode ON (B to exit)");
+            }
+            else
+            {
+                _isDragging = false;
+                _gridRenderer.ClearPreview();
+                _gridRenderer.HideGrid();
+                if (_camController != null) _camController.PanLocked = false;
+                Debug.Log("[Build] Build mode OFF");
             }
         }
 

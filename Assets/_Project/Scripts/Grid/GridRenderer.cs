@@ -42,12 +42,50 @@ namespace CatHotel.Grid
                 return;
             }
 
+            DrawBorderWalls();
+
+            Debug.Log($"[GridRenderer] Grid initialized: {GridData.Width}x{GridData.Height}");
+        }
+
+        /// <summary>
+        /// Show the empty cell grid (build mode).
+        /// Places empty tiles only on cells that are still Empty.
+        /// </summary>
+        public void ShowGrid()
+        {
             for (int y = 0; y < GridData.Height; y++)
                 for (int x = 0; x < GridData.Width; x++)
-                    _emptyTilemap.SetTile(new Vector3Int(x, y, 0), _emptyTile);
+                    if (_gridData.GetCell(x, y) == CellType.Empty)
+                        _emptyTilemap.SetTile(new Vector3Int(x, y, 0), _emptyTile);
+        }
 
-            Debug.Log($"[GridRenderer] Grid initialized: {GridData.Width}x{GridData.Height} " +
-                      $"({GridData.Width * GridData.Height} tiles placed)");
+        /// <summary>
+        /// Hide the empty cell grid (normal mode).
+        /// </summary>
+        public void HideGrid()
+        {
+            _emptyTilemap.ClearAllTiles();
+        }
+
+        /// <summary>
+        /// Draw wall tiles around the entire grid perimeter.
+        /// </summary>
+        private void DrawBorderWalls()
+        {
+            for (int x = 0; x < GridData.Width; x++)
+            {
+                _wallTilemap.SetTile(new Vector3Int(x, 0, 0), _wallTile);
+                _wallTilemap.SetTile(new Vector3Int(x, GridData.Height - 1, 0), _wallTile);
+                _gridData.SetCell(x, 0, CellType.Wall);
+                _gridData.SetCell(x, GridData.Height - 1, CellType.Wall);
+            }
+            for (int y = 0; y < GridData.Height; y++)
+            {
+                _wallTilemap.SetTile(new Vector3Int(0, y, 0), _wallTile);
+                _wallTilemap.SetTile(new Vector3Int(GridData.Width - 1, y, 0), _wallTile);
+                _gridData.SetCell(0, y, CellType.Wall);
+                _gridData.SetCell(GridData.Width - 1, y, CellType.Wall);
+            }
         }
 
         public void RefreshAll()

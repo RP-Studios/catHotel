@@ -15,11 +15,19 @@ namespace CatHotel.Cats
         [SerializeField] private Sprite _backSprite;
 
         [Header("Movement")]
-        [SerializeField] private float _cellMoveTime = 0.35f;
+        [SerializeField] private float _cellMoveTime = 0.7f;
         [SerializeField] private float _idleTimeMin  = 1f;
         [SerializeField] private float _idleTimeMax   = 3f;
         [SerializeField] private int   _wanderStepsMin = 2;
         [SerializeField] private int   _wanderStepsMax = 6;
+
+        private static readonly string[][] IdleStates =
+        {
+            new[] { "Idle3_Front", "Idle2_Front" }, // Front
+            new[] { "Idle3_Back" },                  // Back
+            new[] { "Idle3_Right", "Idle2_Right" },  // Right
+            new[] { "Idle3_Left", "Idle2_Left" },    // Left
+        };
 
         private SpriteRenderer _sr;
         private Animator _animator;
@@ -28,6 +36,7 @@ namespace CatHotel.Cats
         private Sequence _moveSequence;
         private CatDirection _currentDir;
         private bool _isWalking;
+        private string _chosenIdleState;
 
         public Vector2Int GridPos => _gridPos;
 
@@ -46,8 +55,6 @@ namespace CatHotel.Cats
             _animator = GetComponent<Animator>();
             transform.position = CellToWorld(startCell);
 
-            // Start idle — Animator disabled, sprite set manually
-            if (_animator != null) _animator.enabled = false;
             SetDirection(CatDirection.Front);
             ScheduleNextWander();
         }
@@ -97,8 +104,6 @@ namespace CatHotel.Cats
             {
                 _gridPos = finalCell;
                 _isWalking = false;
-                if (_animator != null) _animator.enabled = false;
-                // Show idle sprite for last direction
                 SetDirection(_currentDir);
                 ScheduleNextWander();
             });
@@ -130,35 +135,46 @@ namespace CatHotel.Cats
         private void SetDirection(CatDirection dir)
         {
             _currentDir = dir;
-            _sr.flipX = (dir == CatDirection.Left);
 
-            // Walk animation for Front direction
-            if (_isWalking && dir == CatDirection.Front && _animator != null)
+            if (_isWalking)
             {
-                if (!_animator.enabled)
+                _chosenIdleState = null;
+
+                string walkState = dir switch
                 {
-                    _animator.enabled = true;
-                    _animator.Play("Walk_Front", 0, 0f);
+                    CatDirection.Front => "Walk_Front",
+                    CatDirection.Back  => "Walk_Back",
+                    _ => null
+                };
+
+                if (walkState != null && _animator != null)
+                {
+                    _sr.flipX = false;
+                    if (!_animator.enabled) _animator.enabled = true;
+                    _animator.Play(walkState, 0, 0f);
+                    return;
                 }
+
+                // No walk animation for this direction: static sprite
+                if (_animator != null && _animator.enabled)
+                    _animator.enabled = false;
+                _sr.flipX = (dir == CatDirection.Left);
+                _sr.sprite = _rightSprite;
                 return;
             }
 
-            // All other cases: disable Animator, set sprite manually
-            if (_animator != null && _animator.enabled)
-                _animator.enabled = false;
-
-            switch (dir)
+            // Idle: pick a random animation once, keep it until next walk
+            if (_chosenIdleState == null)
             {
-                case CatDirection.Front:
-                    _sr.sprite = _frontSprite;
-                    break;
-                case CatDirection.Back:
-                    _sr.sprite = _backSprite;
-                    break;
-                case CatDirection.Right:
-                case CatDirection.Left:
-                    _sr.sprite = _rightSprite;
-                    break;
+                var options = IdleStates[(int)dir];
+                _chosenIdleState = options[Random.Range(0, options.Length)];
+            }
+
+            if (_animator != null)
+            {
+                _sr.flipX = false;
+                if (!_animator.enabled) _animator.enabled = true;
+                _animator.Play(_chosenIdleState, 0, 0f);
             }
         }
 

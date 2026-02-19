@@ -7,6 +7,7 @@ using UnityEditor.Animations;
 using CatHotel.Grid;
 using CatHotel.Input;
 using CatHotel.Cats;
+using CatHotel.UI;
 
 namespace CatHotel.Editor
 {
@@ -16,24 +17,51 @@ namespace CatHotel.Editor
         private const string CatSpritesRoot = "Assets/_Project/Art/Cats/Europeen";
         private const string AnimRoot = CatSpritesRoot + "/Animations";
 
+        // Walk spritesheets (8 frames)
         private const string WalkFrontSheet = AnimRoot + "/base_walk_face.png";
-        private const string WalkFrontClipPath = AnimRoot + "/Walk_Front.anim";
+        private const string WalkBackSheet  = AnimRoot + "/base_walk_back.png";
+
+        // Idle3 spritesheets (8 frames)
+        private const string Idle3FrontSheet = AnimRoot + "/base_idle3_face.png";
+        private const string Idle3BackSheet  = AnimRoot + "/base_idle3_back.png";
+        private const string Idle3LeftSheet  = AnimRoot + "/base_idle3_left.png";
+        private const string Idle3RightSheet = AnimRoot + "/base_idle3_right.png";
+
+        // Idle2 spritesheets (6 frames)
+        private const string Idle2FrontSheet = AnimRoot + "/base_idle2_face.png";
+        private const string Idle2LeftSheet  = AnimRoot + "/base_idle2_left.png";
+        private const string Idle2RightSheet = AnimRoot + "/base_idle2_right.png";
+
         private const string CatControllerPath = AnimRoot + "/CatEuropeen.controller";
-        private const int WalkFrameCount = 8;
-        private const float WalkFPS = 12f;
+
+        private const int WalkFrameCount  = 8;
+        private const float WalkFPS       = 12f;
+        private const int Idle3FrameCount = 8;
+        private const float Idle3FPS      = 8f;
+        private const int Idle2FrameCount = 6;
+        private const float Idle2FPS      = 6f;
 
         [MenuItem("Cat Hotel/Setup Proto Scene")]
         public static void SetupScene()
         {
             ConfigureSpriteImports();
             ConfigureCatSpriteImports();
-            ConfigureWalkSpritesheet();
+            ConfigureSpritesheet(WalkFrontSheet, "walk_face", WalkFrameCount);
+            ConfigureSpritesheet(WalkBackSheet, "walk_back", WalkFrameCount);
+            ConfigureSpritesheet(Idle3FrontSheet, "idle3_face", Idle3FrameCount);
+            ConfigureSpritesheet(Idle3BackSheet, "idle3_back", Idle3FrameCount);
+            ConfigureSpritesheet(Idle3LeftSheet, "idle3_left", Idle3FrameCount);
+            ConfigureSpritesheet(Idle3RightSheet, "idle3_right", Idle3FrameCount);
+            ConfigureSpritesheet(Idle2FrontSheet, "idle2_face", Idle2FrameCount);
+            ConfigureSpritesheet(Idle2LeftSheet, "idle2_left", Idle2FrameCount);
+            ConfigureSpritesheet(Idle2RightSheet, "idle2_right", Idle2FrameCount);
+            AssetDatabase.Refresh();
             var tiles = CreateTileAssets();
             var catController = CreateCatAnimationAssets();
             BuildSceneHierarchy(tiles, catController);
             Debug.Log("Proto scene setup complete. " +
-                "Controls: Left-click drag = build room, " +
-                "Right-click drag = pan, Scroll = zoom, S = spawn cats");
+                "Controls: Pan = drag, B = toggle build mode, " +
+                "Scroll = zoom, UI buttons = Build/Spawn/Zoom");
         }
 
         private static void ConfigureSpriteImports()
@@ -62,12 +90,12 @@ namespace CatHotel.Editor
                 ConfigureSprite(path, 200, FilterMode.Bilinear);
         }
 
-        private static void ConfigureWalkSpritesheet()
+        private static void ConfigureSpritesheet(string sheetPath, string namePrefix, int frameCount)
         {
-            var importer = AssetImporter.GetAtPath(WalkFrontSheet) as TextureImporter;
+            var importer = AssetImporter.GetAtPath(sheetPath) as TextureImporter;
             if (importer == null)
             {
-                Debug.LogWarning($"Walk spritesheet not found: {WalkFrontSheet}");
+                Debug.LogWarning($"Spritesheet not found: {sheetPath}");
                 return;
             }
 
@@ -78,14 +106,14 @@ namespace CatHotel.Editor
             importer.textureCompression = TextureImporterCompression.Uncompressed;
 
             importer.GetSourceTextureWidthAndHeight(out int texW, out int texH);
-            int frameW = texW / WalkFrameCount;
+            int frameW = texW / frameCount;
 
-            var metas = new SpriteMetaData[WalkFrameCount];
-            for (int i = 0; i < WalkFrameCount; i++)
+            var metas = new SpriteMetaData[frameCount];
+            for (int i = 0; i < frameCount; i++)
             {
                 metas[i] = new SpriteMetaData
                 {
-                    name = $"walk_face_{i}",
+                    name = $"{namePrefix}_{i}",
                     rect = new Rect(i * frameW, 0, frameW, texH),
                     alignment = (int)SpriteAlignment.Center,
                     pivot = new Vector2(0.5f, 0.5f)
@@ -97,29 +125,79 @@ namespace CatHotel.Editor
 
         private static RuntimeAnimatorController CreateCatAnimationAssets()
         {
-            // --- Create Walk_Front AnimationClip ---
-            var sprites = AssetDatabase.LoadAllAssetsAtPath(WalkFrontSheet)
+            // Walk clips
+            var walkFront  = CreateAnimClip(WalkFrontSheet, AnimRoot + "/Walk_Front.anim", "Walk_Front", WalkFrameCount, WalkFPS);
+            var walkBack   = CreateAnimClip(WalkBackSheet, AnimRoot + "/Walk_Back.anim", "Walk_Back", WalkFrameCount, WalkFPS);
+
+            // Idle3 clips (8 frames)
+            var idle3Front = CreateAnimClip(Idle3FrontSheet, AnimRoot + "/Idle3_Front.anim", "Idle3_Front", Idle3FrameCount, Idle3FPS);
+            var idle3Back  = CreateAnimClip(Idle3BackSheet, AnimRoot + "/Idle3_Back.anim", "Idle3_Back", Idle3FrameCount, Idle3FPS);
+            var idle3Left  = CreateAnimClip(Idle3LeftSheet, AnimRoot + "/Idle3_Left.anim", "Idle3_Left", Idle3FrameCount, Idle3FPS);
+            var idle3Right = CreateAnimClip(Idle3RightSheet, AnimRoot + "/Idle3_Right.anim", "Idle3_Right", Idle3FrameCount, Idle3FPS);
+
+            // Idle2 clips (6 frames)
+            var idle2Front = CreateAnimClip(Idle2FrontSheet, AnimRoot + "/Idle2_Front.anim", "Idle2_Front", Idle2FrameCount, Idle2FPS);
+            var idle2Left  = CreateAnimClip(Idle2LeftSheet, AnimRoot + "/Idle2_Left.anim", "Idle2_Left", Idle2FrameCount, Idle2FPS);
+            var idle2Right = CreateAnimClip(Idle2RightSheet, AnimRoot + "/Idle2_Right.anim", "Idle2_Right", Idle2FrameCount, Idle2FPS);
+
+            // Clean old clips
+            AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Front.anim");
+            AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Left.anim");
+            AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Right.anim");
+
+            // --- Create AnimatorController ---
+            AssetDatabase.DeleteAsset(CatControllerPath);
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(CatControllerPath);
+            var rootSM = controller.layers[0].stateMachine;
+
+            void AddState(string name, AnimationClip clip, bool isDefault = false)
+            {
+                if (clip == null) return;
+                var state = rootSM.AddState(name);
+                state.motion = clip;
+                if (isDefault) rootSM.defaultState = state;
+            }
+
+            AddState("Idle3_Front", idle3Front, true);
+            AddState("Idle3_Back",  idle3Back);
+            AddState("Idle3_Right", idle3Right);
+            AddState("Idle3_Left",  idle3Left);
+            AddState("Idle2_Front", idle2Front);
+            AddState("Idle2_Right", idle2Right);
+            AddState("Idle2_Left",  idle2Left);
+            AddState("Walk_Front",  walkFront);
+            AddState("Walk_Back",   walkBack);
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[ProtoSceneSetup] Created cat AnimatorController (9 states: 7 idle + 2 walk)");
+            return controller;
+        }
+
+        private static AnimationClip CreateAnimClip(
+            string sheetPath, string clipPath, string clipName,
+            int frameCount, float fps)
+        {
+            var sprites = AssetDatabase.LoadAllAssetsAtPath(sheetPath)
                 .OfType<Sprite>()
                 .OrderBy(s => s.name)
                 .ToList();
 
-            if (sprites.Count < WalkFrameCount)
+            if (sprites.Count < frameCount)
             {
-                Debug.LogWarning($"Walk spritesheet: expected {WalkFrameCount} sprites, got {sprites.Count}. Skipping animation.");
+                Debug.LogWarning($"{clipName}: expected {frameCount} sprites in {sheetPath}, got {sprites.Count}. Skipping.");
                 return null;
             }
 
-            var clip = new AnimationClip { frameRate = WalkFPS };
+            var clip = new AnimationClip { frameRate = fps };
 
             var binding = EditorCurveBinding.PPtrCurve("", typeof(SpriteRenderer), "m_Sprite");
-            // +1 keyframe at end for clean loop (last frame gets full duration)
-            var keyframes = new ObjectReferenceKeyframe[WalkFrameCount + 1];
-            for (int i = 0; i <= WalkFrameCount; i++)
+            var keyframes = new ObjectReferenceKeyframe[frameCount + 1];
+            for (int i = 0; i <= frameCount; i++)
             {
                 keyframes[i] = new ObjectReferenceKeyframe
                 {
-                    time = i / WalkFPS,
-                    value = sprites[i % WalkFrameCount]
+                    time = i / fps,
+                    value = sprites[i % frameCount]
                 };
             }
             AnimationUtility.SetObjectReferenceCurve(clip, binding, keyframes);
@@ -128,21 +206,9 @@ namespace CatHotel.Editor
             clipSettings.loopTime = true;
             AnimationUtility.SetAnimationClipSettings(clip, clipSettings);
 
-            AssetDatabase.DeleteAsset(WalkFrontClipPath);
-            AssetDatabase.CreateAsset(clip, WalkFrontClipPath);
-
-            // --- Create AnimatorController ---
-            AssetDatabase.DeleteAsset(CatControllerPath);
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(CatControllerPath);
-
-            var rootSM = controller.layers[0].stateMachine;
-            var walkState = rootSM.AddState("Walk_Front");
-            walkState.motion = clip;
-            rootSM.defaultState = walkState;
-
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[ProtoSceneSetup] Created Walk_Front clip ({WalkFrameCount} frames @ {WalkFPS} FPS) + AnimatorController");
-            return controller;
+            AssetDatabase.DeleteAsset(clipPath);
+            AssetDatabase.CreateAsset(clip, clipPath);
+            return clip;
         }
 
         private static void ConfigureSprite(string path, int ppu, FilterMode filter)
@@ -217,9 +283,9 @@ namespace CatHotel.Editor
 
             var cam = camObj.GetComponent<Camera>();
             cam.orthographic = true;
-            cam.orthographicSize = 8.5f;
+            cam.orthographicSize = 19f;
             cam.backgroundColor = new Color(0.12f, 0.12f, 0.15f);
-            camObj.transform.position = new Vector3(12f, 8f, -10f);
+            camObj.transform.position = new Vector3(24f, 16f, -10f);
 
             if (camObj.GetComponent<CameraController>() == null)
                 camObj.AddComponent<CameraController>();
@@ -282,6 +348,18 @@ namespace CatHotel.Editor
             soSpawner.FindProperty("_backSprite").objectReferenceValue      = catBack;
             soSpawner.FindProperty("_catAnimController").objectReferenceValue = catController;
             soSpawner.ApplyModifiedProperties();
+
+            // --- ProtoUI ---
+            var protoUI = mgrObj.GetComponent<ProtoUI>();
+            if (protoUI == null)
+                protoUI = mgrObj.AddComponent<ProtoUI>();
+
+            var soUI = new SerializedObject(protoUI);
+            soUI.FindProperty("_roomBuilder").objectReferenceValue      = builder;
+            soUI.FindProperty("_catSpawner").objectReferenceValue       = spawner;
+            soUI.FindProperty("_cameraController").objectReferenceValue =
+                camObj.GetComponent<CameraController>();
+            soUI.ApplyModifiedProperties();
 
             // --- Mark dirty ---
             EditorUtility.SetDirty(camObj);
