@@ -32,14 +32,19 @@ namespace CatHotel.Editor
         private const string Idle2LeftSheet  = AnimRoot + "/base_idle2_left.png";
         private const string Idle2RightSheet = AnimRoot + "/base_idle2_right.png";
 
+        // Sleep spritesheet (9 frames)
+        private const string SleepFrontSheet = AnimRoot + "/base_sleeping_face.png";
+
         private const string CatControllerPath = AnimRoot + "/CatEuropeen.controller";
 
-        private const int WalkFrameCount  = 8;
-        private const float WalkFPS       = 12f;
-        private const int Idle3FrameCount = 8;
-        private const float Idle3FPS      = 8f;
-        private const int Idle2FrameCount = 6;
-        private const float Idle2FPS      = 6f;
+        private const int WalkFrameCount   = 8;
+        private const float WalkFPS        = 12f;
+        private const int Idle3FrameCount  = 8;
+        private const float Idle3FPS       = 8f;
+        private const int Idle2FrameCount  = 6;
+        private const float Idle2FPS       = 6f;
+        private const int SleepFrameCount  = 9;
+        private const float SleepFPS       = 4f;
 
         [MenuItem("Cat Hotel/Setup Proto Scene")]
         public static void SetupScene()
@@ -55,6 +60,7 @@ namespace CatHotel.Editor
             ConfigureSpritesheet(Idle2FrontSheet, "idle2_face", Idle2FrameCount);
             ConfigureSpritesheet(Idle2LeftSheet, "idle2_left", Idle2FrameCount);
             ConfigureSpritesheet(Idle2RightSheet, "idle2_right", Idle2FrameCount);
+            ConfigureSpritesheet(SleepFrontSheet, "sleeping_face", SleepFrameCount);
             AssetDatabase.Refresh();
             var tiles = CreateTileAssets();
             var catController = CreateCatAnimationAssets();
@@ -140,6 +146,9 @@ namespace CatHotel.Editor
             var idle2Left  = CreateAnimClip(Idle2LeftSheet, AnimRoot + "/Idle2_Left.anim", "Idle2_Left", Idle2FrameCount, Idle2FPS);
             var idle2Right = CreateAnimClip(Idle2RightSheet, AnimRoot + "/Idle2_Right.anim", "Idle2_Right", Idle2FrameCount, Idle2FPS);
 
+            // Sleep clip (9 frames)
+            var sleepFront = CreateAnimClip(SleepFrontSheet, AnimRoot + "/Sleep_Front.anim", "Sleep_Front", SleepFrameCount, SleepFPS);
+
             // Clean old clips
             AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Front.anim");
             AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Left.anim");
@@ -167,9 +176,10 @@ namespace CatHotel.Editor
             AddState("Idle2_Left",  idle2Left);
             AddState("Walk_Front",  walkFront);
             AddState("Walk_Back",   walkBack);
+            AddState("Sleep_Front", sleepFront);
 
             AssetDatabase.SaveAssets();
-            Debug.Log("[ProtoSceneSetup] Created cat AnimatorController (9 states: 7 idle + 2 walk)");
+            Debug.Log("[ProtoSceneSetup] Created cat AnimatorController (10 states: 7 idle + 2 walk + 1 sleep)");
             return controller;
         }
 

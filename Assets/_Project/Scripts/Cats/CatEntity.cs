@@ -15,11 +15,16 @@ namespace CatHotel.Cats
         [SerializeField] private Sprite _backSprite;
 
         [Header("Movement")]
-        [SerializeField] private float _cellMoveTime = 0.7f;
-        [SerializeField] private float _idleTimeMin  = 1f;
-        [SerializeField] private float _idleTimeMax   = 3f;
+        [SerializeField] private float _cellMoveTime   = 0.7f;
+        [SerializeField] private float _idleTimeMin    = 1f;
+        [SerializeField] private float _idleTimeMax    = 3f;
         [SerializeField] private int   _wanderStepsMin = 2;
         [SerializeField] private int   _wanderStepsMax = 6;
+
+        [Header("Sleep")]
+        [SerializeField, Range(0f, 1f)] private float _sleepChance = 0.3f;
+        [SerializeField] private float _sleepTimeMin = 3f;
+        [SerializeField] private float _sleepTimeMax = 5f;
 
         private static readonly string[][] IdleStates =
         {
@@ -36,7 +41,7 @@ namespace CatHotel.Cats
         private Sequence _moveSequence;
         private CatDirection _currentDir;
         private bool _isWalking;
-        private string _chosenIdleState;
+        private string _chosenRestState;
 
         public Vector2Int GridPos => _gridPos;
 
@@ -55,8 +60,7 @@ namespace CatHotel.Cats
             _animator = GetComponent<Animator>();
             transform.position = CellToWorld(startCell);
 
-            SetDirection(CatDirection.Front);
-            ScheduleNextWander();
+            EnterRest();
         }
 
         private void OnDestroy()
@@ -64,11 +68,52 @@ namespace CatHotel.Cats
             _moveSequence?.Kill();
         }
 
-        private void ScheduleNextWander()
+        // --- Rest state: idle or sleep ---
+
+        private void EnterRest()
         {
+            _isWalking = false;
+            _chosenRestState = null;
+
+            bool willSleep = Random.value < _sleepChance;
+
+            if (willSleep)
+            {
+                _chosenRestState = "Sleep_Front";
+                _currentDir = CatDirection.Front;
+                PlayAnimState(_chosenRestState);
+
+                float sleepTime = Random.Range(_sleepTimeMin, _sleepTimeMax);
+                DOVirtual.DelayedCall(sleepTime, () =>
+                {
+                    // Wake up → idle briefly then wander
+                    _chosenRestState = null;
+                    EnterIdle();
+                });
+            }
+            else
+            {
+                EnterIdle();
+            }
+        }
+
+        private void EnterIdle()
+        {
+            _isWalking = false;
+
+            if (_chosenRestState == null)
+            {
+                var options = IdleStates[(int)_currentDir];
+                _chosenRestState = options[Random.Range(0, options.Length)];
+            }
+
+            PlayAnimState(_chosenRestState);
+
             float idleTime = Random.Range(_idleTimeMin, _idleTimeMax);
             DOVirtual.DelayedCall(idleTime, Wander);
         }
+
+        // --- Movement ---
 
         private void Wander()
         {
@@ -77,11 +122,12 @@ namespace CatHotel.Cats
 
             if (path.Count == 0)
             {
-                ScheduleNextWander();
+                EnterRest();
                 return;
             }
 
             _isWalking = true;
+            _chosenRestState = null;
             _moveSequence = DOTween.Sequence();
 
             for (int i = 0; i < path.Count; i++)
@@ -91,7 +137,7 @@ namespace CatHotel.Cats
                 Vector2Int delta = target - from;
 
                 CatDirection dir = DeltaToDirection(delta);
-                _moveSequence.AppendCallback(() => SetDirection(dir));
+                _moveSequence.AppendCallback(() => SetWalkDirection(dir));
 
                 Vector3 worldTarget = CellToWorld(target);
                 _moveSequence.Append(
@@ -103,10 +149,44 @@ namespace CatHotel.Cats
             _moveSequence.OnComplete(() =>
             {
                 _gridPos = finalCell;
-                _isWalking = false;
-                SetDirection(_currentDir);
-                ScheduleNextWander();
+                EnterRest();
             });
+        }
+
+        private void SetWalkDirection(CatDirection dir)
+        {
+            _currentDir = dir;
+
+            string walkState = dir switch
+            {
+                CatDirection.Front => "Walk_Front",
+                CatDirection.Back  => "Walk_Back",
+                _ => null
+            };
+
+            if (walkState != null && _animator != null)
+            {
+                _sr.flipX = false;
+                if (!_animator.enabled) _animator.enabled = true;
+                _animator.Play(walkState, 0, 0f);
+                return;
+            }
+
+            // No walk animation for this direction: static sprite
+            if (_animator != null && _animator.enabled)
+                _animator.enabled = false;
+            _sr.flipX = (dir == CatDirection.Left);
+            _sr.sprite = _rightSprite;
+        }
+
+        // --- Helpers ---
+
+        private void PlayAnimState(string stateName)
+        {
+            if (_animator == null) return;
+            _sr.flipX = false;
+            if (!_animator.enabled) _animator.enabled = true;
+            _animator.Play(stateName, 0, 0f);
         }
 
         private List<Vector2Int> BuildRandomPath(int steps)
@@ -130,52 +210,6 @@ namespace CatHotel.Cats
             }
 
             return path;
-        }
-
-        private void SetDirection(CatDirection dir)
-        {
-            _currentDir = dir;
-
-            if (_isWalking)
-            {
-                _chosenIdleState = null;
-
-                string walkState = dir switch
-                {
-                    CatDirection.Front => "Walk_Front",
-                    CatDirection.Back  => "Walk_Back",
-                    _ => null
-                };
-
-                if (walkState != null && _animator != null)
-                {
-                    _sr.flipX = false;
-                    if (!_animator.enabled) _animator.enabled = true;
-                    _animator.Play(walkState, 0, 0f);
-                    return;
-                }
-
-                // No walk animation for this direction: static sprite
-                if (_animator != null && _animator.enabled)
-                    _animator.enabled = false;
-                _sr.flipX = (dir == CatDirection.Left);
-                _sr.sprite = _rightSprite;
-                return;
-            }
-
-            // Idle: pick a random animation once, keep it until next walk
-            if (_chosenIdleState == null)
-            {
-                var options = IdleStates[(int)dir];
-                _chosenIdleState = options[Random.Range(0, options.Length)];
-            }
-
-            if (_animator != null)
-            {
-                _sr.flipX = false;
-                if (!_animator.enabled) _animator.enabled = true;
-                _animator.Play(_chosenIdleState, 0, 0f);
-            }
         }
 
         private static CatDirection DeltaToDirection(Vector2Int delta)
