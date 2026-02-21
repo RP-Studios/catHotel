@@ -9,7 +9,7 @@ namespace CatHotel.Cats
 
     public class CatEntity : MonoBehaviour
     {
-        [Header("Sprites")]
+        [Header("Sprites (fallback)")]
         [SerializeField] private Sprite _frontSprite;
         [SerializeField] private Sprite _rightSprite;
         [SerializeField] private Sprite _backSprite;
@@ -21,17 +21,24 @@ namespace CatHotel.Cats
         [SerializeField] private int   _wanderStepsMin = 2;
         [SerializeField] private int   _wanderStepsMax = 6;
 
-        [Header("Sleep")]
-        [SerializeField, Range(0f, 1f)] private float _sleepChance = 0.3f;
+        [Header("Rest Activities")]
+        [SerializeField, Range(0f, 1f)] private float _sleepChance = 0.15f;
+        [SerializeField, Range(0f, 1f)] private float _eatChance   = 0.20f;
+        [SerializeField, Range(0f, 1f)] private float _drinkChance = 0.15f;
         [SerializeField] private float _sleepTimeMin = 3f;
         [SerializeField] private float _sleepTimeMax = 5f;
+        [SerializeField] private float _eatTimeMin   = 3f;
+        [SerializeField] private float _eatTimeMax   = 5f;
+        [SerializeField] private float _drinkTimeMin = 3f;
+        [SerializeField] private float _drinkTimeMax = 5f;
 
+        // Idle: multiple variants per direction, chosen randomly
         private static readonly string[][] IdleStates =
         {
-            new[] { "Idle3_Front", "Idle2_Front" }, // Front
-            new[] { "Idle3_Back" },                  // Back
-            new[] { "Idle3_Right", "Idle2_Right" },  // Right
-            new[] { "Idle3_Left", "Idle2_Left" },    // Left
+            new[] { "Idle1_Front", "Idle2_Front", "Idle3_Front" }, // Front
+            new[] { "Idle1_Back", "Idle3_Back" },                   // Back (no Idle2)
+            new[] { "Idle1_Right", "Idle2_Right", "Idle3_Right" }, // Right
+            new[] { "Idle1_Left", "Idle2_Left", "Idle3_Left" },    // Left
         };
 
         private SpriteRenderer _sr;
@@ -60,6 +67,7 @@ namespace CatHotel.Cats
             _animator = GetComponent<Animator>();
             transform.position = CellToWorld(startCell);
 
+            _currentDir = CatDirection.Front;
             EnterRest();
         }
 
@@ -68,33 +76,48 @@ namespace CatHotel.Cats
             _moveSequence?.Kill();
         }
 
-        // --- Rest state: idle or sleep ---
+        // --- Rest: idle / sleep / eat / drink ---
 
         private void EnterRest()
         {
             _isWalking = false;
             _chosenRestState = null;
 
-            bool willSleep = Random.value < _sleepChance;
+            float roll = Random.value;
 
-            if (willSleep)
+            if (roll < _sleepChance)
             {
-                _chosenRestState = "Sleep_Front";
-                _currentDir = CatDirection.Front;
-                PlayAnimState(_chosenRestState);
-
-                float sleepTime = Random.Range(_sleepTimeMin, _sleepTimeMax);
-                DOVirtual.DelayedCall(sleepTime, () =>
-                {
-                    // Wake up → idle briefly then wander
-                    _chosenRestState = null;
-                    EnterIdle();
-                });
+                StartRestActivity("Sleep", _currentDir, _sleepTimeMin, _sleepTimeMax);
+            }
+            else if (roll < _sleepChance + _eatChance)
+            {
+                StartRestActivity("Eat", _currentDir, _eatTimeMin, _eatTimeMax);
+            }
+            else if (roll < _sleepChance + _eatChance + _drinkChance)
+            {
+                StartRestActivity("Drink", _currentDir, _drinkTimeMin, _drinkTimeMax);
             }
             else
             {
                 EnterIdle();
             }
+        }
+
+        private void StartRestActivity(string prefix, CatDirection dir, float timeMin, float timeMax)
+        {
+            // Sleep/Eat/Drink have front, left, right. Back → front fallback.
+            _chosenRestState = dir == CatDirection.Back
+                ? $"{prefix}_Front"
+                : $"{prefix}_{dir}";
+
+            PlayAnimState(_chosenRestState);
+
+            float duration = Random.Range(timeMin, timeMax);
+            DOVirtual.DelayedCall(duration, () =>
+            {
+                _chosenRestState = null;
+                EnterIdle();
+            });
         }
 
         private void EnterIdle()
@@ -156,27 +179,7 @@ namespace CatHotel.Cats
         private void SetWalkDirection(CatDirection dir)
         {
             _currentDir = dir;
-
-            string walkState = dir switch
-            {
-                CatDirection.Front => "Walk_Front",
-                CatDirection.Back  => "Walk_Back",
-                _ => null
-            };
-
-            if (walkState != null && _animator != null)
-            {
-                _sr.flipX = false;
-                if (!_animator.enabled) _animator.enabled = true;
-                _animator.Play(walkState, 0, 0f);
-                return;
-            }
-
-            // No walk animation for this direction: static sprite
-            if (_animator != null && _animator.enabled)
-                _animator.enabled = false;
-            _sr.flipX = (dir == CatDirection.Left);
-            _sr.sprite = _rightSprite;
+            PlayAnimState($"Walk_{dir}");
         }
 
         // --- Helpers ---
@@ -198,7 +201,6 @@ namespace CatHotel.Cats
             {
                 var neighbors = _grid.GetFloorNeighbors(current.x, current.y);
 
-                // Avoid immediate backtrack
                 if (path.Count >= 1)
                     neighbors.Remove(path.Count >= 2 ? path[^2] : _gridPos);
 
@@ -214,7 +216,6 @@ namespace CatHotel.Cats
 
         private static CatDirection DeltaToDirection(Vector2Int delta)
         {
-            // Prioritize vertical if equal
             if (Mathf.Abs(delta.y) >= Mathf.Abs(delta.x))
                 return delta.y > 0 ? CatDirection.Back : CatDirection.Front;
             return delta.x > 0 ? CatDirection.Right : CatDirection.Left;
@@ -222,8 +223,6 @@ namespace CatHotel.Cats
 
         private static Vector3 CellToWorld(Vector2Int cell)
         {
-            // Cell center: grid cells have their origin at bottom-left,
-            // so center is at +0.5
             return new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
         }
     }

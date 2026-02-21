@@ -17,57 +17,67 @@ namespace CatHotel.Editor
         private const string CatSpritesRoot = "Assets/_Project/Art/Cats/Europeen";
         private const string AnimRoot = CatSpritesRoot + "/Animations";
 
-        // Walk spritesheets (8 frames)
-        private const string WalkFrontSheet = AnimRoot + "/base_walk_face.png";
-        private const string WalkBackSheet  = AnimRoot + "/base_walk_back.png";
-
-        // Idle3 spritesheets (8 frames)
-        private const string Idle3FrontSheet = AnimRoot + "/base_idle3_face.png";
-        private const string Idle3BackSheet  = AnimRoot + "/base_idle3_back.png";
-        private const string Idle3LeftSheet  = AnimRoot + "/base_idle3_left.png";
-        private const string Idle3RightSheet = AnimRoot + "/base_idle3_right.png";
-
-        // Idle2 spritesheets (6 frames)
-        private const string Idle2FrontSheet = AnimRoot + "/base_idle2_face.png";
-        private const string Idle2LeftSheet  = AnimRoot + "/base_idle2_left.png";
-        private const string Idle2RightSheet = AnimRoot + "/base_idle2_right.png";
-
-        // Sleep spritesheet (9 frames)
-        private const string SleepFrontSheet = AnimRoot + "/base_sleeping_face.png";
-
         private const string CatControllerPath = AnimRoot + "/CatEuropeen.controller";
 
-        private const int WalkFrameCount   = 8;
-        private const float WalkFPS        = 12f;
-        private const int Idle3FrameCount  = 8;
-        private const float Idle3FPS       = 8f;
-        private const int Idle2FrameCount  = 6;
-        private const float Idle2FPS       = 6f;
-        private const int SleepFrameCount  = 9;
-        private const float SleepFPS       = 4f;
+        // (sheetFile, slicePrefix, stateName, frames, fps)
+        // Walk: 8 frames, 0.67s loop → 12 FPS
+        // Idle (6f): 1s → 6 FPS | Idle (8f): 1s → 8 FPS
+        // Rest (sleep 9f): 2s → 4.5 FPS | (eat 10f): 2s → 5 FPS | (drink 8f): 2s → 4 FPS
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] AnimConfigs =
+        {
+            // Walk (8f, 12 FPS)
+            ("base_walk_face.png",  "walk_face",  "Walk_Front", 8, 12f),
+            ("base_walk_back.png",  "walk_back",  "Walk_Back",  8, 12f),
+            ("base_walk_left.png",  "walk_left",  "Walk_Left",  8, 12f),
+            ("base_walk_right.png", "walk_right", "Walk_Right", 8, 12f),
+
+            // Idle1 (6f, 6 FPS)
+            ("base_idle1_face.png",  "idle1_face",  "Idle1_Front", 6, 6f),
+            ("base_idle1_back.png",  "idle1_back",  "Idle1_Back",  6, 6f),
+            ("base_idle1_left.png",  "idle1_left",  "Idle1_Left",  6, 6f),
+            ("base_idle1_right.png", "idle1_right", "Idle1_Right", 6, 6f),
+
+            // Idle2 (6f, 6 FPS)
+            ("base_idle2_face.png",  "idle2_face",  "Idle2_Front", 6, 6f),
+            ("base_idle2_left.png",  "idle2_left",  "Idle2_Left",  6, 6f),
+            ("base_idle2_right.png", "idle2_right", "Idle2_Right", 6, 6f),
+
+            // Idle3 (8f, 8 FPS)
+            ("base_idle3_face.png",  "idle3_face",  "Idle3_Front", 8, 8f),
+            ("base_idle3_back.png",  "idle3_back",  "Idle3_Back",  8, 8f),
+            ("base_idle3_left.png",  "idle3_left",  "Idle3_Left",  8, 8f),
+            ("base_idle3_right.png", "idle3_right", "Idle3_Right", 8, 8f),
+
+            // Sleep (9f, 4.5 FPS)
+            ("base_sleeping_face.png",  "sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("base_sleeping_left.png",  "sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("base_sleeping_right.png", "sleeping_right", "Sleep_Right", 9, 4.5f),
+
+            // Eat (face 12f → 6 FPS, left/right 10f → 5 FPS, all 2s loop)
+            ("base_eating_face.png",  "eating_face",  "Eat_Front", 12, 6f),
+            ("base_eating_left.png",  "eating_left",  "Eat_Left",  10, 5f),
+            ("base_eating_right.png", "eating_right", "Eat_Right", 10, 5f),
+
+            // Drink (8f, 4 FPS)
+            ("base_drunking_face.png",  "drunking_face",  "Drink_Front", 8, 4f),
+            ("base_drunking_left.png",  "drunking_left",  "Drink_Left",  8, 4f),
+            ("base_drunking_right.png", "drunking_right", "Drink_Right", 8, 4f),
+        };
 
         [MenuItem("Cat Hotel/Setup Proto Scene")]
         public static void SetupScene()
         {
             ConfigureSpriteImports();
             ConfigureCatSpriteImports();
-            ConfigureSpritesheet(WalkFrontSheet, "walk_face", WalkFrameCount);
-            ConfigureSpritesheet(WalkBackSheet, "walk_back", WalkFrameCount);
-            ConfigureSpritesheet(Idle3FrontSheet, "idle3_face", Idle3FrameCount);
-            ConfigureSpritesheet(Idle3BackSheet, "idle3_back", Idle3FrameCount);
-            ConfigureSpritesheet(Idle3LeftSheet, "idle3_left", Idle3FrameCount);
-            ConfigureSpritesheet(Idle3RightSheet, "idle3_right", Idle3FrameCount);
-            ConfigureSpritesheet(Idle2FrontSheet, "idle2_face", Idle2FrameCount);
-            ConfigureSpritesheet(Idle2LeftSheet, "idle2_left", Idle2FrameCount);
-            ConfigureSpritesheet(Idle2RightSheet, "idle2_right", Idle2FrameCount);
-            ConfigureSpritesheet(SleepFrontSheet, "sleeping_face", SleepFrameCount);
+
+            foreach (var cfg in AnimConfigs)
+                ConfigureSpritesheet($"{AnimRoot}/{cfg.file}", cfg.prefix, cfg.frames);
             AssetDatabase.Refresh();
+
             var tiles = CreateTileAssets();
             var catController = CreateCatAnimationAssets();
             BuildSceneHierarchy(tiles, catController);
-            Debug.Log("Proto scene setup complete. " +
-                "Controls: Pan = drag, B = toggle build mode, " +
-                "Scroll = zoom, UI buttons = Build/Spawn/Zoom");
+            Debug.Log($"Proto scene setup complete. {AnimConfigs.Length} animation clips configured.");
         }
 
         private static void ConfigureSpriteImports()
@@ -131,55 +141,37 @@ namespace CatHotel.Editor
 
         private static RuntimeAnimatorController CreateCatAnimationAssets()
         {
-            // Walk clips
-            var walkFront  = CreateAnimClip(WalkFrontSheet, AnimRoot + "/Walk_Front.anim", "Walk_Front", WalkFrameCount, WalkFPS);
-            var walkBack   = CreateAnimClip(WalkBackSheet, AnimRoot + "/Walk_Back.anim", "Walk_Back", WalkFrameCount, WalkFPS);
-
-            // Idle3 clips (8 frames)
-            var idle3Front = CreateAnimClip(Idle3FrontSheet, AnimRoot + "/Idle3_Front.anim", "Idle3_Front", Idle3FrameCount, Idle3FPS);
-            var idle3Back  = CreateAnimClip(Idle3BackSheet, AnimRoot + "/Idle3_Back.anim", "Idle3_Back", Idle3FrameCount, Idle3FPS);
-            var idle3Left  = CreateAnimClip(Idle3LeftSheet, AnimRoot + "/Idle3_Left.anim", "Idle3_Left", Idle3FrameCount, Idle3FPS);
-            var idle3Right = CreateAnimClip(Idle3RightSheet, AnimRoot + "/Idle3_Right.anim", "Idle3_Right", Idle3FrameCount, Idle3FPS);
-
-            // Idle2 clips (6 frames)
-            var idle2Front = CreateAnimClip(Idle2FrontSheet, AnimRoot + "/Idle2_Front.anim", "Idle2_Front", Idle2FrameCount, Idle2FPS);
-            var idle2Left  = CreateAnimClip(Idle2LeftSheet, AnimRoot + "/Idle2_Left.anim", "Idle2_Left", Idle2FrameCount, Idle2FPS);
-            var idle2Right = CreateAnimClip(Idle2RightSheet, AnimRoot + "/Idle2_Right.anim", "Idle2_Right", Idle2FrameCount, Idle2FPS);
-
-            // Sleep clip (9 frames)
-            var sleepFront = CreateAnimClip(SleepFrontSheet, AnimRoot + "/Sleep_Front.anim", "Sleep_Front", SleepFrameCount, SleepFPS);
-
             // Clean old clips
             AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Front.anim");
             AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Left.anim");
             AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Right.anim");
 
-            // --- Create AnimatorController ---
+            // Create all clips and states
             AssetDatabase.DeleteAsset(CatControllerPath);
             var controller = AnimatorController.CreateAnimatorControllerAtPath(CatControllerPath);
             var rootSM = controller.layers[0].stateMachine;
+            bool defaultSet = false;
 
-            void AddState(string name, AnimationClip clip, bool isDefault = false)
+            foreach (var cfg in AnimConfigs)
             {
-                if (clip == null) return;
-                var state = rootSM.AddState(name);
+                string sheetPath = $"{AnimRoot}/{cfg.file}";
+                string clipPath = $"{AnimRoot}/{cfg.state}.anim";
+
+                var clip = CreateAnimClip(sheetPath, clipPath, cfg.state, cfg.frames, cfg.fps);
+                if (clip == null) continue;
+
+                var state = rootSM.AddState(cfg.state);
                 state.motion = clip;
-                if (isDefault) rootSM.defaultState = state;
+
+                if (!defaultSet)
+                {
+                    rootSM.defaultState = state;
+                    defaultSet = true;
+                }
             }
 
-            AddState("Idle3_Front", idle3Front, true);
-            AddState("Idle3_Back",  idle3Back);
-            AddState("Idle3_Right", idle3Right);
-            AddState("Idle3_Left",  idle3Left);
-            AddState("Idle2_Front", idle2Front);
-            AddState("Idle2_Right", idle2Right);
-            AddState("Idle2_Left",  idle2Left);
-            AddState("Walk_Front",  walkFront);
-            AddState("Walk_Back",   walkBack);
-            AddState("Sleep_Front", sleepFront);
-
             AssetDatabase.SaveAssets();
-            Debug.Log("[ProtoSceneSetup] Created cat AnimatorController (10 states: 7 idle + 2 walk + 1 sleep)");
+            Debug.Log($"[ProtoSceneSetup] Created AnimatorController with {rootSM.states.Length} states");
             return controller;
         }
 
