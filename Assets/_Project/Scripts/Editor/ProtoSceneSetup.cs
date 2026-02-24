@@ -62,6 +62,21 @@ namespace CatHotel.Editor
             ("base_drunking_face.png",  "drunking_face",  "Drink_Front", 8, 4f),
             ("base_drunking_left.png",  "drunking_left",  "Drink_Left",  8, 4f),
             ("base_drunking_right.png", "drunking_right", "Drink_Right", 8, 4f),
+
+            // Cleaning (11f, 5.5 FPS → 2s loop)
+            ("base_cleaning_face.png",  "cleaning_face",  "Clean_Front", 11, 5.5f),
+            ("base_cleaning_left.png",  "cleaning_left",  "Clean_Left",  11, 5.5f),
+            ("base_cleaning_right.png", "cleaning_right", "Clean_Right", 11, 5.5f),
+
+            // Happy (20f, 10 FPS → 2s one-shot)
+            ("base_happy_face.png",  "happy_face",  "Happy_Front", 20, 10f),
+            ("base_happy_left.png",  "happy_left",  "Happy_Left",  20, 10f),
+            ("base_happy_right.png", "happy_right", "Happy_Right", 20, 10f),
+
+            // Unhappy (6f, 6 FPS → 1s one-shot)
+            ("base_unhappy_face.png",  "unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("base_unhappy_left.png",  "unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("base_unhappy_right.png", "unhappy_right", "Unhappy_Right", 6, 6f),
         };
 
         [MenuItem("Cat Hotel/Setup Proto Scene")]

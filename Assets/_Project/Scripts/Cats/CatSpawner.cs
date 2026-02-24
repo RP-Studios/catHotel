@@ -76,6 +76,12 @@ namespace CatHotel.Cats
             return cat;
         }
 
+        public CatEntity GetRandomCat()
+        {
+            if (_cats.Count == 0) return null;
+            return _cats[Random.Range(0, _cats.Count)];
+        }
+
         private static void ShuffleList<T>(List<T> list)
         {
             for (int i = list.Count - 1; i > 0; i--)

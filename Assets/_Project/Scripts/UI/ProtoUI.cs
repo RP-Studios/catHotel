@@ -85,6 +85,16 @@ namespace CatHotel.UI
             _spawnButton = CreateButton(barObj.transform, "SpawnBtn", "Spawn", 200);
             _spawnButton.onClick.AddListener(OnSpawnPressed);
 
+            // --- Happy button ---
+            var happyBtn = CreateButton(barObj.transform, "HappyBtn", "Happy", 160);
+            happyBtn.GetComponent<Image>().color = new Color(0.3f, 0.7f, 0.3f, 1f);
+            happyBtn.onClick.AddListener(OnHappyPressed);
+
+            // --- Unhappy button ---
+            var unhappyBtn = CreateButton(barObj.transform, "UnhappyBtn", "Sad", 160);
+            unhappyBtn.GetComponent<Image>().color = new Color(0.75f, 0.3f, 0.3f, 1f);
+            unhappyBtn.onClick.AddListener(OnUnhappyPressed);
+
             // --- Zoom slider ---
             _zoomSlider = CreateZoomSlider(barObj.transform);
             _zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
@@ -101,6 +111,18 @@ namespace CatHotel.UI
         {
             if (_catSpawner == null) return;
             _catSpawner.SpawnInitialCats();
+        }
+
+        private void OnHappyPressed()
+        {
+            var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
+            if (cat != null) cat.PlayHappy();
+        }
+
+        private void OnUnhappyPressed()
+        {
+            var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
+            if (cat != null) cat.PlayUnhappy();
         }
 
         private void OnZoomSliderChanged(float value)

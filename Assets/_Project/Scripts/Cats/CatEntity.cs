@@ -22,15 +22,18 @@ namespace CatHotel.Cats
         [SerializeField] private int   _wanderStepsMax = 6;
 
         [Header("Rest Activities")]
-        [SerializeField, Range(0f, 1f)] private float _sleepChance = 0.15f;
-        [SerializeField, Range(0f, 1f)] private float _eatChance   = 0.20f;
-        [SerializeField, Range(0f, 1f)] private float _drinkChance = 0.15f;
+        [SerializeField, Range(0f, 1f)] private float _sleepChance = 0.12f;
+        [SerializeField, Range(0f, 1f)] private float _eatChance   = 0.15f;
+        [SerializeField, Range(0f, 1f)] private float _drinkChance = 0.12f;
+        [SerializeField, Range(0f, 1f)] private float _cleanChance = 0.12f;
         [SerializeField] private float _sleepTimeMin = 3f;
         [SerializeField] private float _sleepTimeMax = 5f;
         [SerializeField] private float _eatTimeMin   = 3f;
         [SerializeField] private float _eatTimeMax   = 5f;
         [SerializeField] private float _drinkTimeMin = 3f;
         [SerializeField] private float _drinkTimeMax = 5f;
+        [SerializeField] private float _cleanTimeMin = 3f;
+        [SerializeField] private float _cleanTimeMax = 5f;
 
         // Idle: multiple variants per direction, chosen randomly
         private static readonly string[][] IdleStates =
@@ -46,6 +49,7 @@ namespace CatHotel.Cats
         private GridData _grid;
         private Vector2Int _gridPos;
         private Sequence _moveSequence;
+        private Tween _pendingAction;
         private CatDirection _currentDir;
         private bool _isWalking;
         private string _chosenRestState;
@@ -74,9 +78,36 @@ namespace CatHotel.Cats
         private void OnDestroy()
         {
             _moveSequence?.Kill();
+            _pendingAction?.Kill();
         }
 
-        // --- Rest: idle / sleep / eat / drink ---
+        // --- Emotes (one-shot, triggered externally) ---
+
+        /// <summary>Play happy animation once (2s), then return to idle.</summary>
+        public void PlayHappy() => PlayEmote("Happy", 2f);
+
+        /// <summary>Play unhappy animation once (1s), then return to idle.</summary>
+        public void PlayUnhappy() => PlayEmote("Unhappy", 1f);
+
+        private void PlayEmote(string prefix, float duration)
+        {
+            // Interrupt whatever the cat is doing
+            _moveSequence?.Kill();
+            _pendingAction?.Kill();
+            _isWalking = false;
+            _chosenRestState = null;
+
+            string state = DirectionalState(prefix, _currentDir);
+            PlayAnimState(state);
+
+            _pendingAction = DOVirtual.DelayedCall(duration, () =>
+            {
+                _chosenRestState = null;
+                EnterIdle();
+            });
+        }
+
+        // --- Rest: idle / sleep / eat / drink / clean ---
 
         private void EnterRest()
         {
@@ -84,36 +115,46 @@ namespace CatHotel.Cats
             _chosenRestState = null;
 
             float roll = Random.value;
+            float cursor = 0f;
 
-            if (roll < _sleepChance)
+            cursor += _sleepChance;
+            if (roll < cursor)
             {
-                StartRestActivity("Sleep", _currentDir, _sleepTimeMin, _sleepTimeMax);
+                StartRestActivity("Sleep", _sleepTimeMin, _sleepTimeMax);
+                return;
             }
-            else if (roll < _sleepChance + _eatChance)
+
+            cursor += _eatChance;
+            if (roll < cursor)
             {
-                StartRestActivity("Eat", _currentDir, _eatTimeMin, _eatTimeMax);
+                StartRestActivity("Eat", _eatTimeMin, _eatTimeMax);
+                return;
             }
-            else if (roll < _sleepChance + _eatChance + _drinkChance)
+
+            cursor += _drinkChance;
+            if (roll < cursor)
             {
-                StartRestActivity("Drink", _currentDir, _drinkTimeMin, _drinkTimeMax);
+                StartRestActivity("Drink", _drinkTimeMin, _drinkTimeMax);
+                return;
             }
-            else
+
+            cursor += _cleanChance;
+            if (roll < cursor)
             {
-                EnterIdle();
+                StartRestActivity("Clean", _cleanTimeMin, _cleanTimeMax);
+                return;
             }
+
+            EnterIdle();
         }
 
-        private void StartRestActivity(string prefix, CatDirection dir, float timeMin, float timeMax)
+        private void StartRestActivity(string prefix, float timeMin, float timeMax)
         {
-            // Sleep/Eat/Drink have front, left, right. Back → front fallback.
-            _chosenRestState = dir == CatDirection.Back
-                ? $"{prefix}_Front"
-                : $"{prefix}_{dir}";
-
+            _chosenRestState = DirectionalState(prefix, _currentDir);
             PlayAnimState(_chosenRestState);
 
             float duration = Random.Range(timeMin, timeMax);
-            DOVirtual.DelayedCall(duration, () =>
+            _pendingAction = DOVirtual.DelayedCall(duration, () =>
             {
                 _chosenRestState = null;
                 EnterIdle();
@@ -133,7 +174,7 @@ namespace CatHotel.Cats
             PlayAnimState(_chosenRestState);
 
             float idleTime = Random.Range(_idleTimeMin, _idleTimeMax);
-            DOVirtual.DelayedCall(idleTime, Wander);
+            _pendingAction = DOVirtual.DelayedCall(idleTime, Wander);
         }
 
         // --- Movement ---
@@ -183,6 +224,14 @@ namespace CatHotel.Cats
         }
 
         // --- Helpers ---
+
+        /// <summary>Returns "{prefix}_Front/Left/Right". Back → Front fallback.</summary>
+        private static string DirectionalState(string prefix, CatDirection dir)
+        {
+            return dir == CatDirection.Back
+                ? $"{prefix}_Front"
+                : $"{prefix}_{dir}";
+        }
 
         private void PlayAnimState(string stateName)
         {
