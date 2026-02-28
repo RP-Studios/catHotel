@@ -97,15 +97,13 @@ namespace CatHotel.Editor
 
         private static void ConfigureSpriteImports()
         {
-            string[] paths =
-            {
-                $"{SpritesRoot}/Tiles/tile_empty.png",
-                $"{SpritesRoot}/Floors/tile_floor.png",
-                $"{SpritesRoot}/Walls/tile_wall.png"
-            };
+            // tile_empty is 32x32 → PPU 32
+            ConfigureSprite($"{SpritesRoot}/Tiles/tile_empty.png", 32, FilterMode.Point);
 
-            foreach (string path in paths)
-                ConfigureSprite(path, 32, FilterMode.Point);
+            // parquet + walls are 256x256 → PPU 256 so 1 sprite = 1 tile
+            ConfigureSprite($"{SpritesRoot}/Floors/parquet01.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/murHorizontal.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/murVert.png", 256, FilterMode.Point);
         }
 
         private static void ConfigureCatSpriteImports()
@@ -244,19 +242,22 @@ namespace CatHotel.Editor
             importer.SaveAndReimport();
         }
 
-        private static (TileBase empty, TileBase floor, TileBase wall) CreateTileAssets()
+        private static (TileBase empty, TileBase floor, TileBase wallH, TileBase wallV) CreateTileAssets()
         {
             var empty = CreateTile(
                 $"{SpritesRoot}/Tiles/tile_empty.png",
                 $"{SpritesRoot}/Tiles/EmptyTile.asset");
             var floor = CreateTile(
-                $"{SpritesRoot}/Floors/tile_floor.png",
+                $"{SpritesRoot}/Floors/parquet01.png",
                 $"{SpritesRoot}/Floors/FloorTile.asset");
-            var wall = CreateTile(
-                $"{SpritesRoot}/Walls/tile_wall.png",
-                $"{SpritesRoot}/Walls/WallTile.asset");
+            var wallH = CreateTile(
+                $"{SpritesRoot}/Walls/murHorizontal.png",
+                $"{SpritesRoot}/Walls/WallHTile.asset");
+            var wallV = CreateTile(
+                $"{SpritesRoot}/Walls/murVert.png",
+                $"{SpritesRoot}/Walls/WallVTile.asset");
 
-            return (empty, floor, wall);
+            return (empty, floor, wallH, wallV);
         }
 
         private static TileBase CreateTile(string spritePath, string tilePath)
@@ -287,7 +288,7 @@ namespace CatHotel.Editor
         }
 
         private static void BuildSceneHierarchy(
-            (TileBase empty, TileBase floor, TileBase wall) tiles,
+            (TileBase empty, TileBase floor, TileBase wallH, TileBase wallV) tiles,
             RuntimeAnimatorController catController)
         {
             // --- Camera ---
@@ -334,7 +335,8 @@ namespace CatHotel.Editor
             so.FindProperty("_previewTilemap").objectReferenceValue = tmPreview;
             so.FindProperty("_emptyTile").objectReferenceValue      = tiles.empty;
             so.FindProperty("_floorTile").objectReferenceValue      = tiles.floor;
-            so.FindProperty("_wallTile").objectReferenceValue       = tiles.wall;
+            so.FindProperty("_wallHTile").objectReferenceValue      = tiles.wallH;
+            so.FindProperty("_wallVTile").objectReferenceValue      = tiles.wallV;
             so.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
