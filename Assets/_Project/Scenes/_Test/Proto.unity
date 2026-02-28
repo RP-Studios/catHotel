@@ -789,10 +789,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Cats.CatSpawner
   _gridRenderer: {fileID: 1831571446}
-  _frontSprite: {fileID: 1070723350161826537, guid: 8d81585fe252ce240a25159f52657d58, type: 3}
-  _rightSprite: {fileID: 5616255133797757982, guid: b09caf2b4445ae14d8a57c15151a0c78, type: 3}
-  _backSprite: {fileID: 2172220442990503790, guid: cb1e0e34e2ed2544a8c1ce35307a694d, type: 3}
-  _catAnimController: {fileID: 9100000, guid: 86716aad9887f4444b3e7a2bef1a17d8, type: 2}
+  _breeds:
+  - name: Europeen
+    frontSprite: {fileID: 1070723350161826537, guid: 8d81585fe252ce240a25159f52657d58, type: 3}
+    rightSprite: {fileID: 5616255133797757982, guid: b09caf2b4445ae14d8a57c15151a0c78, type: 3}
+    backSprite: {fileID: 2172220442990503790, guid: cb1e0e34e2ed2544a8c1ce35307a694d, type: 3}
+    controller: {fileID: 9100000, guid: 86716aad9887f4444b3e7a2bef1a17d8, type: 2}
+  - name: Europeen3
+    frontSprite: {fileID: -8991743053677861271, guid: ee40b0667ba1632428ed265a2a741de5, type: 3}
+    rightSprite: {fileID: 4170402067407385212, guid: 5427938b806943841b792dc75ec739bf, type: 3}
+    backSprite: {fileID: 92378527638474029, guid: 17f3f67fa1c0d864aa5264791984e66d, type: 3}
+    controller: {fileID: 9100000, guid: 242790e1ec4b6634a8bceef9e3697247, type: 2}
   _initialCatCount: 3
   _sortingOrder: 10
 --- !u!114 &1831571449

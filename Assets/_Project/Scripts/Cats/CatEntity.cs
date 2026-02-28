@@ -26,6 +26,7 @@ namespace CatHotel.Cats
         [SerializeField, Range(0f, 1f)] private float _eatChance   = 0.15f;
         [SerializeField, Range(0f, 1f)] private float _drinkChance = 0.12f;
         [SerializeField, Range(0f, 1f)] private float _cleanChance = 0.12f;
+        [SerializeField, Range(0f, 1f)] private float _playChance  = 0.12f;
         [SerializeField] private float _sleepTimeMin = 3f;
         [SerializeField] private float _sleepTimeMax = 5f;
         [SerializeField] private float _eatTimeMin   = 3f;
@@ -34,6 +35,8 @@ namespace CatHotel.Cats
         [SerializeField] private float _drinkTimeMax = 5f;
         [SerializeField] private float _cleanTimeMin = 3f;
         [SerializeField] private float _cleanTimeMax = 5f;
+        [SerializeField] private float _playTimeMin  = 3f;
+        [SerializeField] private float _playTimeMax  = 5f;
 
         // Idle: multiple variants per direction, chosen randomly
         private static readonly string[][] IdleStates =
@@ -145,6 +148,13 @@ namespace CatHotel.Cats
                 return;
             }
 
+            cursor += _playChance;
+            if (roll < cursor)
+            {
+                StartRestActivity("Play", _playTimeMin, _playTimeMax);
+                return;
+            }
+
             EnterIdle();
         }
 
@@ -237,8 +247,34 @@ namespace CatHotel.Cats
         {
             if (_animator == null) return;
             _sr.flipX = false;
-            if (!_animator.enabled) _animator.enabled = true;
-            _animator.Play(stateName, 0, 0f);
+
+            int hash = Animator.StringToHash(stateName);
+            if (_animator.HasState(0, hash))
+            {
+                if (!_animator.enabled) _animator.enabled = true;
+                _animator.Play(hash, 0, 0f);
+            }
+            else
+            {
+                // No anim for this state → show static sprite
+                _animator.enabled = false;
+                switch (_currentDir)
+                {
+                    case CatDirection.Back:
+                        _sr.sprite = _backSprite != null ? _backSprite : _frontSprite;
+                        break;
+                    case CatDirection.Right:
+                        _sr.sprite = _rightSprite != null ? _rightSprite : _frontSprite;
+                        break;
+                    case CatDirection.Left:
+                        _sr.sprite = _rightSprite != null ? _rightSprite : _frontSprite;
+                        _sr.flipX = true;
+                        break;
+                    default:
+                        _sr.sprite = _frontSprite;
+                        break;
+                }
+            }
         }
 
         private List<Vector2Int> BuildRandomPath(int steps)

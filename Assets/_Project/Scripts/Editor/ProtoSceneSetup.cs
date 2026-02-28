@@ -16,8 +16,19 @@ namespace CatHotel.Editor
         private const string SpritesRoot = "Assets/_Project/Art/Environment";
         private const string CatSpritesRoot = "Assets/_Project/Art/Cats/Europeen";
         private const string AnimRoot = CatSpritesRoot + "/Animations";
-
         private const string CatControllerPath = AnimRoot + "/CatEuropeen.controller";
+
+        private const string Eur3SpritesRoot = "Assets/_Project/Art/Cats/Europeen3";
+        private const string Eur3AnimRoot = Eur3SpritesRoot + "/Animations";
+        private const string Eur3ControllerPath = Eur3AnimRoot + "/CatEuropeen3.controller";
+
+        // Europeen3: only playing animations (23f, 11.5 FPS → 2s)
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] Eur3AnimConfigs =
+        {
+            ("base_playing_face.png",  "eur3_playing_face",  "Play_Front", 23, 11.5f),
+            ("base_playing_left.png",  "eur3_playing_left",  "Play_Left",  23, 11.5f),
+            ("base_playing_right.png", "eur3_playing_right", "Play_Right", 23, 11.5f),
+        };
 
         // (sheetFile, slicePrefix, stateName, frames, fps)
         // Walk: 8 frames, 0.67s loop → 12 FPS
@@ -68,6 +79,11 @@ namespace CatHotel.Editor
             ("base_cleaning_left.png",  "cleaning_left",  "Clean_Left",  11, 5.5f),
             ("base_cleaning_right.png", "cleaning_right", "Clean_Right", 11, 5.5f),
 
+            // Playing (23f, 11.5 FPS → 2s loop)
+            ("base_playing_face.png",  "playing_face",  "Play_Front", 23, 11.5f),
+            ("base_playing_left.png",  "playing_left",  "Play_Left",  23, 11.5f),
+            ("base_playing_right.png", "playing_right", "Play_Right", 23, 11.5f),
+
             // Happy (20f, 10 FPS → 2s one-shot)
             ("base_happy_face.png",  "happy_face",  "Happy_Front", 20, 10f),
             ("base_happy_left.png",  "happy_left",  "Happy_Left",  20, 10f),
@@ -87,12 +103,16 @@ namespace CatHotel.Editor
 
             foreach (var cfg in AnimConfigs)
                 ConfigureSpritesheet($"{AnimRoot}/{cfg.file}", cfg.prefix, cfg.frames);
+            foreach (var cfg in Eur3AnimConfigs)
+                ConfigureSpritesheet($"{Eur3AnimRoot}/{cfg.file}", cfg.prefix, cfg.frames);
             AssetDatabase.Refresh();
 
             var tiles = CreateTileAssets();
-            var catController = CreateCatAnimationAssets();
-            BuildSceneHierarchy(tiles, catController);
-            Debug.Log($"Proto scene setup complete. {AnimConfigs.Length} animation clips configured.");
+            var eurController = CreateAnimController(CatControllerPath, AnimRoot, AnimConfigs);
+            var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
+            BuildSceneHierarchy(tiles, eurController, eur3Controller);
+            int total = AnimConfigs.Length + Eur3AnimConfigs.Length;
+            Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
         private static void ConfigureSpriteImports()
@@ -112,7 +132,10 @@ namespace CatHotel.Editor
             {
                 $"{CatSpritesRoot}/CAT_EUR_FRONT.png",
                 $"{CatSpritesRoot}/CAT_EUR_RIGHT.png",
-                $"{CatSpritesRoot}/CAT_EUR_BACK.png"
+                $"{CatSpritesRoot}/CAT_EUR_BACK.png",
+                $"{Eur3SpritesRoot}/CAT_EUR_01_FRONT.png",
+                $"{Eur3SpritesRoot}/CAT_EUR_01_RIGHT.png",
+                $"{Eur3SpritesRoot}/CAT_EUR_01_BACK.png"
             };
 
             foreach (string path in paths)
@@ -152,23 +175,19 @@ namespace CatHotel.Editor
             importer.SaveAndReimport();
         }
 
-        private static RuntimeAnimatorController CreateCatAnimationAssets()
+        private static RuntimeAnimatorController CreateAnimController(
+            string controllerPath, string animRoot,
+            (string file, string prefix, string state, int frames, float fps)[] configs)
         {
-            // Clean old clips
-            AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Front.anim");
-            AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Left.anim");
-            AssetDatabase.DeleteAsset(AnimRoot + "/Idle_Right.anim");
-
-            // Create all clips and states
-            AssetDatabase.DeleteAsset(CatControllerPath);
-            var controller = AnimatorController.CreateAnimatorControllerAtPath(CatControllerPath);
+            AssetDatabase.DeleteAsset(controllerPath);
+            var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
             var rootSM = controller.layers[0].stateMachine;
             bool defaultSet = false;
 
-            foreach (var cfg in AnimConfigs)
+            foreach (var cfg in configs)
             {
-                string sheetPath = $"{AnimRoot}/{cfg.file}";
-                string clipPath = $"{AnimRoot}/{cfg.state}.anim";
+                string sheetPath = $"{animRoot}/{cfg.file}";
+                string clipPath = $"{animRoot}/{cfg.state}.anim";
 
                 var clip = CreateAnimClip(sheetPath, clipPath, cfg.state, cfg.frames, cfg.fps);
                 if (clip == null) continue;
@@ -184,7 +203,7 @@ namespace CatHotel.Editor
             }
 
             AssetDatabase.SaveAssets();
-            Debug.Log($"[ProtoSceneSetup] Created AnimatorController with {rootSM.states.Length} states");
+            Debug.Log($"[ProtoSceneSetup] Created {controllerPath} with {rootSM.states.Length} states");
             return controller;
         }
 
@@ -289,7 +308,8 @@ namespace CatHotel.Editor
 
         private static void BuildSceneHierarchy(
             (TileBase empty, TileBase floor, TileBase wallH, TileBase wallV) tiles,
-            RuntimeAnimatorController catController)
+            RuntimeAnimatorController eurController,
+            RuntimeAnimatorController eur3Controller)
         {
             // --- Camera ---
             var camObj = Camera.main != null ? Camera.main.gameObject : null;
@@ -353,19 +373,35 @@ namespace CatHotel.Editor
             if (spawner == null)
                 spawner = mgrObj.AddComponent<CatSpawner>();
 
-            var catFront = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{CatSpritesRoot}/CAT_EUR_FRONT.png");
-            var catRight = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{CatSpritesRoot}/CAT_EUR_RIGHT.png");
-            var catBack = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{CatSpritesRoot}/CAT_EUR_BACK.png");
-
             var soSpawner = new SerializedObject(spawner);
-            soSpawner.FindProperty("_gridRenderer").objectReferenceValue    = renderer;
-            soSpawner.FindProperty("_frontSprite").objectReferenceValue     = catFront;
-            soSpawner.FindProperty("_rightSprite").objectReferenceValue     = catRight;
-            soSpawner.FindProperty("_backSprite").objectReferenceValue      = catBack;
-            soSpawner.FindProperty("_catAnimController").objectReferenceValue = catController;
+            soSpawner.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+
+            // Wire breeds array
+            var breedsProperty = soSpawner.FindProperty("_breeds");
+            breedsProperty.arraySize = 2;
+
+            // Breed 0: Europeen
+            var b0 = breedsProperty.GetArrayElementAtIndex(0);
+            b0.FindPropertyRelative("name").stringValue = "Europeen";
+            b0.FindPropertyRelative("frontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CatSpritesRoot}/CAT_EUR_FRONT.png");
+            b0.FindPropertyRelative("rightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CatSpritesRoot}/CAT_EUR_RIGHT.png");
+            b0.FindPropertyRelative("backSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CatSpritesRoot}/CAT_EUR_BACK.png");
+            b0.FindPropertyRelative("controller").objectReferenceValue = eurController;
+
+            // Breed 1: Europeen3
+            var b1 = breedsProperty.GetArrayElementAtIndex(1);
+            b1.FindPropertyRelative("name").stringValue = "Europeen3";
+            b1.FindPropertyRelative("frontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{Eur3SpritesRoot}/CAT_EUR_01_FRONT.png");
+            b1.FindPropertyRelative("rightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{Eur3SpritesRoot}/CAT_EUR_01_RIGHT.png");
+            b1.FindPropertyRelative("backSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{Eur3SpritesRoot}/CAT_EUR_01_BACK.png");
+            b1.FindPropertyRelative("controller").objectReferenceValue = eur3Controller;
+
             soSpawner.ApplyModifiedProperties();
 
             // --- ProtoUI ---

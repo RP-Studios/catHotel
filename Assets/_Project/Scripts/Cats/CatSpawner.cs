@@ -5,18 +5,23 @@ using CatHotel.Grid;
 
 namespace CatHotel.Cats
 {
+    [System.Serializable]
+    public class CatBreed
+    {
+        public string name;
+        public Sprite frontSprite;
+        public Sprite rightSprite;
+        public Sprite backSprite;
+        public RuntimeAnimatorController controller;
+    }
+
     public class CatSpawner : MonoBehaviour
     {
         [Header("References")]
         [SerializeField] private GridRenderer _gridRenderer;
 
-        [Header("Cat Sprites")]
-        [SerializeField] private Sprite _frontSprite;
-        [SerializeField] private Sprite _rightSprite;
-        [SerializeField] private Sprite _backSprite;
-
-        [Header("Animation")]
-        [SerializeField] private RuntimeAnimatorController _catAnimController;
+        [Header("Breeds")]
+        [SerializeField] private CatBreed[] _breeds;
 
         [Header("Spawning")]
         [SerializeField] private int _initialCatCount = 3;
@@ -54,22 +59,24 @@ namespace CatHotel.Cats
 
         public CatEntity SpawnCat(Vector2Int cell)
         {
-            var go = new GameObject($"Cat_{_cats.Count + 1}");
+            var breed = _breeds[Random.Range(0, _breeds.Length)];
+
+            var go = new GameObject($"Cat_{_cats.Count + 1}_{breed.name}");
             go.transform.SetParent(transform);
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = _frontSprite;
+            sr.sprite = breed.frontSprite;
             sr.sortingOrder = _sortingOrder;
 
-            if (_catAnimController != null)
+            if (breed.controller != null)
             {
                 var animator = go.AddComponent<Animator>();
-                animator.runtimeAnimatorController = _catAnimController;
+                animator.runtimeAnimatorController = breed.controller;
                 animator.enabled = false;
             }
 
             var cat = go.AddComponent<CatEntity>();
-            cat.SetSprites(_frontSprite, _rightSprite, _backSprite);
+            cat.SetSprites(breed.frontSprite, breed.rightSprite, breed.backSprite);
             cat.Init(_gridRenderer.Data, cell);
 
             _cats.Add(cat);
