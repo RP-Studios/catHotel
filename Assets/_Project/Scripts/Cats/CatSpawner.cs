@@ -23,11 +23,16 @@ namespace CatHotel.Cats
         [Header("Breeds")]
         [SerializeField] private CatBreed[] _breeds;
 
+        [Header("Combat")]
+        [SerializeField] private RuntimeAnimatorController _fightCloudController;
+
         [Header("Spawning")]
         [SerializeField] private int _initialCatCount = 3;
         [SerializeField] private int _sortingOrder = 10;
 
         private readonly List<CatEntity> _cats = new();
+
+        public RuntimeAnimatorController FightCloudController => _fightCloudController;
 
         private void Update()
         {
@@ -77,7 +82,7 @@ namespace CatHotel.Cats
 
             var cat = go.AddComponent<CatEntity>();
             cat.SetSprites(breed.frontSprite, breed.rightSprite, breed.backSprite);
-            cat.Init(_gridRenderer.Data, cell);
+            cat.Init(_gridRenderer.Data, cell, this);
 
             _cats.Add(cat);
             return cat;
@@ -87,6 +92,14 @@ namespace CatHotel.Cats
         {
             if (_cats.Count == 0) return null;
             return _cats[Random.Range(0, _cats.Count)];
+        }
+
+        public CatEntity GetCatAt(Vector2Int pos, CatEntity exclude = null)
+        {
+            foreach (var cat in _cats)
+                if (cat != exclude && cat.GridPos == pos)
+                    return cat;
+            return null;
         }
 
         private static void ShuffleList<T>(List<T> list)

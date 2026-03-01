@@ -27,6 +27,7 @@ namespace CatHotel.Cats
         [SerializeField, Range(0f, 1f)] private float _drinkChance = 0.12f;
         [SerializeField, Range(0f, 1f)] private float _cleanChance = 0.12f;
         [SerializeField, Range(0f, 1f)] private float _playChance  = 0.12f;
+        [SerializeField, Range(0f, 1f)] private float _fightChance = 0.15f;
         [SerializeField] private float _sleepTimeMin = 3f;
         [SerializeField] private float _sleepTimeMax = 5f;
         [SerializeField] private float _eatTimeMin   = 3f;
@@ -50,11 +51,13 @@ namespace CatHotel.Cats
         private SpriteRenderer _sr;
         private Animator _animator;
         private GridData _grid;
+        private CatSpawner _spawner;
         private Vector2Int _gridPos;
         private Sequence _moveSequence;
         private Tween _pendingAction;
         private CatDirection _currentDir;
         private bool _isWalking;
+        private bool _isFighting;
         private string _chosenRestState;
 
         public Vector2Int GridPos => _gridPos;
@@ -66,9 +69,10 @@ namespace CatHotel.Cats
             _backSprite = back;
         }
 
-        public void Init(GridData grid, Vector2Int startCell)
+        public void Init(GridData grid, Vector2Int startCell, CatSpawner spawner = null)
         {
             _grid = grid;
+            _spawner = spawner;
             _gridPos = startCell;
             _sr = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
@@ -94,6 +98,7 @@ namespace CatHotel.Cats
 
         private void PlayEmote(string prefix, float duration)
         {
+            if (_isFighting) return;
             // Interrupt whatever the cat is doing
             _moveSequence?.Kill();
             _pendingAction?.Kill();
@@ -110,12 +115,116 @@ namespace CatHotel.Cats
             });
         }
 
+        // --- Combat ---
+
+        public bool IsFighting => _isFighting;
+        public SpriteRenderer SpriteRenderer => _sr;
+
+        private bool CanFight()
+        {
+            if (_animator == null || _isFighting) return false;
+            return _animator.HasState(0, Animator.StringToHash("Fight_In_Left"));
+        }
+
+        private bool TryInitiateFight()
+        {
+            if (_spawner == null || !CanFight()) return false;
+            if (Random.value >= _fightChance) return false;
+
+            // Check left and right neighbors
+            var leftPos = new Vector2Int(_gridPos.x - 1, _gridPos.y);
+            var rightPos = new Vector2Int(_gridPos.x + 1, _gridPos.y);
+
+            var neighbor = _spawner.GetCatAt(leftPos, this);
+            if (neighbor == null || !neighbor.CanFight())
+                neighbor = _spawner.GetCatAt(rightPos, this);
+            if (neighbor == null || !neighbor.CanFight())
+                return false;
+
+            // Determine who is left and who is right
+            CatEntity leftCat = _gridPos.x < neighbor.GridPos.x ? this : neighbor;
+            CatEntity rightCat = _gridPos.x < neighbor.GridPos.x ? neighbor : this;
+
+            RunFightSequence(leftCat, rightCat);
+            return true;
+        }
+
+        private void EnterFight()
+        {
+            _isFighting = true;
+            _moveSequence?.Kill();
+            _pendingAction?.Kill();
+            _isWalking = false;
+            _chosenRestState = null;
+        }
+
+        private void RunFightSequence(CatEntity left, CatEntity right)
+        {
+            left.EnterFight();
+            right.EnterFight();
+
+            var seq = DOTween.Sequence();
+            GameObject cloudGo = null;
+
+            // Phase 1: Fight In (2s)
+            seq.AppendCallback(() =>
+            {
+                left._currentDir = CatDirection.Right;
+                right._currentDir = CatDirection.Left;
+                left.PlayAnimState("Fight_In_Right");
+                right.PlayAnimState("Fight_In_Left");
+            });
+            seq.AppendInterval(2f);
+
+            // Phase 2: Hide cats, show cloud (10s)
+            seq.AppendCallback(() =>
+            {
+                left._sr.enabled = false;
+                right._sr.enabled = false;
+
+                Vector3 midpoint = (left.transform.position + right.transform.position) / 2f;
+                cloudGo = new GameObject("FightCloud");
+                cloudGo.transform.position = midpoint;
+
+                var cloudSr = cloudGo.AddComponent<SpriteRenderer>();
+                cloudSr.sortingOrder = 15;
+
+                var cloudAnim = cloudGo.AddComponent<Animator>();
+                cloudAnim.runtimeAnimatorController = _spawner.FightCloudController;
+            });
+            seq.AppendInterval(10f);
+
+            // Phase 3: Destroy cloud, show cats, Fight Out (1s)
+            seq.AppendCallback(() =>
+            {
+                if (cloudGo != null) Object.Destroy(cloudGo);
+
+                left._sr.enabled = true;
+                right._sr.enabled = true;
+
+                left.PlayAnimState("Fight_Out_Right");
+                right.PlayAnimState("Fight_Out_Left");
+            });
+            seq.AppendInterval(1f);
+
+            // Phase 4: Return to normal
+            seq.AppendCallback(() =>
+            {
+                left._isFighting = false;
+                right._isFighting = false;
+                left.EnterRest();
+                right.EnterRest();
+            });
+        }
+
         // --- Rest: idle / sleep / eat / drink / clean ---
 
         private void EnterRest()
         {
             _isWalking = false;
             _chosenRestState = null;
+
+            if (TryInitiateFight()) return;
 
             float roll = Random.value;
             float cursor = 0f;
