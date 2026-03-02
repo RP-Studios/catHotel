@@ -96,6 +96,40 @@ namespace CatHotel.Cats
         /// <summary>Play unhappy animation once (1s), then return to idle.</summary>
         public void PlayUnhappy() => PlayEmote("Unhappy", 1f);
 
+        /// <summary>Play petting animation (2s) with hand overlay, then return to idle.</summary>
+        public void PlayPetting(RuntimeAnimatorController handController)
+        {
+            if (_isFighting) return;
+
+            _moveSequence?.Kill();
+            _pendingAction?.Kill();
+            _isWalking = false;
+            _chosenRestState = null;
+
+            // Face front for petting
+            _currentDir = CatDirection.Front;
+            PlayAnimState("Pet_Front");
+
+            // Spawn hand overlay above cat
+            GameObject handGo = null;
+            if (handController != null)
+            {
+                handGo = new GameObject("HandPet");
+                handGo.transform.position = transform.position + new Vector3(0, 0.5f, 0);
+                var handSr = handGo.AddComponent<SpriteRenderer>();
+                handSr.sortingOrder = 15;
+                var handAnim = handGo.AddComponent<Animator>();
+                handAnim.runtimeAnimatorController = handController;
+            }
+
+            _pendingAction = DOVirtual.DelayedCall(2f, () =>
+            {
+                if (handGo != null) Object.Destroy(handGo);
+                _chosenRestState = null;
+                EnterIdle();
+            });
+        }
+
         private void PlayEmote(string prefix, float duration)
         {
             if (_isFighting) return;

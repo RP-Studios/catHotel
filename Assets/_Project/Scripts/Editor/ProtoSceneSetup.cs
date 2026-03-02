@@ -19,12 +19,19 @@ namespace CatHotel.Editor
         private const string CatControllerPath = AnimRoot + "/CatEuropeen.controller";
 
         private const string CloudRoot = "Assets/_Project/Art/Effects/Combat";
-        private const string CloudSheetPath = CloudRoot + "/fighting_cloud.png";
         private const string CloudControllerPath = CloudRoot + "/FightCloud.controller";
 
         private static readonly (string file, string prefix, string state, int frames, float fps)[] CloudAnimConfigs =
         {
             ("fighting_cloud.png", "fighting_cloud", "FightCloud", 6, 6f),
+        };
+
+        private const string PettingRoot = "Assets/_Project/Animations/Petting";
+        private const string HandPetControllerPath = PettingRoot + "/HandPet.controller";
+
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] HandPetAnimConfigs =
+        {
+            ("hand_pet.png", "hand_pet", "HandPet", 13, 6.5f),
         };
 
         private const string Eur3SpritesRoot = "Assets/_Project/Art/Cats/Europeen3";
@@ -103,9 +110,12 @@ namespace CatHotel.Editor
             ("base_unhappy_left.png",  "unhappy_left",  "Unhappy_Left",  6, 6f),
             ("base_unhappy_right.png", "unhappy_right", "Unhappy_Right", 6, 6f),
 
-            // Fighting In (5f, 2.5 FPS → 2s one-shot)
-            ("fighting_in_left.png",  "fighting_in_left",  "Fight_In_Left",  5, 2.5f),
-            ("fighting_in_right.png", "fighting_in_right", "Fight_In_Right", 5, 2.5f),
+            // Petting (13f, 6.5 FPS → 2s one-shot)
+            ("base_petting_face.png", "petting_face", "Pet_Front", 13, 6.5f),
+
+            // Fighting In (15f, 7.5 FPS → 2s one-shot)
+            ("fighting_in_left.png",  "fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("fighting_in_right.png", "fighting_in_right", "Fight_In_Right", 15, 7.5f),
 
             // Fighting Out (8f, 8 FPS → 1s one-shot)
             ("fighting_out_left.png",  "fighting_out_left",  "Fight_Out_Left",  8, 8f),
@@ -124,14 +134,17 @@ namespace CatHotel.Editor
                 ConfigureSpritesheet($"{Eur3AnimRoot}/{cfg.file}", cfg.prefix, cfg.frames);
             foreach (var cfg in CloudAnimConfigs)
                 ConfigureSpritesheet($"{CloudRoot}/{cfg.file}", cfg.prefix, cfg.frames);
+            foreach (var cfg in HandPetAnimConfigs)
+                ConfigureSpritesheet($"{PettingRoot}/{cfg.file}", cfg.prefix, cfg.frames);
             AssetDatabase.Refresh();
 
             var tiles = CreateTileAssets();
             var eurController = CreateAnimController(CatControllerPath, AnimRoot, AnimConfigs);
             var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur3Controller, cloudController);
-            int total = AnimConfigs.Length + Eur3AnimConfigs.Length + CloudAnimConfigs.Length;
+            var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
+            BuildSceneHierarchy(tiles, eurController, eur3Controller, cloudController, handPetController);
+            int total = AnimConfigs.Length + Eur3AnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -332,7 +345,8 @@ namespace CatHotel.Editor
             (TileBase empty, TileBase floor, TileBase wallH, TileBase wallV) tiles,
             RuntimeAnimatorController eurController,
             RuntimeAnimatorController eur3Controller,
-            RuntimeAnimatorController cloudController)
+            RuntimeAnimatorController cloudController,
+            RuntimeAnimatorController handPetController)
         {
             // --- Camera ---
             var camObj = Camera.main != null ? Camera.main.gameObject : null;
@@ -426,6 +440,7 @@ namespace CatHotel.Editor
             b1.FindPropertyRelative("controller").objectReferenceValue = eur3Controller;
 
             soSpawner.FindProperty("_fightCloudController").objectReferenceValue = cloudController;
+            soSpawner.FindProperty("_handPetController").objectReferenceValue = handPetController;
             soSpawner.ApplyModifiedProperties();
 
             // --- ProtoUI ---

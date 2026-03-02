@@ -26,6 +26,9 @@ namespace CatHotel.Cats
         [Header("Combat")]
         [SerializeField] private RuntimeAnimatorController _fightCloudController;
 
+        [Header("Petting")]
+        [SerializeField] private RuntimeAnimatorController _handPetController;
+
         [Header("Spawning")]
         [SerializeField] private int _initialCatCount = 3;
         [SerializeField] private int _sortingOrder = 10;
@@ -33,15 +36,53 @@ namespace CatHotel.Cats
         private readonly List<CatEntity> _cats = new();
 
         public RuntimeAnimatorController FightCloudController => _fightCloudController;
+        public RuntimeAnimatorController HandPetController => _handPetController;
+
+        private bool _pettingMode;
+        private Camera _mainCam;
+
+        public bool PettingMode => _pettingMode;
+
+        public void TogglePetting()
+        {
+            _pettingMode = !_pettingMode;
+        }
 
         private void Update()
         {
             var kb = Keyboard.current;
-            if (kb == null) return;
-
-            // Press S to spawn cats
-            if (kb.sKey.wasPressedThisFrame)
+            if (kb != null && kb.sKey.wasPressedThisFrame)
                 SpawnInitialCats();
+
+            if (_pettingMode && UnityEngine.InputSystem.Pointer.current != null
+                && UnityEngine.InputSystem.Pointer.current.press.wasPressedThisFrame)
+            {
+                TryPetAtPointer();
+            }
+        }
+
+        private void TryPetAtPointer()
+        {
+            if (_mainCam == null) _mainCam = Camera.main;
+            if (_mainCam == null) return;
+
+            Vector2 screenPos = UnityEngine.InputSystem.Pointer.current.position.ReadValue();
+            Vector3 worldPos = _mainCam.ScreenToWorldPoint(screenPos);
+
+            CatEntity nearest = null;
+            float bestDist = 1.5f; // max tap radius in world units
+            foreach (var cat in _cats)
+            {
+                float dist = Vector2.Distance(worldPos, cat.transform.position);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    nearest = cat;
+                }
+            }
+
+            if (nearest != null)
+                nearest.PlayPetting(_handPetController);
         }
 
         public void SpawnInitialCats()

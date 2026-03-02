@@ -13,8 +13,10 @@ namespace CatHotel.UI
 
         private Button _buildButton;
         private Button _spawnButton;
+        private Button _petButton;
         private Slider _zoomSlider;
         private Text _buildLabel;
+        private Text _petLabel;
         private bool _updatingSlider;
 
         private void Start()
@@ -95,6 +97,12 @@ namespace CatHotel.UI
             unhappyBtn.GetComponent<Image>().color = new Color(0.75f, 0.3f, 0.3f, 1f);
             unhappyBtn.onClick.AddListener(OnUnhappyPressed);
 
+            // --- Pet button ---
+            _petButton = CreateButton(barObj.transform, "PetBtn", "Pet", 160);
+            _petButton.GetComponent<Image>().color = new Color(0.85f, 0.6f, 0.25f, 1f);
+            _petLabel = _petButton.GetComponentInChildren<Text>();
+            _petButton.onClick.AddListener(OnPetPressed);
+
             // --- Zoom slider ---
             _zoomSlider = CreateZoomSlider(barObj.transform);
             _zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
@@ -123,6 +131,13 @@ namespace CatHotel.UI
         {
             var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
             if (cat != null) cat.PlayUnhappy();
+        }
+
+        private void OnPetPressed()
+        {
+            if (_catSpawner == null) return;
+            _catSpawner.TogglePetting();
+            _petLabel.text = _catSpawner.PettingMode ? "Pet ON" : "Pet";
         }
 
         private void OnZoomSliderChanged(float value)
