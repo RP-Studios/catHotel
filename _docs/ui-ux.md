@@ -1,10 +1,12 @@
 # Cat Hotel Tycoon - UI/UX
 ## Ecrans, cinematiques et flux de navigation
 
-**Version:** 2.0
-**Date:** Fevrier 2026
+**Version:** 2.1
+**Date:** Mars 2026
 **Plateforme:** Mobile Android — Paysage (prioritaire) + Portrait
 **Orientation:** L'interface s'adapte dynamiquement aux deux orientations. Voir section 14 pour les regles d'adaptation
+**Police:** Balsamic Sans (Google Fonts) — utilisee pour tous les textes UI
+**Palette:** voir [gdd.md](gdd.md) section 10.3
 
 ---
 
@@ -154,7 +156,7 @@ Ces panneaux s'affichent par-dessus la vue hotel sans quitter le gameplay.
 
 - **Declencheur :** Tap sur un chat dans la zone de jeu
 - **Apparition :** Slide lateral (droite)
-- **Contenu :** Portrait de la race, nom, race, badge special (si applicable), badge pension/refuge avec timer ou statut, jauge de bonheur globale, 4 jauges de besoins (faim, sommeil, jeu, proprete), liste des caprices actifs avec bouton "Assigner" par caprice, revenu genere par seconde
+- **Contenu :** Portrait de la race, nom (modifiable par tap pour les chats du refuge — ouvre un champ de saisie inline), race, badge special (si applicable), badge pension/refuge avec timer ou statut, jauge de bonheur globale, 4 jauges de besoins (faim, sommeil, jeu, proprete), liste des caprices actifs avec bouton "Assigner" par caprice, revenu genere par seconde
 - **Fermeture :** Tap hors du panneau ou bouton X
 
 ### 4.3 Panneau Info Objet

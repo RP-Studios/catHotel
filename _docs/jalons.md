@@ -87,7 +87,7 @@ Le jeu est jouable de bout en bout avec une seule race de chat. Tous les systeme
 #### Pension / Refuge — GDD 3.10
 
 - **Pension** : le proprietaire depose un chat pour une duree (2-10 min). Paiement en pieces a la fin du sejour base sur bonheur moyen. Pourboire si bonheur > 80%
-- **Refuge** : chat abandonne, cherche un foyer. Adoptant apparait si bonheur > 70% pendant 30+ sec. Bonus pieces + reputation a l'adoption. Fuite si bonheur < 30% trop longtemps
+- **Refuge** : chat abandonne, cherche un foyer. Le joueur peut renommer les chats du refuge (tap sur le nom dans le Panneau Info Chat). Adoptant apparait si bonheur > 70% pendant 30+ sec. Bonus pieces + reputation a l'adoption. Fuite si bonheur < 30% trop longtemps
 - Probabilites : 70% pension, 30% refuge
 - Popups d'arrivee, de bilan et d'adoption fonctionnelles (sans boutons de pub rewarded)
 

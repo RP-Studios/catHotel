@@ -317,6 +317,7 @@ Des chats abandonnés arrivent et cherchent un nouveau foyer.
 |--------|--------|
 | **Arrivée** | Chat abandonné, pas de propriétaire |
 | **Marquage** | Icône spéciale "À adopter" |
+| **Renommage** | Le joueur peut renommer les chats du refuge (tap sur le nom dans le Panneau Info Chat) |
 | **Objectif** | Maintenir bonheur élevé pour attirer adoptants |
 | **Adoptants** | Apparaissent si bonheur > 70% pendant 30+ sec |
 | **Adoption** | Bonus unique à l'adoption réussie |
@@ -765,13 +766,35 @@ Si la réputation tombe sous le minimum requis d'une race :
 
 ### 10.1 Style visuel
 
-- **Style:** Cartoon 2D, couleurs vives et chaleureuses
+- **Style:** Cartoon 2D, palette pastel chaleureuse
 - **Inspiration:** Animal Crossing, Neko Atsume, Two Point Hospital
-- **Ambiance:** Cosy, chaleureux, mignon sans être enfantin
+- **Ambiance:** Cosy, chaleureux, mignon sans etre enfantin
 
-> ⚠️ **Note:** La charte graphique et palette de couleurs sont en cours de définition par l'équipe artistique.
+### 10.2 Typographie
 
-### 10.2 Animation des chats
+- **Police principale:** Balsamic Sans (Google Fonts)
+- Utilisee pour tous les textes du jeu (HUD, boutons, popups, titres, descriptions)
+
+### 10.3 Palette de couleurs
+
+| Role | Nom | Hex | HSL |
+| ------ | ----- | ----- | ----- |
+| **Primary Regular** | Rouge pastel | `#D34E4E` | hsl(0, 60%, 57%) |
+| **Primary Dark** | Rouge sombre | `#BC3E39` | hsl(2, 53%, 48%) |
+| **Neutral Light** | Creme clair | `#F9E7B2` | hsl(45, 86%, 84%) |
+| **Neutral Regular** | Sable | `#E9D595` | hsl(45, 66%, 75%) |
+| **Neutral Medium** | Sable moyen | `#DDC57A` | hsl(45, 59%, 67%) |
+| **Neutral Darker** | Or mat | `#C5A748` | hsl(46, 52%, 53%) |
+| **Brown Reference** | Marron | `#56381E` | hsl(28, 48%, 23%) |
+| **Brown Darker** | Marron fonce | `#33281F` | hsl(28, 24%, 16%) |
+
+**Usage :**
+
+- **Primary** : boutons d'action, accents, CTA, alertes
+- **Neutral** : fonds, panneaux, cadres, HUD
+- **Brown** : textes, contours, ombres, elements d'ancrage
+
+### 10.4 Animation des chats
 
 > Detail complet dans [2d-animation.md](2d-animation.md) : 3 idles x 3 directions, marche, 5 actions, emotions, combats.
 
@@ -782,7 +805,7 @@ Si la réputation tombe sous le minimum requis d'une race :
 - **Mecontent:** Nuage sombre, oreilles baissees
 - **Combat:** Nuage de poussiere avec etoiles
 
-### 10.3 Effets visuels
+### 10.5 Effets visuels
 
 > Detail complet dans [2d-art.md](2d-art.md) section Particules et Effets.
 

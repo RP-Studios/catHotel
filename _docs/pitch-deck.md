@@ -5,26 +5,26 @@ paginate: true
 backgroundColor: #0D1117
 color: #E6EDF3
 style: |
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Balsamic+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
   :root {
-    --accent: #F97316;
-    --accent-light: #FB923C;
-    --accent-glow: #FDBA74;
-    --bg-dark: #0D1117;
-    --bg-card: #161B22;
-    --bg-card-light: #1C2333;
-    --text: #E6EDF3;
-    --text-muted: #8B949E;
+    --accent: #D34E4E;
+    --accent-light: #BC3E39;
+    --accent-glow: #F9E7B2;
+    --bg-dark: #33281F;
+    --bg-card: #56381E;
+    --bg-card-light: #6B4A2A;
+    --text: #F9E7B2;
+    --text-muted: #E9D595;
     --green: #3FB950;
     --blue: #58A6FF;
     --purple: #BC8CFF;
     --pink: #F778BA;
-    --yellow: #D29922;
+    --yellow: #C5A748;
   }
 
   section {
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: 'Balsamic Sans', 'Segoe UI', sans-serif;
     padding: 50px 70px;
     display: flex;
     flex-direction: column;
@@ -420,9 +420,11 @@ Napoleon 🏆 · Odin ❄️
 
 ### Direction artistique
 
-# Cartoon 2D · Cosy · Chaleureux
+# Cartoon 2D · Pastel · Chaleureux
 
-- **Style :** Cartoon 2D, couleurs vives et chaleureuses
+- **Style :** Cartoon 2D, palette pastel chaleureuse
+- **Police :** Balsamic Sans (Google Fonts)
+- **Palette :** Rouge pastel (#D34E4E), creme (#F9E7B2), sable (#E9D595 / #DDC57A), or (#C5A748), marron (#56381E / #33281F)
 - **Perspective :** Top-down / legere isometrie
 - **Inspirations :** Neko Atsume, Animal Crossing, Two Point Hospital
 - **Ambiance :** Cosy, mignon sans etre enfantin, adapte au 12+

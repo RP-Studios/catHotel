@@ -1,12 +1,14 @@
 # Cat Hotel Tycoon - 2D Art
 ## Liste des assets graphiques
 
-**Version:** 1.0
-**Date:** Fevrier 2026
-**Style:** Cartoon 2D, couleurs vives et chaleureuses
+**Version:** 1.1
+**Date:** Mars 2026
+**Style:** Cartoon 2D, palette pastel chaleureuse
 **Perspective:** Vue de dessus (top-down / legere isometrie)
 **Orientation:** Paysage (prioritaire) + Portrait — les assets doivent etre lisibles dans les deux orientations
 **Inspirations:** Neko Atsume, Animal Crossing, Two Point Hospital
+**Police:** Balsamic Sans (Google Fonts)
+**Palette:** Primary (#D34E4E / #BC3E39), Neutral (#F9E7B2 / #E9D595 / #DDC57A / #C5A748), Brown (#56381E / #33281F) — voir [gdd.md](gdd.md) section 10.3
 
 ---
 

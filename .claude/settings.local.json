@@ -6,7 +6,14 @@
       "Bash(node --version:*)",
       "Bash(python -c:*)",
       "Bash(npx --yes md-to-pdf:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(npx --yes @marp-team/marp-cli --version)",
+      "Bash(npx --yes @marp-team/marp-cli pitch-deck.md --pdf --output pdf/pitch-deck.pdf --allow-local-files)",
+      "Bash(md-to-pdf gdd.md --dest pdf/gdd.pdf)",
+      "Bash(md-to-pdf --help)",
+      "Bash(ls -la \"d:\\\\Unity\\\\catHotel_github\\\\_docs/\"*.pdf)",
+      "Bash(ls -la \"d:\\\\Unity\\\\catHotel_github\\\\_docs/pdf/\"*.pdf)",
+      "Bash(md-to-pdf gdd.md)"
     ]
   }
 }
