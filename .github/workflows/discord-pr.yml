@@ -1,0 +1,115 @@
+name: Discord - Pull Requests (all)
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited, ready_for_review, converted_to_draft, closed]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build payload and send to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          REPO: ${{ github.repository }}
+          ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD: ${{ github.event.pull_request.head.ref }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
+          PR_COMMITS: ${{ github.event.pull_request.commits }}
+          PR_ADDITIONS: ${{ github.event.pull_request.additions }}
+          PR_DELETIONS: ${{ github.event.pull_request.deletions }}
+          PR_UPDATED_AT: ${{ github.event.pull_request.updated_at }}
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY' > payload.json
+          import os, json, datetime
+
+          REPO = os.environ["REPO"]
+          ACTION = os.environ["ACTION"]
+          PR_NUMBER = os.environ["PR_NUMBER"]
+          PR_TITLE = os.environ.get("PR_TITLE","")
+          PR_URL = os.environ["PR_URL"]
+          PR_USER = os.environ.get("PR_USER","unknown")
+          PR_BASE = os.environ.get("PR_BASE","")
+          PR_HEAD = os.environ.get("PR_HEAD","")
+          PR_DRAFT = os.environ.get("PR_DRAFT","false").lower() == "true"
+          PR_MERGED = os.environ.get("PR_MERGED","false").lower() == "true"
+          PR_CHANGED_FILES = os.environ.get("PR_CHANGED_FILES","0")
+          PR_COMMITS = os.environ.get("PR_COMMITS","0")
+          PR_ADDITIONS = os.environ.get("PR_ADDITIONS","0")
+          PR_DELETIONS = os.environ.get("PR_DELETIONS","0")
+          PR_UPDATED_AT = os.environ.get("PR_UPDATED_AT","")
+
+          def ts_now():
+              return datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00","Z")
+
+          def parse_ts(s):
+              try:
+                  return datetime.datetime.fromisoformat(s.replace("Z","+00:00")).isoformat().replace("+00:00","Z")
+              except Exception:
+                  return ts_now()
+
+          # Color logic
+          color = 5814783  # blue
+          title = f"\U0001f500 PR {ACTION}: #{PR_NUMBER}"
+          if ACTION == "opened":
+              color = 3066993  # green
+              title = f"\U0001f195 PR opened: #{PR_NUMBER}"
+          elif ACTION in ("synchronize",):
+              color = 15105570  # yellow-ish
+              title = f"\u267b\ufe0f PR updated: #{PR_NUMBER}"
+          elif ACTION == "closed":
+              if PR_MERGED:
+                  color = 10181046  # purple-ish
+                  title = f"\u2705 PR merged: #{PR_NUMBER}"
+              else:
+                  color = 10038562  # grey-ish
+                  title = f"\u26d4 PR closed: #{PR_NUMBER}"
+          elif ACTION == "converted_to_draft":
+              color = 9807270
+              title = f"\U0001f9ea PR draft: #{PR_NUMBER}"
+          elif ACTION == "ready_for_review":
+              color = 3447003
+              title = f"\U0001f4e3 PR ready for review: #{PR_NUMBER}"
+
+          desc = f"**{PR_TITLE}**\n" \
+                 f"`{PR_HEAD} -> {PR_BASE}`\n" \
+                 f"Author: **{PR_USER}**\n" \
+                 f"[Open PR]({PR_URL})"
+
+          payload = {
+            "embeds": [{
+              "title": title,
+              "url": PR_URL,
+              "description": desc[:3900],
+              "color": color,
+              "timestamp": parse_ts(PR_UPDATED_AT),
+              "fields": [
+                {"name":"Repository", "value": f"[{REPO}](https://github.com/{REPO})", "inline": True},
+                {"name":"Branch", "value": f"`{PR_HEAD} -> {PR_BASE}`", "inline": True},
+                {"name":"Draft", "value": "`yes`" if PR_DRAFT else "`no`", "inline": True},
+                {"name":"Commits", "value": f"`{PR_COMMITS}`", "inline": True},
+                {"name":"Files", "value": f"`{PR_CHANGED_FILES}`", "inline": True},
+                {"name":"Diff", "value": f"[files changed]({PR_URL}/files)", "inline": True},
+                {"name":"Stats", "value": f"`+{PR_ADDITIONS} / -{PR_DELETIONS}`", "inline": True},
+              ],
+              "footer": {"text": "GitHub Actions -> Discord"}
+            }]
+          }
+
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+          curl -sS -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" >/dev/null

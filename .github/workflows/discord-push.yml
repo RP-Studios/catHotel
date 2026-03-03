@@ -1,0 +1,115 @@
+name: Discord - Push
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build payload and send to Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          REF_NAME: ${{ github.ref_name }}
+          ACTOR: ${{ github.actor }}
+          COMPARE_URL: ${{ github.event.compare }}
+          PUSHER_NAME: ${{ github.event.pusher.name }}
+          COMMITS_JSON: ${{ toJson(github.event.commits) }}
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY' > payload.json
+          import os, json, datetime, urllib.request
+
+          GH_TOKEN = os.environ["GH_TOKEN"]
+          REPO = os.environ["REPO"]
+          REF_NAME = os.environ["REF_NAME"]
+          ACTOR = os.environ["ACTOR"]
+          COMPARE_URL = os.environ.get("COMPARE_URL","")
+          PUSHER_NAME = os.environ.get("PUSHER_NAME","")
+
+          COMMITS = json.loads(os.environ.get("COMMITS_JSON","[]") or "[]")
+          owner, repo = REPO.split("/", 1)
+
+          def gh_get(url):
+              req = urllib.request.Request(url)
+              req.add_header("Authorization", f"Bearer {GH_TOKEN}")
+              req.add_header("Accept", "application/vnd.github+json")
+              with urllib.request.urlopen(req) as r:
+                  return json.loads(r.read().decode("utf-8"))
+
+          items = []
+          for c in COMMITS:
+              sha = c.get("id") or ""
+              msg = (c.get("message") or "").splitlines()[0][:180]
+              author = ((c.get("author") or {}).get("name")) or ACTOR
+
+              file_count = 0
+              html_url = f"https://github.com/{owner}/{repo}/commit/{sha}" if sha else ""
+              date_iso = ""
+
+              if sha:
+                  detail = gh_get(f"https://api.github.com/repos/{owner}/{repo}/commits/{sha}")
+                  files = detail.get("files") or []
+                  file_count = len(files)
+                  html_url = detail.get("html_url") or html_url
+                  date_iso = ((detail.get("commit") or {}).get("author") or {}).get("date") or ""
+
+              items.append({
+                  "sha": sha[:7] if sha else "???????",
+                  "message": msg,
+                  "author": author,
+                  "files": file_count,
+                  "url": html_url,
+                  "date": date_iso,
+              })
+
+          def parse_dt(s):
+              try:
+                  return datetime.datetime.fromisoformat(s.replace("Z","+00:00"))
+              except Exception:
+                  return datetime.datetime(1970,1,1,tzinfo=datetime.timezone.utc)
+
+          items.sort(key=lambda x: parse_dt(x["date"]))
+
+          lines = []
+          for it in items[:20]:
+              t = parse_dt(it["date"]).strftime("%Y-%m-%d %H:%MZ") if it["date"] else ""
+              when = f"`{t}` - " if t else ""
+              files = f" *(+{it['files']} files)*"
+              link = f"[`{it['sha']}`]({it['url']})" if it["url"] else f"`{it['sha']}`"
+              lines.append(f"- {when}**{it['author']}** - {it['message']}{files} - {link}")
+
+          extra = max(0, len(items) - 20)
+          desc = "\n".join(lines) if lines else "_(push sans commit listable)_"
+          if extra:
+              desc += f"\n...et **{extra}** autre(s) commit(s)."
+
+          now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00","Z")
+
+          payload = {
+            "embeds": [{
+              "title": f"\U0001f680 Push on `{REF_NAME}`",
+              "url": COMPARE_URL or f"https://github.com/{owner}/{repo}/commits/{REF_NAME}",
+              "description": desc[:3900],
+              "timestamp": now,
+              "fields": [
+                {"name":"Repository", "value": f"[{REPO}](https://github.com/{REPO})", "inline": True},
+                {"name":"Branch", "value": f"`{REF_NAME}`", "inline": True},
+                {"name":"Pusher", "value": f"`{PUSHER_NAME or ACTOR}`", "inline": True},
+                {"name":"Compare", "value": f"[view diff]({COMPARE_URL})" if COMPARE_URL else "_n/a_", "inline": True},
+                {"name":"Commits", "value": f"`{len(items)}`", "inline": True},
+              ],
+              "footer": {"text": "GitHub Actions -> Discord"}
+            }]
+          }
+
+          print(json.dumps(payload, ensure_ascii=False))
+          PY
+
+          curl -sS -H "Content-Type: application/json" -d @payload.json "$DISCORD_WEBHOOK" >/dev/null
