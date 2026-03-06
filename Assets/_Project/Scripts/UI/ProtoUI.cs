@@ -11,6 +11,17 @@ namespace CatHotel.UI
         [SerializeField] private CatSpawner _catSpawner;
         [SerializeField] private CameraController _cameraController;
 
+        [Header("UI Zones (set by ProtoSceneSetup)")]
+        [SerializeField] private RectTransform _zoneTop;
+        [SerializeField] private RectTransform _zoneLeft;
+        [SerializeField] private RectTransform _zoneRight;
+        [SerializeField] private RectTransform _zoneCenter;
+
+        public RectTransform ZoneTop    => _zoneTop;
+        public RectTransform ZoneLeft   => _zoneLeft;
+        public RectTransform ZoneRight  => _zoneRight;
+        public RectTransform ZoneCenter => _zoneCenter;
+
         private Button _buildButton;
         private Button _spawnButton;
         private Button _petButton;
@@ -21,7 +32,7 @@ namespace CatHotel.UI
 
         private void Start()
         {
-            CreateUI();
+            PopulateZones();
 
             if (_cameraController != null)
             {
@@ -36,77 +47,45 @@ namespace CatHotel.UI
                 _cameraController.OnZoomChanged -= SyncSliderFromCamera;
         }
 
-        private void CreateUI()
+        private void PopulateZones()
         {
-            // --- Canvas ---
-            var canvasObj = new GameObject("ProtoCanvas");
-            canvasObj.transform.SetParent(transform, false);
+            if (_zoneRight == null) return;
 
-            var canvas = canvasObj.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = 100;
+            // --- Right zone: toolbar buttons (vertical, like hotel_screen mockup) ---
+            var layout = _zoneRight.GetComponent<VerticalLayoutGroup>();
+            if (layout == null)
+                layout = _zoneRight.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 8;
+            layout.padding = new RectOffset(8, 8, 12, 12);
+            layout.childAlignment = TextAnchor.UpperCenter;
+            layout.childForceExpandWidth = true;
+            layout.childForceExpandHeight = false;
 
-            var scaler = canvasObj.AddComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
-            scaler.matchWidthOrHeight = 0.5f;
-
-            canvasObj.AddComponent<GraphicRaycaster>();
-
-            // --- EventSystem (if missing) ---
-            if (UnityEngine.EventSystems.EventSystem.current == null)
-            {
-                var esObj = new GameObject("EventSystem");
-                esObj.AddComponent<UnityEngine.EventSystems.EventSystem>();
-                esObj.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
-            }
-
-            // --- Bottom bar ---
-            var barObj = CreatePanel(canvasObj.transform, "BottomBar",
-                new Color(0.1f, 0.1f, 0.12f, 0.85f));
-
-            var barRect = barObj.GetComponent<RectTransform>();
-            barRect.anchorMin = new Vector2(0, 0);
-            barRect.anchorMax = new Vector2(1, 0);
-            barRect.pivot = new Vector2(0.5f, 0);
-            barRect.sizeDelta = new Vector2(0, 140);
-
-            var layout = barObj.AddComponent<HorizontalLayoutGroup>();
-            layout.spacing = 20;
-            layout.padding = new RectOffset(30, 30, 15, 15);
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = true;
-
-            // --- Build button ---
-            _buildButton = CreateButton(barObj.transform, "BuildBtn", "Build", 200);
+            _buildButton = CreateButton(_zoneRight, "BuildBtn", "Build", 0);
             _buildLabel = _buildButton.GetComponentInChildren<Text>();
             _buildButton.onClick.AddListener(OnBuildPressed);
 
-            // --- Spawn button ---
-            _spawnButton = CreateButton(barObj.transform, "SpawnBtn", "Spawn", 200);
+            _spawnButton = CreateButton(_zoneRight, "SpawnBtn", "Spawn", 0);
             _spawnButton.onClick.AddListener(OnSpawnPressed);
 
-            // --- Happy button ---
-            var happyBtn = CreateButton(barObj.transform, "HappyBtn", "Happy", 160);
+            var happyBtn = CreateButton(_zoneRight, "HappyBtn", "Happy", 0);
             happyBtn.GetComponent<Image>().color = new Color(0.3f, 0.7f, 0.3f, 1f);
             happyBtn.onClick.AddListener(OnHappyPressed);
 
-            // --- Unhappy button ---
-            var unhappyBtn = CreateButton(barObj.transform, "UnhappyBtn", "Sad", 160);
+            var unhappyBtn = CreateButton(_zoneRight, "UnhappyBtn", "Sad", 0);
             unhappyBtn.GetComponent<Image>().color = new Color(0.75f, 0.3f, 0.3f, 1f);
             unhappyBtn.onClick.AddListener(OnUnhappyPressed);
 
-            // --- Pet button ---
-            _petButton = CreateButton(barObj.transform, "PetBtn", "Pet", 160);
+            _petButton = CreateButton(_zoneRight, "PetBtn", "Pet", 0);
             _petButton.GetComponent<Image>().color = new Color(0.85f, 0.6f, 0.25f, 1f);
             _petLabel = _petButton.GetComponentInChildren<Text>();
             _petButton.onClick.AddListener(OnPetPressed);
 
-            // --- Zoom slider ---
-            _zoomSlider = CreateZoomSlider(barObj.transform);
+            _zoomSlider = CreateZoomSlider(_zoneRight);
             _zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
         }
+
+        // --- Button callbacks ---
 
         private void OnBuildPressed()
         {
@@ -156,17 +135,6 @@ namespace CatHotel.UI
 
         // --- UI factory helpers ---
 
-        private static GameObject CreatePanel(Transform parent, string name, Color color)
-        {
-            var obj = new GameObject(name, typeof(RectTransform));
-            obj.transform.SetParent(parent, false);
-
-            var img = obj.AddComponent<Image>();
-            img.color = color;
-
-            return obj;
-        }
-
         private static Button CreateButton(Transform parent, string name, string label, float width)
         {
             var obj = new GameObject(name, typeof(RectTransform));
@@ -179,10 +147,9 @@ namespace CatHotel.UI
             btn.targetGraphic = img;
 
             var le = obj.AddComponent<LayoutElement>();
-            le.preferredWidth = width;
-            le.minWidth = 140;
+            le.preferredHeight = 64;
+            if (width > 0) le.preferredWidth = width;
 
-            // Label
             var txtObj = new GameObject("Label", typeof(RectTransform));
             txtObj.transform.SetParent(obj.transform, false);
 
@@ -194,7 +161,7 @@ namespace CatHotel.UI
             var txt = txtObj.AddComponent<Text>();
             txt.text = label;
             txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            txt.fontSize = 36;
+            txt.fontSize = 28;
             txt.alignment = TextAnchor.MiddleCenter;
             txt.color = Color.white;
 
@@ -208,7 +175,7 @@ namespace CatHotel.UI
 
             var le = obj.AddComponent<LayoutElement>();
             le.flexibleWidth = 1;
-            le.minWidth = 200;
+            le.minWidth = 150;
 
             var slider = obj.AddComponent<Slider>();
             slider.minValue = 0f;
@@ -255,7 +222,7 @@ namespace CatHotel.UI
             var handle = new GameObject("Handle", typeof(RectTransform));
             handle.transform.SetParent(handleArea.transform, false);
             var handleRect = handle.GetComponent<RectTransform>();
-            handleRect.sizeDelta = new Vector2(40, 0);
+            handleRect.sizeDelta = new Vector2(30, 0);
             var handleImg = handle.AddComponent<Image>();
             handleImg.color = Color.white;
 
