@@ -542,4 +542,4 @@ En portrait, les elements se reorganisent pour s'adapter a l'ecran plus etroit e
 
 ---
 
-*Document associe : [gdd.md](gdd.md) | [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [jalons.md](jalons.md)*
+*Document associe : [gdd.md](gdd.md) | [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [sound-design.md](sound-design.md) | [jalons.md](jalons.md)*

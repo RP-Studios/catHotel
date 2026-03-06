@@ -276,4 +276,4 @@ Chaque objet necessite une **icone de boutique** (vignette carree simplifiee pou
 
 ---
 
-*Document associe : [gdd.md](gdd.md) | [2d-animation.md](2d-animation.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*
+*Document associe : [gdd.md](gdd.md) | [2d-animation.md](2d-animation.md) | [sound-design.md](sound-design.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*

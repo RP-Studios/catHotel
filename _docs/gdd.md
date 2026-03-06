@@ -14,6 +14,7 @@
 |----------|---------|
 | **[2d-art.md](2d-art.md)** | Liste des assets graphiques (characters, environnement, emotes, particules) |
 | **[2d-animation.md](2d-animation.md)** | Liste des animations 2D (idles, marche, actions, emotions, objets) |
+| **[sound-design.md](sound-design.md)** | Liste des assets audio (musique, vocalisations, UI, evenements) |
 | **[ui-ux.md](ui-ux.md)** | Ecrans, cinematiques de navigation, economie F2P, pubs rewarded, daily rewards |
 | **[jalons.md](jalons.md)** | Roadmap par jalons (J1: core, J2: contenu, J3: economie F2P) |
 
@@ -952,4 +953,4 @@ revenu = Σ pour chaque chat:
 
 *Document cree pour Cat Hotel Tycoon - Janvier 2026, mis a jour Fevrier 2026*
 
-*Documents associes : [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*
+*Documents associes : [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [sound-design.md](sound-design.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*

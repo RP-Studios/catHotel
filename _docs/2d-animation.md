@@ -320,4 +320,4 @@ Chaque race (base + special) necessite :
 
 ---
 
-*Document associe : [gdd.md](gdd.md) | [2d-art.md](2d-art.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*
+*Document associe : [gdd.md](gdd.md) | [2d-art.md](2d-art.md) | [sound-design.md](sound-design.md) | [ui-ux.md](ui-ux.md) | [jalons.md](jalons.md)*

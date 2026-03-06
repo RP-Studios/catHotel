@@ -15,6 +15,7 @@
 | **[gdd.md](gdd.md)** | Design complet du jeu |
 | **[2d-art.md](2d-art.md)** | Liste des assets graphiques |
 | **[2d-animation.md](2d-animation.md)** | Liste des animations 2D |
+| **[sound-design.md](sound-design.md)** | Liste des assets audio |
 | **[ui-ux.md](ui-ux.md)** | Ecrans, flux de navigation, economie F2P |
 
 ---
@@ -217,15 +218,19 @@ Minimum fonctionnel : 1 objet de base par categorie de besoin + quelques decorat
 
 ---
 
-### 1.7 Audio (minimal)
+### 1.7 Audio — ref sound-design.md
 
-| Categorie | Sons |
-|-----------|------|
-| Interface | Tap, validation, erreur, notification toast |
-| Pieces | Son de collecte (piece), son Ramasser tout (cascade) |
-| Chats | Miaulement (1-2 variations), ronronnement (caresse) |
-| Actions | Manger, dormir (Zzz), jouer |
-| Evenements | Arrivee chat, depart, combat |
+| Categorie | Sons | Quantite |
+|-----------|------|----------|
+| Musique | Gameplay loop (1 piste) | 1 |
+| Jingles | Bienvenue, arrivee, depart pension, chat en danger, combat | 5 |
+| Vocalisations Europeen | Set complet (miaulements, ronronnement, baillement) | ~13 |
+| Actions chats | Manger, boire, dormir, jouer, litiere, marche, course | 15 |
+| Tap-to-Collect | Spawn, collecte (3 var.), combo, fly-to, compteur, ramasser tout | 6 |
+| Caresses | Main, reussite, cooldown refuse, cooldown pret | 4 |
+| Interface | Boutons (4), panneaux (7), toasts (5), HUD (3) | 19 |
+| Evenements | Arrivee, depart, construction, caprices, confort, danger, achat | 28 |
+| **Total J1** | | **~91 fichiers** |
 
 ---
 
@@ -379,7 +384,22 @@ Objets avances et decorations supplementaires pour diversifier le gameplay.
 
 ---
 
-### 2.6 Ce qui n'est PAS dans le J2
+### 2.6 Audio ajoute — ref sound-design.md
+
+| Categorie | Sons | Quantite |
+|-----------|------|----------|
+| Vocalisations 7 races | 7 sets complets (~13 sons chacun) | ~91 |
+| Jingles | Level-up reputation, deblocage etage | 2 |
+| Reputation | Conditions remplies, animation level-up | 2 |
+| Objets ambiants | Fontaine, aquarium, distributeur auto, litiere auto, lampe | 5 |
+| Navigation etages | Son d'ascenseur cartoon | 1 |
+| **Total J2** | | **~101 fichiers** |
+
+**Total cumule J1+J2 : ~192 fichiers audio**
+
+---
+
+### 2.7 Ce qui n'est PAS dans le J2
 
 - Gemmes (hard currency)
 - IAP et Boutique Premium
@@ -545,7 +565,24 @@ La majorite des assets graphiques sont deja produits en J1+J2. Le J3 ajoute prin
 
 ---
 
-### 3.4 Ce qui n'est PAS dans le J3 (post-launch)
+### 3.4 Audio ajoute — ref sound-design.md
+
+| Categorie | Sons | Quantite |
+|-----------|------|----------|
+| Jingles | Recompense journaliere, rapport d'absence, tutoriel termine, level-up confort, adoption | 5 |
+| Recompenses journalieres | Jour debloque, collecte pieces/gemmes, chat special J7, streak perdu | 5 |
+| Rapport d'absence | Decompte revenus | 1 |
+| UI gemmes | Gemmes ajoutees, achat reussi gemmes | 2 |
+| Adoption | Adoptant arrive, confettis, coeurs | 3 |
+| Ecran plein transition | Stats, boutique premium | 1 |
+| Notifications push | 6 sons de notification hors app | 6 |
+| **Total J3** | | **~23 fichiers** |
+
+**Total cumule J1+J2+J3 : ~216 fichiers audio** (= catalogue complet ref sound-design.md)
+
+---
+
+### 3.5 Ce qui n'est PAS dans le J3 (post-launch)
 
 - Evenements saisonniers
 - Objets cosmetiques supplementaires
@@ -584,15 +621,16 @@ La majorite des assets graphiques sont deja produits en J1+J2. Le J3 ajoute prin
 | Timers construction | | | x |
 | FTUE | | | x |
 | Notifications push | | | x |
+| **Audio (musique + SFX)** | x (~91) | x (+101) | x (+23) |
 
 ### Volume d'assets par jalon
 
-| Jalon | Assets art | Frames anim | Ecrans UI |
-|-------|------------|-------------|-----------|
-| J1 | ~63 | ~364 | 17 |
-| J2 | +92 | +1910 | +5 |
-| J3 | +11 | - | +7 |
-| **Total** | **~166** | **~2274** | **29** |
+| Jalon | Assets art | Frames anim | Ecrans UI | Fichiers audio |
+|-------|------------|-------------|-----------|----------------|
+| J1 | ~66 | ~408 | 18 | ~91 |
+| J2 | +92 | +2162 | +5 | +101 |
+| J3 | +12 | - | +7 | +23 |
+| **Total** | **~170** | **~2570** | **30** | **~215** |
 
 ### Charge de travail estimee (art)
 
@@ -608,4 +646,4 @@ La majorite des assets graphiques sont deja produits en J1+J2. Le J3 ajoute prin
 
 *Document cree pour Cat Hotel Tycoon - Fevrier 2026*
 
-*Documents associes : [gdd.md](gdd.md) | [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [ui-ux.md](ui-ux.md)*
+*Documents associes : [gdd.md](gdd.md) | [2d-art.md](2d-art.md) | [2d-animation.md](2d-animation.md) | [sound-design.md](sound-design.md) | [ui-ux.md](ui-ux.md)*
