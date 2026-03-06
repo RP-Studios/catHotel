@@ -22,82 +22,59 @@ namespace CatHotel.UI
         public RectTransform ZoneRight  => _zoneRight;
         public RectTransform ZoneCenter => _zoneCenter;
 
-        private Button _buildButton;
-        private Button _spawnButton;
-        private Button _petButton;
-        private Slider _zoomSlider;
-        private Text _buildLabel;
-        private Text _petLabel;
-        private bool _updatingSlider;
-
         private void Start()
         {
-            PopulateZones();
-
-            if (_cameraController != null)
-            {
-                _cameraController.OnZoomChanged += SyncSliderFromCamera;
-                SyncSliderFromCamera();
-            }
+            WireToolbarButtons();
         }
 
-        private void OnDestroy()
-        {
-            if (_cameraController != null)
-                _cameraController.OnZoomChanged -= SyncSliderFromCamera;
-        }
-
-        private void PopulateZones()
+        private void WireToolbarButtons()
         {
             if (_zoneRight == null) return;
 
-            // --- Right zone: toolbar buttons (vertical, like hotel_screen mockup) ---
-            var layout = _zoneRight.GetComponent<VerticalLayoutGroup>();
-            if (layout == null)
-                layout = _zoneRight.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.spacing = 8;
-            layout.padding = new RectOffset(8, 8, 12, 12);
-            layout.childAlignment = TextAnchor.UpperCenter;
-            layout.childForceExpandWidth = true;
-            layout.childForceExpandHeight = false;
+            // Expect 5 children in ZoneRight: Build, Spawn, Pet, Happy, Sad
+            System.Action[] actions =
+            {
+                OnBuildPressed,
+                OnSpawnPressed,
+                OnPetPressed,
+                OnHappyPressed,
+                OnUnhappyPressed,
+            };
 
-            _buildButton = CreateButton(_zoneRight, "BuildBtn", "Build", 0);
-            _buildLabel = _buildButton.GetComponentInChildren<Text>();
-            _buildButton.onClick.AddListener(OnBuildPressed);
+            int count = Mathf.Min(_zoneRight.childCount, actions.Length);
+            for (int i = 0; i < count; i++)
+            {
+                var child = _zoneRight.GetChild(i).gameObject;
 
-            _spawnButton = CreateButton(_zoneRight, "SpawnBtn", "Spawn", 0);
-            _spawnButton.onClick.AddListener(OnSpawnPressed);
+                var btn = child.GetComponent<Button>();
+                if (btn == null)
+                    btn = child.AddComponent<Button>();
 
-            var happyBtn = CreateButton(_zoneRight, "HappyBtn", "Happy", 0);
-            happyBtn.GetComponent<Image>().color = new Color(0.3f, 0.7f, 0.3f, 1f);
-            happyBtn.onClick.AddListener(OnHappyPressed);
+                var img = child.GetComponent<Image>();
+                if (img != null)
+                    btn.targetGraphic = img;
 
-            var unhappyBtn = CreateButton(_zoneRight, "UnhappyBtn", "Sad", 0);
-            unhappyBtn.GetComponent<Image>().color = new Color(0.75f, 0.3f, 0.3f, 1f);
-            unhappyBtn.onClick.AddListener(OnUnhappyPressed);
-
-            _petButton = CreateButton(_zoneRight, "PetBtn", "Pet", 0);
-            _petButton.GetComponent<Image>().color = new Color(0.85f, 0.6f, 0.25f, 1f);
-            _petLabel = _petButton.GetComponentInChildren<Text>();
-            _petButton.onClick.AddListener(OnPetPressed);
-
-            _zoomSlider = CreateZoomSlider(_zoneRight);
-            _zoomSlider.onValueChanged.AddListener(OnZoomSliderChanged);
+                int idx = i;
+                btn.onClick.AddListener(() => actions[idx]());
+            }
         }
-
-        // --- Button callbacks ---
 
         private void OnBuildPressed()
         {
             if (_roomBuilder == null) return;
             _roomBuilder.SetBuildMode(!_roomBuilder.BuildMode);
-            _buildLabel.text = _roomBuilder.BuildMode ? "Build ON" : "Build";
         }
 
         private void OnSpawnPressed()
         {
             if (_catSpawner == null) return;
             _catSpawner.SpawnInitialCats();
+        }
+
+        private void OnPetPressed()
+        {
+            if (_catSpawner == null) return;
+            _catSpawner.TogglePetting();
         }
 
         private void OnHappyPressed()
@@ -110,125 +87,6 @@ namespace CatHotel.UI
         {
             var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
             if (cat != null) cat.PlayUnhappy();
-        }
-
-        private void OnPetPressed()
-        {
-            if (_catSpawner == null) return;
-            _catSpawner.TogglePetting();
-            _petLabel.text = _catSpawner.PettingMode ? "Pet ON" : "Pet";
-        }
-
-        private void OnZoomSliderChanged(float value)
-        {
-            if (_updatingSlider || _cameraController == null) return;
-            _cameraController.SetZoomNormalized(value);
-        }
-
-        private void SyncSliderFromCamera()
-        {
-            if (_zoomSlider == null || _cameraController == null) return;
-            _updatingSlider = true;
-            _zoomSlider.value = _cameraController.GetZoomNormalized();
-            _updatingSlider = false;
-        }
-
-        // --- UI factory helpers ---
-
-        private static Button CreateButton(Transform parent, string name, string label, float width)
-        {
-            var obj = new GameObject(name, typeof(RectTransform));
-            obj.transform.SetParent(parent, false);
-
-            var img = obj.AddComponent<Image>();
-            img.color = new Color(0.25f, 0.55f, 0.85f, 1f);
-
-            var btn = obj.AddComponent<Button>();
-            btn.targetGraphic = img;
-
-            var le = obj.AddComponent<LayoutElement>();
-            le.preferredHeight = 64;
-            if (width > 0) le.preferredWidth = width;
-
-            var txtObj = new GameObject("Label", typeof(RectTransform));
-            txtObj.transform.SetParent(obj.transform, false);
-
-            var txtRect = txtObj.GetComponent<RectTransform>();
-            txtRect.anchorMin = Vector2.zero;
-            txtRect.anchorMax = Vector2.one;
-            txtRect.sizeDelta = Vector2.zero;
-
-            var txt = txtObj.AddComponent<Text>();
-            txt.text = label;
-            txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            txt.fontSize = 28;
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.color = Color.white;
-
-            return btn;
-        }
-
-        private static Slider CreateZoomSlider(Transform parent)
-        {
-            var obj = new GameObject("ZoomSlider", typeof(RectTransform));
-            obj.transform.SetParent(parent, false);
-
-            var le = obj.AddComponent<LayoutElement>();
-            le.flexibleWidth = 1;
-            le.minWidth = 150;
-
-            var slider = obj.AddComponent<Slider>();
-            slider.minValue = 0f;
-            slider.maxValue = 1f;
-            slider.value = 0f;
-
-            // Background
-            var bgObj = new GameObject("Background", typeof(RectTransform));
-            bgObj.transform.SetParent(obj.transform, false);
-            var bgRect = bgObj.GetComponent<RectTransform>();
-            bgRect.anchorMin = new Vector2(0, 0.35f);
-            bgRect.anchorMax = new Vector2(1, 0.65f);
-            bgRect.sizeDelta = Vector2.zero;
-            var bgImg = bgObj.AddComponent<Image>();
-            bgImg.color = new Color(0.3f, 0.3f, 0.35f, 1f);
-
-            // Fill area
-            var fillArea = new GameObject("Fill Area", typeof(RectTransform));
-            fillArea.transform.SetParent(obj.transform, false);
-            var fillAreaRect = fillArea.GetComponent<RectTransform>();
-            fillAreaRect.anchorMin = new Vector2(0, 0.35f);
-            fillAreaRect.anchorMax = new Vector2(1, 0.65f);
-            fillAreaRect.sizeDelta = Vector2.zero;
-
-            var fill = new GameObject("Fill", typeof(RectTransform));
-            fill.transform.SetParent(fillArea.transform, false);
-            var fillRect = fill.GetComponent<RectTransform>();
-            fillRect.anchorMin = Vector2.zero;
-            fillRect.anchorMax = Vector2.one;
-            fillRect.sizeDelta = Vector2.zero;
-            var fillImg = fill.AddComponent<Image>();
-            fillImg.color = new Color(0.25f, 0.55f, 0.85f, 1f);
-
-            slider.fillRect = fillRect;
-
-            // Handle slide area
-            var handleArea = new GameObject("Handle Slide Area", typeof(RectTransform));
-            handleArea.transform.SetParent(obj.transform, false);
-            var handleAreaRect = handleArea.GetComponent<RectTransform>();
-            handleAreaRect.anchorMin = Vector2.zero;
-            handleAreaRect.anchorMax = Vector2.one;
-            handleAreaRect.sizeDelta = Vector2.zero;
-
-            var handle = new GameObject("Handle", typeof(RectTransform));
-            handle.transform.SetParent(handleArea.transform, false);
-            var handleRect = handle.GetComponent<RectTransform>();
-            handleRect.sizeDelta = new Vector2(30, 0);
-            var handleImg = handle.AddComponent<Image>();
-            handleImg.color = Color.white;
-
-            slider.handleRect = handleRect;
-
-            return slider;
         }
     }
 }

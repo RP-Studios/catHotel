@@ -448,6 +448,7 @@ namespace CatHotel.Editor
             ConfigureSprite($"{SpritesRoot}/Floors/parquet01.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/murHorizontal.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/murVert.png", 256, FilterMode.Point);
+
         }
 
         private static void ConfigureCatSpriteImports()
@@ -777,13 +778,6 @@ namespace CatHotel.Editor
                 esObj.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
             }
 
-            // Clean up old renamed zones
-            foreach (var old in new[] { "ZoneBottom" })
-            {
-                var t = canvasObj.transform.Find(old);
-                if (t != null) Object.DestroyImmediate(t.gameObject);
-            }
-
             // --- 4 UI zones (32px margin from screen edges) ---
             const float m = 32f; // margin in reference pixels
 
@@ -799,11 +793,11 @@ namespace CatHotel.Editor
                 new Color(0.77f, 0.65f, 0.28f, 0.15f),
                 new Vector2(m, m), new Vector2(0f, 0f));
 
-            // Right: 20% width, below top to bottom, inset 32px from right/bottom
+            // Right: 20% width, below top to bottom, no margin (buttons go to edge)
             var zoneRight  = CreateUIZone(canvasObj, "ZoneRight",
                 new Vector2(0.80f, 0f), new Vector2(1f, 0.85f),
                 new Color(0.77f, 0.65f, 0.28f, 0.15f),
-                new Vector2(0f, m), new Vector2(-m, 0f));
+                new Vector2(0f, m), new Vector2(0f, 0f));
 
             // Center: fills remainder, inset 32px from bottom
             var zoneCenter = CreateUIZone(canvasObj, "ZoneCenter",

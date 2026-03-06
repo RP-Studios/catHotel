@@ -151,8 +151,11 @@ namespace CatHotel.Input
             float scroll = mouse.scroll.ReadValue().y;
             if (Mathf.Abs(scroll) < 0.01f) return;
 
+            // Normalize scroll (Windows returns ±120 per notch)
+            float normalizedScroll = scroll / 120f;
+
             _cam.orthographicSize = Mathf.Clamp(
-                _cam.orthographicSize - scroll * _zoomSpeed,
+                _cam.orthographicSize - normalizedScroll * _zoomSpeed,
                 _minOrthoSize, EffectiveMaxOrthoSize);
             OnZoomChanged?.Invoke();
         }
