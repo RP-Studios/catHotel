@@ -54,7 +54,7 @@ namespace CatHotel.Input
         private void Awake()
         {
             _cam = GetComponent<Camera>();
-            _cam.orthographicSize = Mathf.Min(19f, EffectiveMaxOrthoSize);
+            _cam.orthographicSize = EffectiveMaxOrthoSize;
         }
 
         private void Start()

@@ -29,14 +29,22 @@ namespace CatHotel.Cats
         [Header("Petting")]
         [SerializeField] private RuntimeAnimatorController _handPetController;
 
-        [Header("Spawning")]
-        [SerializeField] private int _initialCatCount = 3;
+        [Header("Auto Spawn")]
+        [SerializeField] private float _spawnInterval = 5f;
+        [SerializeField] private int _maxCatsPerEntrance = 5;
         [SerializeField] private int _sortingOrder = 10;
 
         private readonly List<CatEntity> _cats = new();
+        private readonly List<CatEntity> _pensionCats = new();
+        private readonly List<CatEntity> _refugeCats = new();
+
+        private float _pensionTimer;
+        private float _refugeTimer;
+        private bool _autoSpawnEnabled = true;
 
         public RuntimeAnimatorController FightCloudController => _fightCloudController;
         public RuntimeAnimatorController HandPetController => _handPetController;
+        public IReadOnlyList<CatEntity> AllCats => _cats;
 
         private bool _pettingMode;
         private Camera _mainCam;
@@ -50,14 +58,55 @@ namespace CatHotel.Cats
 
         private void Update()
         {
+            // Debug: S key still works for manual spawn
             var kb = Keyboard.current;
             if (kb != null && kb.sKey.wasPressedThisFrame)
                 SpawnInitialCats();
 
-            if (_pettingMode && UnityEngine.InputSystem.Pointer.current != null
-                && UnityEngine.InputSystem.Pointer.current.press.wasPressedThisFrame)
+            if (_pettingMode && Pointer.current != null
+                && Pointer.current.press.wasPressedThisFrame)
             {
                 TryPetAtPointer();
+            }
+
+            if (_autoSpawnEnabled)
+                HandleAutoSpawn();
+        }
+
+        private void HandleAutoSpawn()
+        {
+            if (_gridRenderer.Entrances.Count < 2) return;
+
+            _pensionTimer += Time.deltaTime;
+            _refugeTimer += Time.deltaTime;
+
+            if (_pensionTimer >= _spawnInterval && _pensionCats.Count < _maxCatsPerEntrance)
+            {
+                _pensionTimer = 0f;
+                SpawnFromEntrance(0, _pensionCats);
+            }
+
+            if (_refugeTimer >= _spawnInterval && _refugeCats.Count < _maxCatsPerEntrance)
+            {
+                _refugeTimer = 0f;
+                SpawnFromEntrance(1, _refugeCats);
+            }
+        }
+
+        private void SpawnFromEntrance(int entranceIndex, List<CatEntity> trackingList)
+        {
+            var entrance = _gridRenderer.Entrances[entranceIndex];
+            var cat = SpawnCat(entrance);
+            if (cat == null) return;
+
+            trackingList.Add(cat);
+
+            // Pick a random target in the central room and pathfind there
+            var centralCells = _gridRenderer.CentralRoomFloorCells;
+            if (centralCells.Count > 0)
+            {
+                var target = centralCells[Random.Range(0, centralCells.Count)];
+                cat.WalkToTarget(target);
             }
         }
 
@@ -66,11 +115,11 @@ namespace CatHotel.Cats
             if (_mainCam == null) _mainCam = Camera.main;
             if (_mainCam == null) return;
 
-            Vector2 screenPos = UnityEngine.InputSystem.Pointer.current.position.ReadValue();
+            Vector2 screenPos = Pointer.current.position.ReadValue();
             Vector3 worldPos = _mainCam.ScreenToWorldPoint(screenPos);
 
             CatEntity nearest = null;
-            float bestDist = 1.5f; // max tap radius in world units
+            float bestDist = 1.5f;
             foreach (var cat in _cats)
             {
                 float dist = Vector2.Distance(worldPos, cat.transform.position);
@@ -94,7 +143,7 @@ namespace CatHotel.Cats
                 return;
             }
 
-            int count = Mathf.Min(_initialCatCount, floorCells.Count);
+            int count = Mathf.Min(3, floorCells.Count);
             ShuffleList(floorCells);
 
             for (int i = 0; i < count; i++)
@@ -105,6 +154,8 @@ namespace CatHotel.Cats
 
         public CatEntity SpawnCat(Vector2Int cell)
         {
+            if (_breeds == null || _breeds.Length == 0) return null;
+
             var breed = _breeds[Random.Range(0, _breeds.Length)];
 
             var go = new GameObject($"Cat_{_cats.Count + 1}_{breed.name}");

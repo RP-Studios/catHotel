@@ -1878,8 +1878,12 @@ MonoBehaviour:
   _previewTilemap: {fileID: 1034053488}
   _emptyTile: {fileID: 11400000, guid: 7000d7073712f254bb7ec9ece9b7b096, type: 2}
   _floorTile: {fileID: 11400000, guid: a6cfb89708772da45ad0593203739487, type: 2}
-  _wallHTile: {fileID: 11400000, guid: c61627d46c1387641b5dfe573ce2f5a8, type: 2}
-  _wallVTile: {fileID: 11400000, guid: aacfc7fe233d895408d1d5bc96207a66, type: 2}
+  _wallTopTile: {fileID: 11400000, guid: 2674b05e0965edc4e8c16b9980de053f, type: 2}
+  _wallBotTile: {fileID: 11400000, guid: fcc0e5033900e31458e4a6dd92539eb1, type: 2}
+  _wallLeftTopTile: {fileID: 11400000, guid: 579649ac187bb614690148ebba76c820, type: 2}
+  _wallLeftMidTile: {fileID: 11400000, guid: ecb2f746f893fb641872cae7640b6afa, type: 2}
+  _wallRightTopTile: {fileID: 11400000, guid: fc89ef77209744d4986bf28de4ccd080, type: 2}
+  _wallRightMidTile: {fileID: 11400000, guid: a540637bbea7f99489aded4d9f6952c0, type: 2}
   _validColor: {r: 0.2, g: 0.8, b: 0.2, a: 0.5}
   _invalidColor: {r: 0.8, g: 0.2, b: 0.2, a: 0.5}
 --- !u!4 &1831571447
@@ -1933,7 +1937,8 @@ MonoBehaviour:
     controller: {fileID: 9100000, guid: 9b55c1e4835f97040881507b7ec911c7, type: 2}
   _fightCloudController: {fileID: 9100000, guid: ce6355418d84a2d44a35c2fcea411713, type: 2}
   _handPetController: {fileID: 9100000, guid: d9c535d272385544387002734771cc10, type: 2}
-  _initialCatCount: 3
+  _spawnInterval: 5
+  _maxCatsPerEntrance: 5
   _sortingOrder: 10
 --- !u!114 &1831571449
 MonoBehaviour:

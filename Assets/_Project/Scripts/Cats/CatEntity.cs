@@ -330,7 +330,55 @@ namespace CatHotel.Cats
             _pendingAction = DOVirtual.DelayedCall(idleTime, Wander);
         }
 
-        // --- Movement ---
+        // --- Targeted Movement (BFS pathfinding) ---
+
+        /// <summary>
+        /// Walk to a specific target cell using BFS pathfinding.
+        /// On arrival, enter normal rest/wander behavior.
+        /// </summary>
+        public void WalkToTarget(Vector2Int target)
+        {
+            if (_isFighting) return;
+            _moveSequence?.Kill();
+            _pendingAction?.Kill();
+            _isWalking = false;
+            _chosenRestState = null;
+
+            var path = _grid.FindPath(_gridPos, target);
+            if (path == null || path.Count < 2)
+            {
+                EnterRest();
+                return;
+            }
+
+            _isWalking = true;
+            _moveSequence = DOTween.Sequence();
+
+            // Skip index 0 (current position)
+            for (int i = 1; i < path.Count; i++)
+            {
+                Vector2Int cell = path[i];
+                Vector2Int from = path[i - 1];
+                Vector2Int delta = cell - from;
+
+                CatDirection dir = DeltaToDirection(delta);
+                _moveSequence.AppendCallback(() => SetWalkDirection(dir));
+
+                Vector3 worldTarget = CellToWorld(cell);
+                _moveSequence.Append(
+                    transform.DOMove(worldTarget, _cellMoveTime)
+                        .SetEase(Ease.Linear));
+            }
+
+            Vector2Int finalCell = path[^1];
+            _moveSequence.OnComplete(() =>
+            {
+                _gridPos = finalCell;
+                EnterRest();
+            });
+        }
+
+        // --- Random Movement ---
 
         private void Wander()
         {

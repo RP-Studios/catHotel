@@ -4,6 +4,7 @@ namespace CatHotel.Grid
     {
         Empty = 0,
         Floor = 1,
-        Wall  = 2
+        Wall  = 2,
+        Door  = 3
     }
 }

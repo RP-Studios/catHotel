@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -14,22 +15,27 @@ namespace CatHotel.Grid
         [Header("Tiles")]
         [SerializeField] private TileBase _emptyTile;
         [SerializeField] private TileBase _floorTile;
-        [SerializeField] private TileBase _wallHTile;
-        [SerializeField] private TileBase _wallVTile;
+
+        [Header("Wall Tiles")]
+        [SerializeField] private TileBase _wallTopTile;        // WALL_H: top wall face (visible height)
+        [SerializeField] private TileBase _wallBotTile;        // WALL_BOT_Middle: bottom wall (thin line)
+        [SerializeField] private TileBase _wallLeftTopTile;    // WALL_LEFT_Top: left wall cap
+        [SerializeField] private TileBase _wallLeftMidTile;    // WALL_LEFT_Middle: left wall body
+        [SerializeField] private TileBase _wallRightTopTile;   // WALL_RIGHT_Top: right wall cap
+        [SerializeField] private TileBase _wallRightMidTile;   // WALL_RIGHT_Middle: right wall body
 
         [Header("Preview Colors")]
         [SerializeField] private Color _validColor   = new(0.2f, 0.8f, 0.2f, 0.5f);
         [SerializeField] private Color _invalidColor = new(0.8f, 0.2f, 0.2f, 0.5f);
-
-        // Flip matrix for bottom horizontal walls (Y scale −1, offset +1 to stay in cell)
-        private static readonly Matrix4x4 FlipY = Matrix4x4.TRS(
-            new Vector3(0, 1, 0), Quaternion.identity, new Vector3(1, -1, 1));
 
         private GridData _gridData;
         private RoomRegistry _roomRegistry;
 
         public GridData Data      => _gridData;
         public RoomRegistry Rooms => _roomRegistry;
+
+        public List<Vector2Int> Entrances { get; private set; } = new();
+        public List<Vector2Int> CentralRoomFloorCells { get; private set; } = new();
 
         private void Awake()
         {
@@ -42,20 +48,74 @@ namespace CatHotel.Grid
             if (_emptyTilemap == null || _emptyTile == null)
             {
                 Debug.LogError("[GridRenderer] Missing references! " +
-                    $"Tilemap={_emptyTilemap != null}, Tile={_emptyTile != null}. " +
                     "Run 'Cat Hotel > Setup Proto Scene' from the menu.");
                 return;
             }
 
             DrawBorderWalls();
+            BuildInitialLayout();
+            RefreshAll();
 
-            Debug.Log($"[GridRenderer] Grid initialized: {GridData.Width}x{GridData.Height}");
+            Debug.Log($"[GridRenderer] Grid initialized: {GridData.Width}x{GridData.Height}, " +
+                $"Entrances: {Entrances.Count}, CentralFloor: {CentralRoomFloorCells.Count}");
         }
 
-        /// <summary>
-        /// Show the empty cell grid (build mode).
-        /// Places empty tiles only on cells that are still Empty.
-        /// </summary>
+        private void BuildInitialLayout()
+        {
+            // Pension (5x5): x=1..5, y=18..22
+            var pensionRect = new RectInt(1, 18, 5, 5);
+            FillRoom(pensionRect);
+            _roomRegistry.RegisterRoom(pensionRect);
+
+            // Refuge (5x5): x=1..5, y=11..15
+            var refugeRect = new RectInt(1, 11, 5, 5);
+            FillRoom(refugeRect);
+            _roomRegistry.RegisterRoom(refugeRect);
+
+            // Central room: x=5..21, y=9..24 (shares wall x=5 with accueils)
+            var centralRect = new RectInt(5, 9, 17, 16);
+            FillRoom(centralRect);
+            _roomRegistry.RegisterRoom(centralRect);
+
+            // Doors: connect accueils → central at shared wall x=5
+            _gridData.SetCell(5, 20, CellType.Door); // pension
+            _gridData.SetCell(5, 13, CellType.Door); // refuge
+
+            // Entrance doors (left wall x=1)
+            _gridData.SetCell(1, 20, CellType.Door);
+            Entrances.Add(new Vector2Int(1, 20));
+
+            _gridData.SetCell(1, 13, CellType.Door);
+            Entrances.Add(new Vector2Int(1, 13));
+
+            // Cache central room floor cells
+            for (int y = centralRect.yMin + 1; y < centralRect.yMax - 1; y++)
+                for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
+                    CentralRoomFloorCells.Add(new Vector2Int(x, y));
+        }
+
+        private void FillRoom(RectInt rect)
+        {
+            for (int y = rect.yMin; y < rect.yMax; y++)
+            {
+                for (int x = rect.xMin; x < rect.xMax; x++)
+                {
+                    bool isPerimeter = x == rect.xMin || x == rect.xMax - 1 ||
+                                       y == rect.yMin || y == rect.yMax - 1;
+
+                    if (isPerimeter)
+                    {
+                        if (!_gridData.IsWalkable(x, y))
+                            _gridData.SetCell(x, y, CellType.Wall);
+                    }
+                    else
+                    {
+                        _gridData.SetCell(x, y, CellType.Floor);
+                    }
+                }
+            }
+        }
+
         public void ShowGrid()
         {
             for (int y = 0; y < GridData.Height; y++)
@@ -64,35 +124,20 @@ namespace CatHotel.Grid
                         _emptyTilemap.SetTile(new Vector3Int(x, y, 0), _emptyTile);
         }
 
-        /// <summary>
-        /// Hide the empty cell grid (normal mode).
-        /// </summary>
         public void HideGrid()
         {
             _emptyTilemap.ClearAllTiles();
         }
 
-        /// <summary>
-        /// Draw wall tiles around the entire grid perimeter.
-        /// </summary>
         private void DrawBorderWalls()
         {
-            // Top & bottom
             for (int x = 0; x < GridData.Width; x++)
             {
-                // Wall tiles temporarily disabled (visuals not final)
-                // _wallTilemap.SetTile(new Vector3Int(x, 0, 0), _wallHTile);
-                // _wallTilemap.SetTransformMatrix(new Vector3Int(x, 0, 0), FlipY);
-                // _wallTilemap.SetTile(new Vector3Int(x, GridData.Height - 1, 0), _wallHTile);
-
                 _gridData.SetCell(x, 0, CellType.Wall);
                 _gridData.SetCell(x, GridData.Height - 1, CellType.Wall);
             }
-            // Left & right
             for (int y = 1; y < GridData.Height - 1; y++)
             {
-                // _wallTilemap.SetTile(new Vector3Int(0, y, 0), _wallVTile);
-                // _wallTilemap.SetTile(new Vector3Int(GridData.Width - 1, y, 0), _wallVTile);
                 _gridData.SetCell(0, y, CellType.Wall);
                 _gridData.SetCell(GridData.Width - 1, y, CellType.Wall);
             }
@@ -111,47 +156,63 @@ namespace CatHotel.Grid
                     switch (_gridData.GetCell(x, y))
                     {
                         case CellType.Floor:
+                        case CellType.Door:
                             _floorTilemap.SetTile(pos, _floorTile);
                             break;
-                        // Wall tiles temporarily disabled (visuals not final)
-                        // case CellType.Wall:
-                        //     var wallTile = GetWallTile(x, y);
-                        //     _wallTilemap.SetTile(pos, wallTile);
-                        //     if (wallTile == _wallHTile && IsBottomHWall(x, y))
-                        //         _wallTilemap.SetTransformMatrix(pos, FlipY);
-                        //     break;
+                        case CellType.Wall:
+                            var wallTile = GetWallTile(x, y);
+                            if (wallTile != null)
+                                _wallTilemap.SetTile(pos, wallTile);
+                            break;
                     }
                 }
             }
         }
 
         /// <summary>
-        /// A horizontal wall is "bottom" if floor is directly above it.
-        /// </summary>
-        private bool IsBottomHWall(int x, int y)
-        {
-            return _gridData.InBounds(x, y + 1) && _gridData.GetCell(x, y + 1) == CellType.Floor;
-        }
-
-        /// <summary>
-        /// Determine wall orientation: horizontal if floor is above/below,
-        /// vertical if floor is left/right only.
+        /// Pick the correct wall tile based on where adjacent floor/door cells are.
+        /// - Floor below → top wall (WALL_H, visible face)
+        /// - Floor above → bottom wall (WALL_BOT, thin line from above)
+        /// - Floor to the right → left wall (WALL_LEFT variants)
+        /// - Floor to the left → right wall (WALL_RIGHT variants)
+        /// Returns null for wall cells with no adjacent floor (invisible border).
         /// </summary>
         private TileBase GetWallTile(int x, int y)
         {
-            bool floorAboveOrBelow =
-                (_gridData.InBounds(x, y - 1) && _gridData.GetCell(x, y - 1) == CellType.Floor) ||
-                (_gridData.InBounds(x, y + 1) && _gridData.GetCell(x, y + 1) == CellType.Floor);
+            bool floorBelow = _gridData.InBounds(x, y - 1) && _gridData.IsWalkable(x, y - 1);
+            bool floorAbove = _gridData.InBounds(x, y + 1) && _gridData.IsWalkable(x, y + 1);
+            bool floorRight = _gridData.InBounds(x + 1, y) && _gridData.IsWalkable(x + 1, y);
+            bool floorLeft  = _gridData.InBounds(x - 1, y) && _gridData.IsWalkable(x - 1, y);
 
-            if (floorAboveOrBelow) return _wallHTile;
+            // Top wall (most prominent — visible wall face from above)
+            if (floorBelow) return _wallTopTile;
 
-            bool floorLeftOrRight =
-                (_gridData.InBounds(x - 1, y) && _gridData.GetCell(x - 1, y) == CellType.Floor) ||
-                (_gridData.InBounds(x + 1, y) && _gridData.GetCell(x + 1, y) == CellType.Floor);
+            // Bottom wall (thin top-down line)
+            if (floorAbove) return _wallBotTile;
 
-            if (floorLeftOrRight) return _wallVTile;
+            // Left wall (floor is to the right of this wall)
+            if (floorRight)
+            {
+                // Use _Top variant if the cell above is NOT also a left-wall
+                bool aboveIsLeftWall = _gridData.InBounds(x, y + 1)
+                    && _gridData.GetCell(x, y + 1) == CellType.Wall
+                    && _gridData.InBounds(x + 1, y + 1)
+                    && _gridData.IsWalkable(x + 1, y + 1);
+                return aboveIsLeftWall ? _wallLeftMidTile : _wallLeftTopTile;
+            }
 
-            return _wallHTile; // default (border, corners)
+            // Right wall (floor is to the left of this wall)
+            if (floorLeft)
+            {
+                bool aboveIsRightWall = _gridData.InBounds(x, y + 1)
+                    && _gridData.GetCell(x, y + 1) == CellType.Wall
+                    && _gridData.InBounds(x - 1, y + 1)
+                    && _gridData.IsWalkable(x - 1, y + 1);
+                return aboveIsRightWall ? _wallRightMidTile : _wallRightTopTile;
+            }
+
+            // No adjacent floor — border wall with no nearby rooms → invisible
+            return null;
         }
 
         public void ShowPreview(RectInt rect, bool valid)
@@ -164,10 +225,7 @@ namespace CatHotel.Grid
                 for (int x = rect.xMin; x < rect.xMax; x++)
                 {
                     if (!_gridData.InBounds(x, y)) continue;
-
-                    // Wall preview temporarily disabled — show floor for all cells
-                    var pos = new Vector3Int(x, y, 0);
-                    _previewTilemap.SetTile(pos, _floorTile);
+                    _previewTilemap.SetTile(new Vector3Int(x, y, 0), _floorTile);
                 }
             }
         }

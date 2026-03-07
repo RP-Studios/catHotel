@@ -11,6 +11,16 @@ namespace CatHotel.Grid
 
         public IReadOnlyList<RoomData> Rooms => _rooms;
 
+        /// <summary>
+        /// Register a pre-built room (cells already set in GridData).
+        /// </summary>
+        public RoomData RegisterRoom(RectInt rect)
+        {
+            var room = new RoomData(_nextId++, rect);
+            _rooms.Add(room);
+            return room;
+        }
+
         public RoomRegistry(GridData grid)
         {
             _grid = grid;
@@ -28,7 +38,27 @@ namespace CatHotel.Grid
             if (_grid.DoesInteriorOverlapFloor(rect))
                 return false;
 
+            // Extension-only: new room must share at least one wall with existing structure
+            if (!SharesWallWithExisting(rect))
+                return false;
+
             return true;
+        }
+
+        private bool SharesWallWithExisting(RectInt rect)
+        {
+            // Check if any perimeter cell of the new room overlaps an existing Wall cell
+            for (int x = rect.xMin; x < rect.xMax; x++)
+            {
+                if (_grid.GetCell(x, rect.yMin) == CellType.Wall) return true;
+                if (_grid.GetCell(x, rect.yMax - 1) == CellType.Wall) return true;
+            }
+            for (int y = rect.yMin + 1; y < rect.yMax - 1; y++)
+            {
+                if (_grid.GetCell(rect.xMin, y) == CellType.Wall) return true;
+                if (_grid.GetCell(rect.xMax - 1, y) == CellType.Wall) return true;
+            }
+            return false;
         }
 
         public RoomData TryCreateRoom(RectInt rect)

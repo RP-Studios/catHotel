@@ -446,8 +446,12 @@ namespace CatHotel.Editor
 
             // parquet + walls are 256x256 → PPU 256 so 1 sprite = 1 tile
             ConfigureSprite($"{SpritesRoot}/Floors/parquet01.png", 256, FilterMode.Point);
-            ConfigureSprite($"{SpritesRoot}/Walls/murHorizontal.png", 256, FilterMode.Point);
-            ConfigureSprite($"{SpritesRoot}/Walls/murVert.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_H.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_BOT_Middle.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_LEFT_Top.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_LEFT_Middle.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_RIGHT_Top.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_RIGHT_Middle.png", 256, FilterMode.Point);
 
         }
 
@@ -605,22 +609,30 @@ namespace CatHotel.Editor
             importer.SaveAndReimport();
         }
 
-        private static (TileBase empty, TileBase floor, TileBase wallH, TileBase wallV) CreateTileAssets()
+        private struct TileSet
         {
-            var empty = CreateTile(
-                $"{SpritesRoot}/Tiles/tile_empty.png",
-                $"{SpritesRoot}/Tiles/EmptyTile.asset");
-            var floor = CreateTile(
-                $"{SpritesRoot}/Floors/parquet01.png",
-                $"{SpritesRoot}/Floors/FloorTile.asset");
-            var wallH = CreateTile(
-                $"{SpritesRoot}/Walls/murHorizontal.png",
-                $"{SpritesRoot}/Walls/WallHTile.asset");
-            var wallV = CreateTile(
-                $"{SpritesRoot}/Walls/murVert.png",
-                $"{SpritesRoot}/Walls/WallVTile.asset");
+            public TileBase empty, floor;
+            public TileBase wallTop, wallBot;
+            public TileBase wallLeftTop, wallLeftMid;
+            public TileBase wallRightTop, wallRightMid;
+        }
 
-            return (empty, floor, wallH, wallV);
+        private static TileSet CreateTileAssets()
+        {
+            const string W = SpritesRoot + "/Walls";
+            return new TileSet
+            {
+                empty        = CreateTile($"{SpritesRoot}/Tiles/tile_empty.png",
+                                           $"{SpritesRoot}/Tiles/EmptyTile.asset"),
+                floor        = CreateTile($"{SpritesRoot}/Floors/parquet01.png",
+                                           $"{SpritesRoot}/Floors/FloorTile.asset"),
+                wallTop      = CreateTile($"{W}/WALL_H.png",          $"{W}/WallTopTile.asset"),
+                wallBot      = CreateTile($"{W}/WALL_BOT_Middle.png", $"{W}/WallBotTile.asset"),
+                wallLeftTop  = CreateTile($"{W}/WALL_LEFT_Top.png",   $"{W}/WallLeftTopTile.asset"),
+                wallLeftMid  = CreateTile($"{W}/WALL_LEFT_Middle.png",$"{W}/WallLeftMidTile.asset"),
+                wallRightTop = CreateTile($"{W}/WALL_RIGHT_Top.png",  $"{W}/WallRightTopTile.asset"),
+                wallRightMid = CreateTile($"{W}/WALL_RIGHT_Middle.png",$"{W}/WallRightMidTile.asset"),
+            };
         }
 
         private static TileBase CreateTile(string spritePath, string tilePath)
@@ -651,7 +663,7 @@ namespace CatHotel.Editor
         }
 
         private static void BuildSceneHierarchy(
-            (TileBase empty, TileBase floor, TileBase wallH, TileBase wallV) tiles,
+            TileSet tiles,
             RuntimeAnimatorController eurController,
             RuntimeAnimatorController eur2Controller,
             RuntimeAnimatorController eur3Controller,
@@ -669,7 +681,6 @@ namespace CatHotel.Editor
 
             var cam = camObj.GetComponent<Camera>();
             cam.orthographic = true;
-            cam.orthographicSize = 19f;
             cam.backgroundColor = new Color(0.12f, 0.12f, 0.15f);
             camObj.transform.position = new Vector3(24f, 16f, -10f);
 
@@ -701,10 +712,14 @@ namespace CatHotel.Editor
             so.FindProperty("_floorTilemap").objectReferenceValue   = tmFloor;
             so.FindProperty("_wallTilemap").objectReferenceValue    = tmWall;
             so.FindProperty("_previewTilemap").objectReferenceValue = tmPreview;
-            so.FindProperty("_emptyTile").objectReferenceValue      = tiles.empty;
-            so.FindProperty("_floorTile").objectReferenceValue      = tiles.floor;
-            so.FindProperty("_wallHTile").objectReferenceValue      = tiles.wallH;
-            so.FindProperty("_wallVTile").objectReferenceValue      = tiles.wallV;
+            so.FindProperty("_emptyTile").objectReferenceValue          = tiles.empty;
+            so.FindProperty("_floorTile").objectReferenceValue          = tiles.floor;
+            so.FindProperty("_wallTopTile").objectReferenceValue        = tiles.wallTop;
+            so.FindProperty("_wallBotTile").objectReferenceValue        = tiles.wallBot;
+            so.FindProperty("_wallLeftTopTile").objectReferenceValue    = tiles.wallLeftTop;
+            so.FindProperty("_wallLeftMidTile").objectReferenceValue    = tiles.wallLeftMid;
+            so.FindProperty("_wallRightTopTile").objectReferenceValue   = tiles.wallRightTop;
+            so.FindProperty("_wallRightMidTile").objectReferenceValue   = tiles.wallRightMid;
             so.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
