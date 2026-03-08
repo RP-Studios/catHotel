@@ -5,6 +5,14 @@ using CatHotel.Grid;
 
 namespace CatHotel.Cats
 {
+    public class BedSpot
+    {
+        public Vector2Int GridPos;
+        public bool Occupied;
+
+        public BedSpot(Vector2Int gridPos) { GridPos = gridPos; }
+    }
+
     [System.Serializable]
     public class CatBreed
     {
@@ -37,6 +45,7 @@ namespace CatHotel.Cats
         private readonly List<CatEntity> _cats = new();
         private readonly List<CatEntity> _pensionCats = new();
         private readonly List<CatEntity> _refugeCats = new();
+        private readonly List<BedSpot> _bedSpots = new();
 
         private float _pensionTimer;
         private float _refugeTimer;
@@ -50,6 +59,51 @@ namespace CatHotel.Cats
         private Camera _mainCam;
 
         public bool PettingMode => _pettingMode;
+
+        private void Start()
+        {
+            // Auto-detect bed objects from Decorations hierarchy
+            var decoRoot = GameObject.Find("Decorations");
+            if (decoRoot != null)
+            {
+                for (int i = 0; i < decoRoot.transform.childCount; i++)
+                {
+                    var child = decoRoot.transform.GetChild(i);
+                    string n = child.name.ToLowerInvariant();
+                    if (n.Contains("bed") || n.Contains("coussin"))
+                    {
+                        var gp = new Vector2Int(
+                            Mathf.FloorToInt(child.position.x),
+                            Mathf.FloorToInt(child.position.y));
+                        _bedSpots.Add(new BedSpot(gp));
+                    }
+                }
+            }
+            Debug.Log($"[CatSpawner] Registered {_bedSpots.Count} bed spots");
+        }
+
+        public BedSpot ClaimNearestBed(Vector2Int from)
+        {
+            BedSpot best = null;
+            float bestDist = float.MaxValue;
+            foreach (var bed in _bedSpots)
+            {
+                if (bed.Occupied) continue;
+                float dist = Vector2Int.Distance(from, bed.GridPos);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    best = bed;
+                }
+            }
+            if (best != null) best.Occupied = true;
+            return best;
+        }
+
+        public void ReleaseBed(BedSpot bed)
+        {
+            if (bed != null) bed.Occupied = false;
+        }
 
         public void TogglePetting()
         {
@@ -171,6 +225,10 @@ namespace CatHotel.Cats
                 animator.runtimeAnimatorController = breed.controller;
                 animator.enabled = false;
             }
+
+            // Random scale variation
+            float scale = Random.Range(0.5f, 0.8f);
+            go.transform.localScale = new Vector3(scale, scale, 1f);
 
             var cat = go.AddComponent<CatEntity>();
             cat.SetSprites(breed.frontSprite, breed.rightSprite, breed.backSprite);

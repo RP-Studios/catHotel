@@ -14,6 +14,7 @@ namespace CatHotel.Editor
     public static class ProtoSceneSetup
     {
         private const string SpritesRoot = "Assets/_Project/Art/Environment";
+        private const string ObjectsRoot = "Assets/_Project/Art/Objects";
         private const string CatSpritesRoot = "Assets/_Project/Art/Cats/Europeen";
         private const string AnimRoot = CatSpritesRoot + "/Animations";
         private const string CatControllerPath = AnimRoot + "/CatEuropeen.controller";
@@ -465,6 +466,19 @@ namespace CatHotel.Editor
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Left.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Right.png", 256, FilterMode.Point);
 
+            // Object sprites — PPU 200 (same as cats) with Bilinear
+            string[] objectSprites =
+            {
+                $"{ObjectsRoot}/Env/SHELF.png",
+                $"{ObjectsRoot}/Env/SHELF_Var_01.png",
+                $"{ObjectsRoot}/Env/PLANTE.png",
+                $"{ObjectsRoot}/Env/PLANT_BIG.png",
+                $"{ObjectsRoot}/Beds/BED.png",
+                $"{ObjectsRoot}/Beds/COUSSIN.png",
+                $"{ObjectsRoot}/Beds/LUXOUS_BED.png",
+            };
+            foreach (var s in objectSprites)
+                ConfigureSprite(s, 200, FilterMode.Bilinear);
         }
 
         private static void ConfigureCatSpriteImports()
@@ -875,6 +889,9 @@ namespace CatHotel.Editor
             soUI.FindProperty("_zoneCenter").objectReferenceValue = zoneCenter;
             soUI.ApplyModifiedProperties();
 
+            // --- Decorations ---
+            PlaceDecorations();
+
             // --- Mark dirty ---
             EditorUtility.SetDirty(camObj);
             EditorUtility.SetDirty(gridObj);
@@ -883,6 +900,57 @@ namespace CatHotel.Editor
 
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
                 UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+        }
+
+        private static void PlaceDecorations()
+        {
+            // Destroy previous decorations container
+            var old = GameObject.Find("Decorations");
+            if (old != null) Object.DestroyImmediate(old);
+
+            var root = new GameObject("Decorations");
+
+            // Central room: x=5-21, y=10-23. Top wall at y=24.
+
+            // --- Shelves on top wall tiles (2 heights) ---
+            // High (y=24.65) and low (y=24.25), both on the wall row y=24
+            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(8.5f,  24.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(12.5f, 24.25f, 0), 3);
+            PlaceSprite(root, "Shelf_High_2",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(16.5f, 24.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_2",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(19.5f, 24.25f, 0), 3);
+
+            // --- Plants ---
+            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(6.5f,  22.5f, 0), 5);
+            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(20.5f, 21.5f, 0), 5);
+            PlaceSprite(root, "Plante_2",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(19.5f, 11.5f, 0), 5);
+            PlaceSprite(root, "PlantBig_2", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(6.5f,  12.5f, 0), 5);
+
+            // --- Beds ---
+            PlaceSprite(root, "Bed_1",       $"{ObjectsRoot}/Beds/BED.png",        new Vector3(9.5f,  18.5f, 0), 5);
+            PlaceSprite(root, "Coussin_1",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(14.5f, 13.5f, 0), 5);
+            PlaceSprite(root, "LuxBed_1",    $"{ObjectsRoot}/Beds/LUXOUS_BED.png", new Vector3(12.5f, 20.5f, 0), 5);
+            PlaceSprite(root, "Coussin_2",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(17.5f, 16.5f, 0), 5);
+
+            EditorUtility.SetDirty(root);
+        }
+
+        private static void PlaceSprite(GameObject parent, string name, string spritePath,
+            Vector3 position, int sortingOrder)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            if (sprite == null)
+            {
+                Debug.LogWarning($"Decoration sprite not found: {spritePath}");
+                return;
+            }
+
+            var go = new GameObject(name);
+            go.transform.SetParent(parent.transform, false);
+            go.transform.position = position;
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.sortingOrder = sortingOrder;
         }
 
         private static void SetBreed(SerializedProperty breedsProperty, int index,

@@ -59,6 +59,7 @@ namespace CatHotel.Cats
         private bool _isWalking;
         private bool _isFighting;
         private string _chosenRestState;
+        private BedSpot _claimedBed;
 
         public Vector2Int GridPos => _gridPos;
 
@@ -86,6 +87,11 @@ namespace CatHotel.Cats
         {
             _moveSequence?.Kill();
             _pendingAction?.Kill();
+            if (_claimedBed != null && _spawner != null)
+            {
+                _spawner.ReleaseBed(_claimedBed);
+                _claimedBed = null;
+            }
         }
 
         // --- Emotes (one-shot, triggered externally) ---
@@ -105,6 +111,7 @@ namespace CatHotel.Cats
             _pendingAction?.Kill();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseBedIfClaimed();
 
             // Face front for petting
             _currentDir = CatDirection.Front;
@@ -130,6 +137,15 @@ namespace CatHotel.Cats
             });
         }
 
+        private void ReleaseBedIfClaimed()
+        {
+            if (_claimedBed != null && _spawner != null)
+            {
+                _spawner.ReleaseBed(_claimedBed);
+                _claimedBed = null;
+            }
+        }
+
         private void PlayEmote(string prefix, float duration)
         {
             if (_isFighting) return;
@@ -138,6 +154,7 @@ namespace CatHotel.Cats
             _pendingAction?.Kill();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseBedIfClaimed();
 
             string state = DirectionalState(prefix, _currentDir);
             PlayAnimState(state);
@@ -190,6 +207,7 @@ namespace CatHotel.Cats
             _pendingAction?.Kill();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseBedIfClaimed();
         }
 
         private void RunFightSequence(CatEntity left, CatEntity right)
@@ -266,7 +284,7 @@ namespace CatHotel.Cats
             cursor += _sleepChance;
             if (roll < cursor)
             {
-                StartRestActivity("Sleep", _sleepTimeMin, _sleepTimeMax);
+                StartSleep();
                 return;
             }
 
@@ -314,6 +332,49 @@ namespace CatHotel.Cats
             });
         }
 
+        private void StartSleep()
+        {
+            if (_spawner == null)
+            {
+                SleepInPlace();
+                return;
+            }
+
+            var bed = _spawner.ClaimNearestBed(_gridPos);
+            if (bed == null)
+            {
+                SleepInPlace();
+                return;
+            }
+
+            _claimedBed = bed;
+            WalkToTarget(bed.GridPos, () =>
+            {
+                _chosenRestState = DirectionalState("Sleep", _currentDir);
+                PlayAnimState(_chosenRestState);
+
+                _pendingAction = DOVirtual.DelayedCall(10f, () =>
+                {
+                    _spawner.ReleaseBed(_claimedBed);
+                    _claimedBed = null;
+                    _chosenRestState = null;
+                    EnterIdle();
+                });
+            });
+        }
+
+        private void SleepInPlace()
+        {
+            _chosenRestState = DirectionalState("Sleep", _currentDir);
+            PlayAnimState(_chosenRestState);
+
+            _pendingAction = DOVirtual.DelayedCall(10f, () =>
+            {
+                _chosenRestState = null;
+                EnterIdle();
+            });
+        }
+
         private void EnterIdle()
         {
             _isWalking = false;
@@ -338,6 +399,14 @@ namespace CatHotel.Cats
         /// </summary>
         public void WalkToTarget(Vector2Int target)
         {
+            WalkToTarget(target, null);
+        }
+
+        /// <summary>
+        /// Walk to a target cell. If onArrival is set, call it instead of EnterRest.
+        /// </summary>
+        public void WalkToTarget(Vector2Int target, System.Action onArrival)
+        {
             if (_isFighting) return;
             _moveSequence?.Kill();
             _pendingAction?.Kill();
@@ -347,14 +416,14 @@ namespace CatHotel.Cats
             var path = _grid.FindPath(_gridPos, target);
             if (path == null || path.Count < 2)
             {
-                EnterRest();
+                if (onArrival != null) onArrival();
+                else EnterRest();
                 return;
             }
 
             _isWalking = true;
             _moveSequence = DOTween.Sequence();
 
-            // Skip index 0 (current position)
             for (int i = 1; i < path.Count; i++)
             {
                 Vector2Int cell = path[i];
@@ -374,7 +443,8 @@ namespace CatHotel.Cats
             _moveSequence.OnComplete(() =>
             {
                 _gridPos = finalCell;
-                EnterRest();
+                if (onArrival != null) onArrival();
+                else EnterRest();
             });
         }
 
