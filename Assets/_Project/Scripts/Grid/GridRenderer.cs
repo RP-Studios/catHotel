@@ -14,27 +14,23 @@ namespace CatHotel.Grid
 
         [Header("Tiles")]
         [SerializeField] private TileBase _emptyTile;
-        [SerializeField] private TileBase _floorTile;
+        [SerializeField] private TileBase[] _floorTiles;
+
+        private TileBase _floorTile;
 
         [Header("Wall Tiles")]
-        [SerializeField] private TileBase _wallTopTile;        // WALL_H: top wall face (visible height)
-        [SerializeField] private TileBase _wallBotTile;        // WALL_BOT_Middle: bottom wall (thin line)
-        [SerializeField] private TileBase _wallLeftTopTile;    // WALL_LEFT_Top: left wall cap
-        [SerializeField] private TileBase _wallLeftMidTile;    // WALL_LEFT_Middle: left wall body
-        [SerializeField] private TileBase _wallRightTopTile;   // WALL_RIGHT_Top: right wall cap
-        [SerializeField] private TileBase _wallRightMidTile;   // WALL_RIGHT_Middle: right wall body
+        [SerializeField] private TileBase _wallTopTile;        // WALL_H
+        [SerializeField] private TileBase _wallBotTile;        // WALL_BOT_Middle
+        [SerializeField] private TileBase _wallLeftTopTile;    // WALL_LEFT_Top
+        [SerializeField] private TileBase _wallLeftMidTile;    // WALL_LEFT_Middle
+        [SerializeField] private TileBase _wallRightTopTile;   // WALL_RIGHT_Top
+        [SerializeField] private TileBase _wallRightMidTile;   // WALL_RIGHT_Middle
+        [SerializeField] private TileBase _wallTopLeftTile;    // WALL_H_Left
+        [SerializeField] private TileBase _wallTopRightTile;   // WALL_H_Right
 
         [Header("Preview Colors")]
         [SerializeField] private Color _validColor   = new(0.2f, 0.8f, 0.2f, 0.5f);
         [SerializeField] private Color _invalidColor = new(0.8f, 0.2f, 0.2f, 0.5f);
-
-        // Flip matrices to reposition wall bars within the cell
-        private static readonly Matrix4x4 FlipX = Matrix4x4.TRS(
-            new Vector3(1, 0, 0), Quaternion.identity, new Vector3(-1, 1, 1));
-        private static readonly Matrix4x4 FlipY = Matrix4x4.TRS(
-            new Vector3(0, 1, 0), Quaternion.identity, new Vector3(1, -1, 1));
-
-        private enum WallType { None, Top, Bottom, Left, Right }
 
         private GridData _gridData;
         private RoomRegistry _roomRegistry;
@@ -60,58 +56,43 @@ namespace CatHotel.Grid
                 return;
             }
 
+            // Pick a random floor tile at launch
+            if (_floorTiles != null && _floorTiles.Length > 0)
+                _floorTile = _floorTiles[Random.Range(0, _floorTiles.Length)];
+
             DrawBorderWalls();
             BuildInitialLayout();
             RefreshAll();
 
             Debug.Log($"[GridRenderer] Grid initialized: {GridData.Width}x{GridData.Height}, " +
-                $"Entrances: {Entrances.Count}, CentralFloor: {CentralRoomFloorCells.Count}");
+                $"CentralFloor: {CentralRoomFloorCells.Count}");
         }
 
         private void BuildInitialLayout()
         {
-            // Pension (5x5): x=1..5, y=18..22
-            var pensionRect = new RectInt(1, 18, 5, 5);
-            FillRoom(pensionRect);
-            _roomRegistry.RegisterRoom(pensionRect);
-
-            // Refuge (5x5): x=1..5, y=11..15
-            var refugeRect = new RectInt(1, 11, 5, 5);
-            FillRoom(refugeRect);
-            _roomRegistry.RegisterRoom(refugeRect);
-
-            // Central room: x=5..21, y=9..24 (shares wall x=5 with accueils)
+            // Single main room: floor first, then walls around it
             var centralRect = new RectInt(5, 9, 17, 16);
             FillRoom(centralRect);
             _roomRegistry.RegisterRoom(centralRect);
 
-            // Doors: connect accueils → central at shared wall x=5
-            _gridData.SetCell(5, 20, CellType.Door); // pension
-            _gridData.SetCell(5, 13, CellType.Door); // refuge
-
-            // Entrance doors (left wall x=1)
-            _gridData.SetCell(1, 20, CellType.Door);
-            Entrances.Add(new Vector2Int(1, 20));
-
-            _gridData.SetCell(1, 13, CellType.Door);
-            Entrances.Add(new Vector2Int(1, 13));
-
-            // Cache central room floor cells
             for (int y = centralRect.yMin + 1; y < centralRect.yMax - 1; y++)
-                for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
+                for (int x = centralRect.xMin; x < centralRect.xMax; x++)
                     CentralRoomFloorCells.Add(new Vector2Int(x, y));
         }
 
+        /// <summary>
+        /// Only top/bottom perimeter = Wall. Left/right edges + interior = Floor.
+        /// Vertical walls are rendered as overlays on edge floor cells.
+        /// </summary>
         private void FillRoom(RectInt rect)
         {
             for (int y = rect.yMin; y < rect.yMax; y++)
             {
                 for (int x = rect.xMin; x < rect.xMax; x++)
                 {
-                    bool isPerimeter = x == rect.xMin || x == rect.xMax - 1 ||
-                                       y == rect.yMin || y == rect.yMax - 1;
+                    bool isTopOrBottom = y == rect.yMin || y == rect.yMax - 1;
 
-                    if (isPerimeter)
+                    if (isTopOrBottom)
                     {
                         if (!_gridData.IsWalkable(x, y))
                             _gridData.SetCell(x, y, CellType.Wall);
@@ -161,87 +142,60 @@ namespace CatHotel.Grid
                 for (int x = 0; x < GridData.Width; x++)
                 {
                     var pos = new Vector3Int(x, y, 0);
-                    switch (_gridData.GetCell(x, y))
+                    var cell = _gridData.GetCell(x, y);
+
+                    if (cell == CellType.Floor || cell == CellType.Door)
                     {
-                        case CellType.Floor:
-                        case CellType.Door:
-                            _floorTilemap.SetTile(pos, _floorTile);
-                            break;
-                        case CellType.Wall:
-                            var (wallTile, wallType) = GetWallTile(x, y);
-                            if (wallTile != null)
-                            {
-                                _wallTilemap.SetTile(pos, wallTile);
-                                // Apply flip matrices to align bars to correct cell edges
-                                switch (wallType)
-                                {
-                                    case WallType.Bottom:
-                                        _wallTilemap.SetTransformMatrix(pos, FlipY);
-                                        break;
-                                    case WallType.Left:
-                                        _wallTilemap.SetTransformMatrix(pos, FlipX);
-                                        break;
-                                    case WallType.Right:
-                                        _wallTilemap.SetTransformMatrix(pos, FlipX);
-                                        break;
-                                }
-                            }
-                            break;
+                        _floorTilemap.SetTile(pos, _floorTile);
+
+                        // Vertical wall overlay on edge floor cells (adjacent to empty/out-of-bounds)
+                        bool edgeLeft  = !_gridData.InBounds(x - 1, y) || _gridData.GetCell(x - 1, y) == CellType.Empty;
+                        bool edgeRight = !_gridData.InBounds(x + 1, y) || _gridData.GetCell(x + 1, y) == CellType.Empty;
+
+                        if (edgeLeft && !edgeRight)
+                            _wallTilemap.SetTile(pos, _wallRightMidTile);
+                        else if (edgeRight && !edgeLeft)
+                            _wallTilemap.SetTile(pos, _wallLeftMidTile);
+                    }
+                    else if (cell == CellType.Wall)
+                    {
+                        var tile = GetWallTile(x, y);
+                        if (tile != null)
+                            _wallTilemap.SetTile(pos, tile);
                     }
                 }
             }
         }
 
-        private (TileBase tile, WallType type) GetWallTile(int x, int y)
+        /// <summary>
+        /// Simple cardinal check: which side has floor?
+        /// - Floor below → WALL_H
+        /// - Floor above → WALL_BOT_Middle
+        /// - Floor right → WALL_LEFT_Middle
+        /// - Floor left  → WALL_RIGHT_Middle
+        /// </summary>
+        private TileBase GetWallTile(int x, int y)
         {
             bool floorBelow = _gridData.InBounds(x, y - 1) && _gridData.IsWalkable(x, y - 1);
             bool floorAbove = _gridData.InBounds(x, y + 1) && _gridData.IsWalkable(x, y + 1);
             bool floorRight = _gridData.InBounds(x + 1, y) && _gridData.IsWalkable(x + 1, y);
             bool floorLeft  = _gridData.InBounds(x - 1, y) && _gridData.IsWalkable(x - 1, y);
 
-            // Top wall (most prominent — visible wall face from above)
-            if (floorBelow) return (_wallTopTile, WallType.Top);
-
-            // Bottom wall (thin line, flipped Y to sit at bottom of cell)
-            if (floorAbove) return (_wallBotTile, WallType.Bottom);
-
-            // Left wall (floor to the right, flipped X so bar sits at left of cell)
-            if (floorRight)
+            // Top wall row: replace leftmost/rightmost with corner tiles
+            if (floorBelow)
             {
-                bool aboveIsLeftWall = _gridData.InBounds(x, y + 1)
-                    && _gridData.GetCell(x, y + 1) == CellType.Wall
-                    && _gridData.InBounds(x + 1, y + 1)
-                    && _gridData.IsWalkable(x + 1, y + 1);
-                var tile = aboveIsLeftWall ? _wallLeftMidTile : _wallLeftTopTile;
-                return (tile, WallType.Left);
+                // Is the neighbor also a top-wall tile? (= also has floor below it)
+                bool topWallLeft  = _gridData.InBounds(x - 1, y - 1) && _gridData.IsWalkable(x - 1, y - 1);
+                bool topWallRight = _gridData.InBounds(x + 1, y - 1) && _gridData.IsWalkable(x + 1, y - 1);
+
+                if (!topWallLeft && topWallRight)  return _wallTopLeftTile;
+                if (topWallLeft  && !topWallRight) return _wallTopRightTile;
+                return _wallTopTile;
             }
 
-            // Right wall (floor to the left, flipped X so bar sits at right of cell)
-            if (floorLeft)
-            {
-                bool aboveIsRightWall = _gridData.InBounds(x, y + 1)
-                    && _gridData.GetCell(x, y + 1) == CellType.Wall
-                    && _gridData.InBounds(x - 1, y + 1)
-                    && _gridData.IsWalkable(x - 1, y + 1);
-                var tile = aboveIsRightWall ? _wallRightMidTile : _wallRightTopTile;
-                return (tile, WallType.Right);
-            }
+            if (floorAbove) return _wallBotTile;
 
-            // Corner cells: no direct floor neighbor, check diagonals
-            bool floorBelowLeft  = _gridData.InBounds(x - 1, y - 1) && _gridData.IsWalkable(x - 1, y - 1);
-            bool floorBelowRight = _gridData.InBounds(x + 1, y - 1) && _gridData.IsWalkable(x + 1, y - 1);
-            bool floorAboveLeft  = _gridData.InBounds(x - 1, y + 1) && _gridData.IsWalkable(x - 1, y + 1);
-            bool floorAboveRight = _gridData.InBounds(x + 1, y + 1) && _gridData.IsWalkable(x + 1, y + 1);
-
-            // Top corners → extend top wall
-            if (floorBelowLeft || floorBelowRight)
-                return (_wallTopTile, WallType.Top);
-
-            // Bottom corners → extend bottom wall
-            if (floorAboveLeft || floorAboveRight)
-                return (_wallBotTile, WallType.Bottom);
-
-            return (null, WallType.None);
+            return null;
         }
 
         public void ShowPreview(RectInt rect, bool valid)

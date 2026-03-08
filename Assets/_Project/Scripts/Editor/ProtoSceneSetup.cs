@@ -444,14 +444,26 @@ namespace CatHotel.Editor
             // tile_empty is 32x32 → PPU 32
             ConfigureSprite($"{SpritesRoot}/Tiles/tile_empty.png", 32, FilterMode.Point);
 
-            // parquet + walls are 256x256 → PPU 256 so 1 sprite = 1 tile
-            ConfigureSprite($"{SpritesRoot}/Floors/parquet01.png", 256, FilterMode.Point);
+            // Floor sprites are 256x256 → PPU 256 so 1 sprite = 1 tile
+            string[] floorFiles =
+            {
+                "FLOOR_Basic.png", "FLOOR_Basic_Var01.png",
+                "FLOOR_01.png", "FLOOR_01_Var_01.png",
+                "FLOOR_02.png", "FLOOR_02_Var01.png",
+                "FLOOR_03.png", "FLOOR_03_Var_01.png",
+                "FLOOR_04.png", "FLOOR_04_Var_01.png",
+                "FLOOR_05.png", "FLOOR_05_Var01.png",
+            };
+            foreach (var f in floorFiles)
+                ConfigureSprite($"{SpritesRoot}/Floors/{f}", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_BOT_Middle.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_LEFT_Top.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_LEFT_Middle.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_RIGHT_Top.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_RIGHT_Middle.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Left.png", 256, FilterMode.Point);
+            ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Right.png", 256, FilterMode.Point);
 
         }
 
@@ -611,27 +623,49 @@ namespace CatHotel.Editor
 
         private struct TileSet
         {
-            public TileBase empty, floor;
+            public TileBase empty;
+            public TileBase[] floors;
             public TileBase wallTop, wallBot;
             public TileBase wallLeftTop, wallLeftMid;
             public TileBase wallRightTop, wallRightMid;
+            public TileBase wallTopLeft, wallTopRight;
         }
+
+        private static readonly string[] FloorSpriteNames =
+        {
+            "FLOOR_Basic", "FLOOR_Basic_Var01",
+            "FLOOR_01", "FLOOR_01_Var_01",
+            "FLOOR_02", "FLOOR_02_Var01",
+            "FLOOR_03", "FLOOR_03_Var_01",
+            "FLOOR_04", "FLOOR_04_Var_01",
+            "FLOOR_05", "FLOOR_05_Var01",
+        };
 
         private static TileSet CreateTileAssets()
         {
+            const string F = SpritesRoot + "/Floors";
             const string W = SpritesRoot + "/Walls";
+
+            var floors = new TileBase[FloorSpriteNames.Length];
+            for (int i = 0; i < FloorSpriteNames.Length; i++)
+            {
+                string name = FloorSpriteNames[i];
+                floors[i] = CreateTile($"{F}/{name}.png", $"{F}/{name}Tile.asset");
+            }
+
             return new TileSet
             {
                 empty        = CreateTile($"{SpritesRoot}/Tiles/tile_empty.png",
                                            $"{SpritesRoot}/Tiles/EmptyTile.asset"),
-                floor        = CreateTile($"{SpritesRoot}/Floors/parquet01.png",
-                                           $"{SpritesRoot}/Floors/FloorTile.asset"),
+                floors       = floors,
                 wallTop      = CreateTile($"{W}/WALL_H.png",          $"{W}/WallTopTile.asset"),
                 wallBot      = CreateTile($"{W}/WALL_BOT_Middle.png", $"{W}/WallBotTile.asset"),
                 wallLeftTop  = CreateTile($"{W}/WALL_LEFT_Top.png",   $"{W}/WallLeftTopTile.asset"),
                 wallLeftMid  = CreateTile($"{W}/WALL_LEFT_Middle.png",$"{W}/WallLeftMidTile.asset"),
                 wallRightTop = CreateTile($"{W}/WALL_RIGHT_Top.png",  $"{W}/WallRightTopTile.asset"),
                 wallRightMid = CreateTile($"{W}/WALL_RIGHT_Middle.png",$"{W}/WallRightMidTile.asset"),
+                wallTopLeft  = CreateTile($"{W}/WALL_H_Left.png",      $"{W}/WallTopLeftTile.asset"),
+                wallTopRight = CreateTile($"{W}/WALL_H_Right.png",     $"{W}/WallTopRightTile.asset"),
             };
         }
 
@@ -695,10 +729,10 @@ namespace CatHotel.Editor
             grid.cellSize = Vector3.one;
 
             // --- Tilemaps ---
-            var tmEmpty   = CreateTilemapChild(gridObj, "Tilemap_Empty",   0);
-            var tmFloor   = CreateTilemapChild(gridObj, "Tilemap_Floor",   1);
-            var tmWall    = CreateTilemapChild(gridObj, "Tilemap_Wall",    2);
-            var tmPreview = CreateTilemapChild(gridObj, "Tilemap_Preview", 3);
+            var tmEmpty    = CreateTilemapChild(gridObj, "Tilemap_Empty",       0);
+            var tmFloor    = CreateTilemapChild(gridObj, "Tilemap_Floor",       1);
+            var tmWall     = CreateTilemapChild(gridObj, "Tilemap_Wall",        2);
+            var tmPreview  = CreateTilemapChild(gridObj, "Tilemap_Preview",     3);
 
             // --- GridManager ---
             var mgrObj = FindOrCreate("GridManager");
@@ -708,18 +742,23 @@ namespace CatHotel.Editor
                 renderer = mgrObj.AddComponent<GridRenderer>();
 
             var so = new SerializedObject(renderer);
-            so.FindProperty("_emptyTilemap").objectReferenceValue   = tmEmpty;
-            so.FindProperty("_floorTilemap").objectReferenceValue   = tmFloor;
-            so.FindProperty("_wallTilemap").objectReferenceValue    = tmWall;
-            so.FindProperty("_previewTilemap").objectReferenceValue = tmPreview;
+            so.FindProperty("_emptyTilemap").objectReferenceValue      = tmEmpty;
+            so.FindProperty("_floorTilemap").objectReferenceValue      = tmFloor;
+            so.FindProperty("_wallTilemap").objectReferenceValue       = tmWall;
+            so.FindProperty("_previewTilemap").objectReferenceValue    = tmPreview;
             so.FindProperty("_emptyTile").objectReferenceValue          = tiles.empty;
-            so.FindProperty("_floorTile").objectReferenceValue          = tiles.floor;
+            var floorsProp = so.FindProperty("_floorTiles");
+            floorsProp.arraySize = tiles.floors.Length;
+            for (int i = 0; i < tiles.floors.Length; i++)
+                floorsProp.GetArrayElementAtIndex(i).objectReferenceValue = tiles.floors[i];
             so.FindProperty("_wallTopTile").objectReferenceValue        = tiles.wallTop;
             so.FindProperty("_wallBotTile").objectReferenceValue        = tiles.wallBot;
             so.FindProperty("_wallLeftTopTile").objectReferenceValue    = tiles.wallLeftTop;
             so.FindProperty("_wallLeftMidTile").objectReferenceValue    = tiles.wallLeftMid;
             so.FindProperty("_wallRightTopTile").objectReferenceValue   = tiles.wallRightTop;
             so.FindProperty("_wallRightMidTile").objectReferenceValue   = tiles.wallRightMid;
+            so.FindProperty("_wallTopLeftTile").objectReferenceValue    = tiles.wallTopLeft;
+            so.FindProperty("_wallTopRightTile").objectReferenceValue   = tiles.wallTopRight;
             so.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
