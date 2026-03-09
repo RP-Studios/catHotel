@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using CatHotel.Cats;
 using CatHotel.Input;
+using CatHotel.Shop;
 
 namespace CatHotel.UI
 {
@@ -17,6 +18,9 @@ namespace CatHotel.UI
         [SerializeField] private RectTransform _zoneRight;
         [SerializeField] private RectTransform _zoneCenter;
 
+        [Header("Shop")]
+        [SerializeField] private ShopUI _shopUI;
+
         public RectTransform ZoneTop    => _zoneTop;
         public RectTransform ZoneLeft   => _zoneLeft;
         public RectTransform ZoneRight  => _zoneRight;
@@ -31,19 +35,21 @@ namespace CatHotel.UI
         {
             if (_zoneRight == null) return;
 
-            // Expect 5 children in ZoneRight: Build, Spawn, Pet, Happy, Sad
+            // 5 children in ZoneRight: Spawn, (rien), (rien), Boutique, Build
             System.Action[] actions =
             {
-                OnBuildPressed,
                 OnSpawnPressed,
-                OnPetPressed,
-                OnHappyPressed,
-                OnUnhappyPressed,
+                null,
+                null,
+                OnShopPressed,
+                OnBuildPressed,
             };
 
             int count = Mathf.Min(_zoneRight.childCount, actions.Length);
             for (int i = 0; i < count; i++)
             {
+                if (actions[i] == null) continue;
+
                 var child = _zoneRight.GetChild(i).gameObject;
 
                 var btn = child.GetComponent<Button>();
@@ -87,6 +93,12 @@ namespace CatHotel.UI
         {
             var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
             if (cat != null) cat.PlayUnhappy();
+        }
+
+        private void OnShopPressed()
+        {
+            if (_shopUI == null) return;
+            _shopUI.Toggle();
         }
     }
 }
