@@ -31,6 +31,10 @@ namespace CatHotel.Editor
         private const string SiamoisAnimRoot = SiamoisSpritesRoot + "/Animations";
         private const string SiamoisControllerPath = SiamoisAnimRoot + "/CatSiamois.controller";
 
+        private const string CleoSpritesRoot = "Assets/_Project/Art/SpecialCats/Cleo";
+        private const string CleoAnimRoot = CleoSpritesRoot;
+        private const string CleoControllerPath = CleoSpritesRoot + "/CatCleo.controller";
+
         private const string CloudRoot = "Assets/_Project/Art/Effects/Combat";
         private const string CloudControllerPath = CloudRoot + "/FightCloud.controller";
 
@@ -405,6 +409,79 @@ namespace CatHotel.Editor
             ("Fighting/siamois_fighting_out_right.png", "siam_fighting_out_right", "Fight_Out_Right", 8, 8f),
         };
 
+        // ==================== CLEO (Special Cat) ====================
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] CleoAnimConfigs =
+        {
+            // Walk (8f @256, 12 FPS)
+            ("Walk/siamois_cleo_walk_face.png",  "cleo_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/siamois_cleo_walk_back.png",  "cleo_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/siamois_cleo_walk_left.png",  "cleo_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/siamois_cleo_walk_right.png", "cleo_walk_right", "Walk_Right", 8, 12f),
+
+            // Idle1 (6f @256, 6 FPS)
+            ("Idle 1/siamois_cleo_idle1_face.png",  "cleo_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/siamois_cleo_idle1_back.png",  "cleo_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/siamois_cleo_idle1_left.png",  "cleo_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/siamois_cleo_idle1_right.png", "cleo_idle1_right", "Idle1_Right", 6, 6f),
+
+            // Idle2 (6f @256, 6 FPS)
+            ("Idle 2/siamois_cleo_idle2_face.png",  "cleo_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/siamois_cleo_idle2_left.png",  "cleo_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/siamois_cleo_idle2_right.png", "cleo_idle2_right", "Idle2_Right", 6, 6f),
+
+            // Idle3 (8f @256, 8 FPS)
+            ("Idle 3/siamois_cleo_idle3_face.png",  "cleo_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/siamois_cleo_idle3_back.png",  "cleo_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/siamois_cleo_idle3_left.png",  "cleo_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/siamois_cleo_idle3_right.png", "cleo_idle3_right", "Idle3_Right", 8, 8f),
+
+            // Sleep (9f @256, 4.5 FPS)
+            ("Sleep/siamois_cleo_sleeping_face.png",  "cleo_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/siamois_cleo_sleeping_left.png",  "cleo_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/siamois_cleo_sleeping_right.png", "cleo_sleeping_right", "Sleep_Right", 9, 4.5f),
+
+            // Eat (face 12f @256, 6 FPS | left/right 10f @512, 5 FPS)
+            ("Eating/siamois_cleo_eating_face.png",  "cleo_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/siamois_cleo_eating_left.png",  "cleo_eating_left",  "Eat_Left",  10, 5f),
+            ("Eating/siamois_cleo_eating_right.png", "cleo_eating_right", "Eat_Right", 10, 5f),
+
+            // Drink (face 8f @256, 4 FPS | left/right 8f @512, 4 FPS)
+            ("Drunking/siamois_base_drunking_face.png",  "cleo_drunking_face",  "Drink_Front", 8, 4f),
+            ("Drunking/siamois_base_drunking_left.png",  "cleo_drunking_left",  "Drink_Left",  8, 4f),
+            ("Drunking/siamois_base_drunking_right.png", "cleo_drunking_right", "Drink_Right", 8, 4f),
+
+            // Cleaning (11f @256, 5.5 FPS)
+            ("Cleaning/siamois_cleo_cleaning_face.png",  "cleo_cleaning_face",  "Clean_Front", 11, 5.5f),
+            ("Cleaning/siamois_cleo_cleaning_left.png",  "cleo_cleaning_left",  "Clean_Left",  11, 5.5f),
+            ("Cleaning/siamois_cleo_cleaning_right.png", "cleo_cleaning_right", "Clean_Right", 11, 5.5f),
+
+            // Playing (23f @512, 11.5 FPS)
+            ("Playing/siamois_cleo_playing_face.png",  "cleo_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/siamois_cleo_playing_left.png",  "cleo_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/siamois_cleo_playing_right.png", "cleo_playing_right", "Play_Right", 23, 11.5f),
+
+            // Happy (20f @512, 10 FPS)
+            ("Happy/siamois_cleo_happy_face.png",  "cleo_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/siamois_cleo_happy_left.png",  "cleo_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/siamois_cleo_happy_right.png", "cleo_happy_right", "Happy_Right", 20, 10f),
+
+            // Unhappy (6f @512, 6 FPS)
+            ("Unhappy/siamois_cleo_unhappy_face.png",  "cleo_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/siamois_cleo_unhappy_left.png",  "cleo_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/siamois_cleo_unhappy_right.png", "cleo_unhappy_right", "Unhappy_Right", 6, 6f),
+
+            // Petting (13f @256, 6.5 FPS)
+            ("Petting/siamois_cleo_petting_face.png", "cleo_petting_face", "Pet_Front", 13, 6.5f),
+
+            // Fighting In (15f @512, 7.5 FPS)
+            ("Fighting/siamois_cleo_fighting_in_left.png",  "cleo_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/siamois_cleo_fighting_in_right.png", "cleo_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+
+            // Fighting Out (8f @512, 8 FPS)
+            ("Fighting/siamois_cleo_fighting_out_left.png",  "cleo_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/siamois_cleo_fighting_out_right.png", "cleo_fighting_out_right", "Fight_Out_Right", 8, 8f),
+        };
+
         [MenuItem("Cat Hotel/Setup Proto Scene")]
         public static void SetupScene()
         {
@@ -416,6 +493,7 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(Eur2AnimRoot, Eur2AnimConfigs);
             ProcessAnimConfigs(Eur3AnimRoot, Eur3AnimConfigs);
             ProcessAnimConfigs(SiamoisAnimRoot, SiamoisAnimConfigs);
+            ProcessAnimConfigs(CleoAnimRoot, CleoAnimConfigs);
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
             ProcessAnimConfigs(PettingRoot, HandPetAnimConfigs);
             AssetDatabase.Refresh();
@@ -425,11 +503,12 @@ namespace CatHotel.Editor
             var eur2Controller = CreateAnimController(Eur2ControllerPath, Eur2AnimRoot, Eur2AnimConfigs);
             var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
             var siamoisController = CreateAnimController(SiamoisControllerPath, SiamoisAnimRoot, SiamoisAnimConfigs);
+            var cleoController = CreateAnimController(CleoControllerPath, CleoAnimRoot, CleoAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cloudController, handPetController);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, cloudController, handPetController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
+                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -501,6 +580,10 @@ namespace CatHotel.Editor
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_FRONT.png",
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_RIGHT.png",
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_BACK.png",
+                // Cleo (Special)
+                $"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png",
+                $"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png",
+                $"{CleoSpritesRoot}/CAT_EUR_Cleo_BACK.png",
             };
 
             foreach (string path in paths)
@@ -716,6 +799,7 @@ namespace CatHotel.Editor
             RuntimeAnimatorController eur2Controller,
             RuntimeAnimatorController eur3Controller,
             RuntimeAnimatorController siamoisController,
+            RuntimeAnimatorController cleoController,
             RuntimeAnimatorController cloudController,
             RuntimeAnimatorController handPetController)
         {
@@ -815,6 +899,17 @@ namespace CatHotel.Editor
             SetBreed(breedsProperty, 3, "Siamois", SiamoisSpritesRoot,
                 "CAT_SIAMESE_FRONT.png", "CAT_SIAMESE_RIGHT.png", "CAT_SIAMESE_BACK.png",
                 siamoisController);
+
+            // Wire Cleo (special unique cat)
+            var cleoProp = soSpawner.FindProperty("_cleoBreed");
+            cleoProp.FindPropertyRelative("name").stringValue = "Cleo";
+            cleoProp.FindPropertyRelative("frontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png");
+            cleoProp.FindPropertyRelative("rightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png");
+            cleoProp.FindPropertyRelative("backSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_BACK.png");
+            cleoProp.FindPropertyRelative("controller").objectReferenceValue = cleoController;
 
             soSpawner.FindProperty("_fightCloudController").objectReferenceValue = cloudController;
             soSpawner.FindProperty("_handPetController").objectReferenceValue = handPetController;

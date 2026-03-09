@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -37,6 +38,9 @@ namespace CatHotel.Cats
         [Header("Petting")]
         [SerializeField] private RuntimeAnimatorController _handPetController;
 
+        [Header("Special Cats")]
+        [SerializeField] private CatBreed _cleoBreed;
+
         [Header("Auto Spawn")]
         [SerializeField] private float _spawnInterval = 5f;
         [SerializeField] private int _maxCatsPerEntrance = 5;
@@ -60,8 +64,11 @@ namespace CatHotel.Cats
 
         public bool PettingMode => _pettingMode;
 
-        private void Start()
+        private IEnumerator Start()
         {
+            // Wait one frame so GridRenderer.Start() fills the central room
+            yield return null;
+
             // Auto-detect bed objects from Decorations hierarchy
             var decoRoot = GameObject.Find("Decorations");
             if (decoRoot != null)
@@ -80,6 +87,9 @@ namespace CatHotel.Cats
                 }
             }
             Debug.Log($"[CatSpawner] Registered {_bedSpots.Count} bed spots");
+
+            // Spawn unique special cat: Cleo
+            SpawnSpecialCat(_cleoBreed);
         }
 
         public BedSpot ClaimNearestBed(Vector2Int from)
@@ -204,6 +214,44 @@ namespace CatHotel.Cats
                 SpawnCat(floorCells[i]);
 
             Debug.Log($"[CatSpawner] Spawned {count} cats on floor cells");
+        }
+
+        private void SpawnSpecialCat(CatBreed breed)
+        {
+            if (breed == null || breed.frontSprite == null) return;
+
+            var floorCells = _gridRenderer.Data.GetAllFloorCells();
+            if (floorCells.Count == 0)
+            {
+                Debug.LogWarning($"[CatSpawner] No floor cells to spawn {breed.name}");
+                return;
+            }
+
+            var cell = floorCells[Random.Range(0, floorCells.Count)];
+
+            var go = new GameObject($"Cat_{breed.name}");
+            go.transform.SetParent(transform);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = breed.frontSprite;
+            sr.sortingOrder = _sortingOrder;
+
+            if (breed.controller != null)
+            {
+                var animator = go.AddComponent<Animator>();
+                animator.runtimeAnimatorController = breed.controller;
+                animator.enabled = false;
+            }
+
+            float scale = Random.Range(0.5f, 0.8f);
+            go.transform.localScale = new Vector3(scale, scale, 1f);
+
+            var cat = go.AddComponent<CatEntity>();
+            cat.SetSprites(breed.frontSprite, breed.rightSprite, breed.backSprite);
+            cat.Init(_gridRenderer.Data, cell, this);
+
+            _cats.Add(cat);
+            Debug.Log($"[CatSpawner] Spawned special cat {breed.name} at {cell}");
         }
 
         public CatEntity SpawnCat(Vector2Int cell)
