@@ -9,16 +9,12 @@ using CatHotel.Grid;
 using CatHotel.Input;
 using CatHotel.Cats;
 using CatHotel.UI;
-using CatHotel.Shop;
+
 
 namespace CatHotel.Editor
 {
     public static class ProtoSceneSetup
     {
-        // ==================== UI / SHOP ====================
-        private const string UIRoot = "Assets/_Project/Art/UI";
-        private const string ShopDataRoot = "Assets/_Project/Data/Shop";
-
         private const string SpritesRoot = "Assets/_Project/Art/Environment";
         private const string ObjectsRoot = "Assets/_Project/Art/Objects";
         private const string CatSpritesRoot = "Assets/_Project/Art/Cats/Europeen";
@@ -493,8 +489,6 @@ namespace CatHotel.Editor
         {
             ConfigureSpriteImports();
             ConfigureCatSpriteImports();
-            ConfigureUISprites();
-            var shopItems = CreateShopItemAssets();
 
             // Process all animation spritesheets
             ProcessAnimConfigs(AnimRoot, AnimConfigs);
@@ -514,7 +508,7 @@ namespace CatHotel.Editor
             var cleoController = CreateAnimController(CleoControllerPath, CleoAnimRoot, CleoAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, cloudController, handPetController, shopItems);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, cloudController, handPetController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
                       + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
@@ -552,6 +546,15 @@ namespace CatHotel.Editor
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_RIGHT_Middle.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Left.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Right.png", 256, FilterMode.Point);
+
+            // Interior wall sprites — PPU 256, pivot (0,0) so sprites stay inside cell bounds
+            string iw = $"{SpritesRoot}/Walls/Interrior";
+            // H wall (256x26): bottom-left at anchor → extends right and up within cell
+            ConfigureSprite($"{iw}/WALL_h.png", 256, FilterMode.Point, new Vector2(0f, 0f));
+            // V wall (26x256): bottom-left at anchor → extends right and up within cell
+            ConfigureSprite($"{iw}/WALL_v.png", 256, FilterMode.Point, new Vector2(0f, 0f));
+            // Cross (26x26): bottom-left at anchor → sits at corner within cell
+            ConfigureSprite($"{iw}/CORNER_CROIX.png", 256, FilterMode.Point, new Vector2(0f, 0f));
 
             // Object sprites — PPU 200 (same as cats) with Bilinear
             string[] objectSprites =
@@ -712,6 +715,11 @@ namespace CatHotel.Editor
 
         private static void ConfigureSprite(string path, int ppu, FilterMode filter)
         {
+            ConfigureSprite(path, ppu, filter, null);
+        }
+
+        private static void ConfigureSprite(string path, int ppu, FilterMode filter, Vector2? customPivot)
+        {
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             if (importer == null)
             {
@@ -723,6 +731,16 @@ namespace CatHotel.Editor
             importer.spritePixelsPerUnit = ppu;
             importer.filterMode = filter;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
+
+            if (customPivot.HasValue)
+            {
+                var settings = new TextureImporterSettings();
+                importer.ReadTextureSettings(settings);
+                settings.spriteAlignment = (int)SpriteAlignment.Custom;
+                settings.spritePivot = customPivot.Value;
+                importer.SetTextureSettings(settings);
+            }
+
             importer.SaveAndReimport();
         }
 
@@ -734,6 +752,9 @@ namespace CatHotel.Editor
             public TileBase wallLeftTop, wallLeftMid;
             public TileBase wallRightTop, wallRightMid;
             public TileBase wallTopLeft, wallTopRight;
+            // Interior walls
+            public TileBase intWallH, intWallV;
+            public TileBase intCroix;
         }
 
         private static readonly string[] FloorSpriteNames =
@@ -750,6 +771,7 @@ namespace CatHotel.Editor
         {
             const string F = SpritesRoot + "/Floors";
             const string W = SpritesRoot + "/Walls";
+            const string IW = W + "/Interrior";
 
             var floors = new TileBase[FloorSpriteNames.Length];
             for (int i = 0; i < FloorSpriteNames.Length; i++)
@@ -771,24 +793,24 @@ namespace CatHotel.Editor
                 wallRightMid = CreateTile($"{W}/WALL_RIGHT_Middle.png",$"{W}/WallRightMidTile.asset"),
                 wallTopLeft  = CreateTile($"{W}/WALL_H_Left.png",      $"{W}/WallTopLeftTile.asset"),
                 wallTopRight = CreateTile($"{W}/WALL_H_Right.png",     $"{W}/WallTopRightTile.asset"),
+                // Interior walls (cropped sprites with custom pivots)
+                intWallH    = CreateTile($"{IW}/WALL_h.png",      $"{IW}/IntWallHTile.asset"),
+                intWallV    = CreateTile($"{IW}/WALL_v.png",            $"{IW}/IntWallVTile.asset"),
+                intCroix    = CreateTile($"{IW}/CORNER_CROIX.png",         $"{IW}/IntCroixTile.asset"),
             };
         }
 
         private static TileBase CreateTile(string spritePath, string tilePath)
         {
+            // Always delete and recreate to avoid stale sprite references
             var existing = AssetDatabase.LoadAssetAtPath<Tile>(tilePath);
             if (existing != null)
-            {
-                existing.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
-                EditorUtility.SetDirty(existing);
-                AssetDatabase.SaveAssets();
-                return existing;
-            }
+                AssetDatabase.DeleteAsset(tilePath);
 
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
             if (sprite == null)
             {
-                Debug.LogError($"Cannot load sprite at {spritePath}");
+                Debug.LogError($"[Setup] Cannot load sprite at {spritePath}");
                 return null;
             }
 
@@ -798,6 +820,7 @@ namespace CatHotel.Editor
 
             AssetDatabase.CreateAsset(tile, tilePath);
             AssetDatabase.SaveAssets();
+            Debug.Log($"[Setup] Tile created: {tilePath} → sprite {sprite.name} ({sprite.rect.width}x{sprite.rect.height})");
             return tile;
         }
 
@@ -809,8 +832,7 @@ namespace CatHotel.Editor
             RuntimeAnimatorController siamoisController,
             RuntimeAnimatorController cleoController,
             RuntimeAnimatorController cloudController,
-            RuntimeAnimatorController handPetController,
-            ShopItemData[] shopItems)
+            RuntimeAnimatorController handPetController)
         {
             // --- Camera ---
             var camObj = Camera.main != null ? Camera.main.gameObject : null;
@@ -836,10 +858,24 @@ namespace CatHotel.Editor
             grid.cellSize = Vector3.one;
 
             // --- Tilemaps ---
-            var tmEmpty    = CreateTilemapChild(gridObj, "Tilemap_Empty",       0);
-            var tmFloor    = CreateTilemapChild(gridObj, "Tilemap_Floor",       1);
-            var tmWall     = CreateTilemapChild(gridObj, "Tilemap_Wall",        2);
-            var tmPreview  = CreateTilemapChild(gridObj, "Tilemap_Preview",     3);
+            var tmEmpty      = CreateTilemapChild(gridObj, "Tilemap_Empty",       0);
+            var tmFloor      = CreateTilemapChild(gridObj, "Tilemap_Floor",       1);
+            var tmWall       = CreateTilemapChild(gridObj, "Tilemap_Wall",        2);
+            var tmIntWallSeg   = CreateTilemapChild(gridObj, "Tilemap_IntWallSeg",   3);
+            var tmIntWallCross = CreateTilemapChild(gridObj, "Tilemap_IntWallCross", 4);
+            var tmPreview      = CreateTilemapChild(gridObj, "Tilemap_Preview",      5);
+
+            // Interior wall tilemaps anchor at cell corners (0,0) instead of center
+            tmIntWallSeg.tileAnchor   = Vector3.zero;
+            tmIntWallCross.tileAnchor = Vector3.zero;
+
+            // Clean up old tilemaps from previous versions
+            foreach (var old in new[] { "Tilemap_WallCorners", "Tilemap_IntWallH",
+                                        "Tilemap_IntWallV", "Tilemap_IntWall" })
+            {
+                var t = gridObj.transform.Find(old);
+                if (t != null) Object.DestroyImmediate(t.gameObject);
+            }
 
             // --- GridManager ---
             var mgrObj = FindOrCreate("GridManager");
@@ -852,6 +888,8 @@ namespace CatHotel.Editor
             so.FindProperty("_emptyTilemap").objectReferenceValue      = tmEmpty;
             so.FindProperty("_floorTilemap").objectReferenceValue      = tmFloor;
             so.FindProperty("_wallTilemap").objectReferenceValue       = tmWall;
+            so.FindProperty("_intWallCrossTilemap").objectReferenceValue = tmIntWallCross;
+            so.FindProperty("_intWallSegTilemap").objectReferenceValue   = tmIntWallSeg;
             so.FindProperty("_previewTilemap").objectReferenceValue    = tmPreview;
             so.FindProperty("_emptyTile").objectReferenceValue          = tiles.empty;
             var floorsProp = so.FindProperty("_floorTiles");
@@ -866,6 +904,10 @@ namespace CatHotel.Editor
             so.FindProperty("_wallRightMidTile").objectReferenceValue   = tiles.wallRightMid;
             so.FindProperty("_wallTopLeftTile").objectReferenceValue    = tiles.wallTopLeft;
             so.FindProperty("_wallTopRightTile").objectReferenceValue   = tiles.wallTopRight;
+            // Interior wall tiles
+            so.FindProperty("_intWallH").objectReferenceValue     = tiles.intWallH;
+            so.FindProperty("_intWallV").objectReferenceValue     = tiles.intWallV;
+            so.FindProperty("_intCroix").objectReferenceValue     = tiles.intCroix;
             so.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
@@ -993,9 +1035,6 @@ namespace CatHotel.Editor
             soUI.FindProperty("_zoneCenter").objectReferenceValue = zoneCenter;
             soUI.ApplyModifiedProperties();
 
-            // --- Shop UI ---
-            BuildShopUI(canvasObj, mgrObj, shopItems);
-
             // --- Decorations ---
             PlaceDecorations();
 
@@ -1007,434 +1046,6 @@ namespace CatHotel.Editor
 
             UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
                 UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
-        }
-
-        // ==================== UI SPRITE IMPORTS ====================
-        private static void ConfigureUISprites()
-        {
-            // 9-slice containers (Sprite mode = Single, mesh type = FullRect for 9-slice)
-            string[] nineSliceSprites =
-            {
-                $"{UIRoot}/Components/RegularShop/shop_items_container.png",
-                $"{UIRoot}/Components/RegularShop/shop_item_background_container.png",
-                $"{UIRoot}/Components/RegularShop/shop_item_price_tag.png",
-                $"{UIRoot}/Components/RegularShop/shop_item_label.png",
-                $"{UIRoot}/Components/RegularShop/shop_item_icon_container.png",
-                $"{UIRoot}/Components/RegularShop/regular_shop_items_container.png",
-                $"{UIRoot}/Components/ObjectInformation/object_information_container.png",
-                $"{UIRoot}/Components/ObjectInformation/price_tag.png",
-                $"{UIRoot}/Panels/menu_panel_container.png",
-            };
-            foreach (var s in nineSliceSprites)
-                ConfigureSprite(s, 100, FilterMode.Bilinear);
-
-            // Regular sprites (icons, buttons)
-            string[] regularSprites =
-            {
-                $"{UIRoot}/Icons/Minimalist/shop.png",
-                $"{UIRoot}/Icons/Minimalist/cat_coin.png",
-                $"{UIRoot}/Icons/Minimalist/plus.png",
-                $"{UIRoot}/Buttons/back_btn.png",
-                $"{UIRoot}/Buttons/game_menu_btn.png",
-                $"{UIRoot}/Components/ObjectInformation/close_btn.png",
-                $"{UIRoot}/Components/ObjectInformation/sell_btn.png",
-                $"{UIRoot}/Banners/full_banner.png",
-            };
-            foreach (var s in regularSprites)
-                ConfigureSprite(s, 100, FilterMode.Bilinear);
-        }
-
-        // ==================== SHOP ITEM DATA ====================
-        private static ShopItemData[] CreateShopItemAssets()
-        {
-            // Ensure directory exists
-            if (!AssetDatabase.IsValidFolder("Assets/_Project/Data"))
-                AssetDatabase.CreateFolder("Assets/_Project", "Data");
-            if (!AssetDatabase.IsValidFolder(ShopDataRoot))
-                AssetDatabase.CreateFolder("Assets/_Project/Data", "Shop");
-
-            var items = new (string name, string display, string spritePath, int price, ShopCategory cat)[]
-            {
-                ("Bed",       "Lit",         $"{ObjectsRoot}/Beds/BED.png",        50,  ShopCategory.Beds),
-                ("Coussin",   "Coussin",     $"{ObjectsRoot}/Beds/COUSSIN.png",    30,  ShopCategory.Beds),
-                ("LuxousBed", "Lit de luxe", $"{ObjectsRoot}/Beds/LUXOUS_BED.png", 150, ShopCategory.Beds),
-            };
-
-            var result = new ShopItemData[items.Length];
-            for (int i = 0; i < items.Length; i++)
-            {
-                var (name, display, spritePath, price, cat) = items[i];
-                string assetPath = $"{ShopDataRoot}/ShopItem_{name}.asset";
-
-                var existing = AssetDatabase.LoadAssetAtPath<ShopItemData>(assetPath);
-                if (existing != null)
-                {
-                    result[i] = existing;
-                    continue;
-                }
-
-                var data = ScriptableObject.CreateInstance<ShopItemData>();
-                data.displayName = display;
-                data.icon = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
-                data.price = price;
-                data.category = cat;
-                data.spritePath = spritePath;
-
-                AssetDatabase.CreateAsset(data, assetPath);
-                result[i] = data;
-            }
-
-            AssetDatabase.SaveAssets();
-            Debug.Log($"[ProtoSceneSetup] {result.Length} shop items configured.");
-            return result;
-        }
-
-        // ==================== SHOP UI HIERARCHY ====================
-        private static void BuildShopUI(GameObject canvasObj, GameObject mgrObj, ShopItemData[] shopItems)
-        {
-            // --- Shop Panel (fullscreen overlay, starts hidden) ---
-            var panelObj = FindOrCreateChild(canvasObj, "ShopPanel");
-            var panelRect = EnsureRectTransform(panelObj);
-            panelRect.anchorMin = Vector2.zero;
-            panelRect.anchorMax = Vector2.one;
-            panelRect.offsetMin = Vector2.zero;
-            panelRect.offsetMax = Vector2.zero;
-
-            // Semi-transparent background
-            var panelImg = panelObj.GetComponent<Image>();
-            if (panelImg == null)
-                panelImg = panelObj.AddComponent<Image>();
-            // Use the shop container sprite if available, otherwise solid color
-            var containerSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{UIRoot}/Components/RegularShop/shop_items_container.png");
-            if (containerSprite != null)
-            {
-                panelImg.sprite = containerSprite;
-                panelImg.type = Image.Type.Sliced;
-                panelImg.color = new Color(0.96f, 0.90f, 0.78f, 0.97f); // Crème
-            }
-            else
-            {
-                panelImg.color = new Color(0.96f, 0.90f, 0.78f, 0.95f);
-            }
-
-            // --- Title banner ---
-            var titleObj = FindOrCreateChild(panelObj, "Title");
-            var titleRect = EnsureRectTransform(titleObj);
-            titleRect.anchorMin = new Vector2(0.15f, 0.85f);
-            titleRect.anchorMax = new Vector2(0.85f, 0.95f);
-            titleRect.offsetMin = Vector2.zero;
-            titleRect.offsetMax = Vector2.zero;
-
-            var bannerSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{UIRoot}/Banners/full_banner.png");
-            var titleImg = titleObj.GetComponent<Image>();
-            if (titleImg == null)
-                titleImg = titleObj.AddComponent<Image>();
-            if (bannerSprite != null)
-            {
-                titleImg.sprite = bannerSprite;
-                titleImg.type = Image.Type.Sliced;
-                titleImg.preserveAspect = true;
-            }
-
-            var titleText = FindOrCreateChild(titleObj, "Text");
-            var titleTextRect = EnsureRectTransform(titleText);
-            titleTextRect.anchorMin = Vector2.zero;
-            titleTextRect.anchorMax = Vector2.one;
-            titleTextRect.offsetMin = Vector2.zero;
-            titleTextRect.offsetMax = Vector2.zero;
-            var txt = titleText.GetComponent<Text>();
-            if (txt == null)
-                txt = titleText.AddComponent<Text>();
-            txt.text = "Boutique";
-            txt.alignment = TextAnchor.MiddleCenter;
-            txt.fontSize = 42;
-            txt.fontStyle = FontStyle.Bold;
-            txt.color = new Color(0.35f, 0.15f, 0.15f, 1f);
-            txt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-
-            // --- Close button (top-right) ---
-            var closeBtnObj = FindOrCreateChild(panelObj, "CloseBtn");
-            var closeBtnRect = EnsureRectTransform(closeBtnObj);
-            closeBtnRect.anchorMin = new Vector2(0.90f, 0.88f);
-            closeBtnRect.anchorMax = new Vector2(0.97f, 0.97f);
-            closeBtnRect.offsetMin = Vector2.zero;
-            closeBtnRect.offsetMax = Vector2.zero;
-
-            var closeBtnSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{UIRoot}/Components/ObjectInformation/close_btn.png");
-            var closeBtnImg = closeBtnObj.GetComponent<Image>();
-            if (closeBtnImg == null)
-                closeBtnImg = closeBtnObj.AddComponent<Image>();
-            if (closeBtnSprite != null)
-                closeBtnImg.sprite = closeBtnSprite;
-            closeBtnImg.color = Color.white;
-
-            if (closeBtnObj.GetComponent<Button>() == null)
-                closeBtnObj.AddComponent<Button>();
-
-            // --- ScrollRect area ---
-            var scrollObj = FindOrCreateChild(panelObj, "ScrollArea");
-            var scrollRect = EnsureRectTransform(scrollObj);
-            scrollRect.anchorMin = new Vector2(0.05f, 0.08f);
-            scrollRect.anchorMax = new Vector2(0.95f, 0.82f);
-            scrollRect.offsetMin = Vector2.zero;
-            scrollRect.offsetMax = Vector2.zero;
-
-            var scrollComp = scrollObj.GetComponent<ScrollRect>();
-            if (scrollComp == null)
-                scrollComp = scrollObj.AddComponent<ScrollRect>();
-            scrollComp.horizontal = true;
-            scrollComp.vertical = false;
-            scrollComp.movementType = ScrollRect.MovementType.Elastic;
-            scrollComp.elasticity = 0.1f;
-            scrollComp.inertia = true;
-            scrollComp.decelerationRate = 0.135f;
-
-            // Mask
-            var scrollImg = scrollObj.GetComponent<Image>();
-            if (scrollImg == null)
-                scrollImg = scrollObj.AddComponent<Image>();
-            scrollImg.color = new Color(1f, 1f, 1f, 0.01f); // near-invisible, needed for mask
-            var mask = scrollObj.GetComponent<Mask>();
-            if (mask == null)
-                mask = scrollObj.AddComponent<Mask>();
-            mask.showMaskGraphic = false;
-
-            // Content (horizontal layout)
-            var contentObj = FindOrCreateChild(scrollObj, "Content");
-            var contentRect = EnsureRectTransform(contentObj);
-            contentRect.anchorMin = new Vector2(0f, 0f);
-            contentRect.anchorMax = new Vector2(0f, 1f); // stretch vertically, grow right
-            contentRect.pivot = new Vector2(0f, 0.5f);
-            contentRect.offsetMin = Vector2.zero;
-            contentRect.offsetMax = Vector2.zero;
-
-            var hlg = contentObj.GetComponent<HorizontalLayoutGroup>();
-            if (hlg == null)
-                hlg = contentObj.AddComponent<HorizontalLayoutGroup>();
-            hlg.spacing = 20f;
-            hlg.padding = new RectOffset(20, 20, 10, 10);
-            hlg.childAlignment = TextAnchor.MiddleLeft;
-            hlg.childForceExpandWidth = false;
-            hlg.childForceExpandHeight = true;
-            hlg.childControlWidth = false;
-            hlg.childControlHeight = true;
-
-            var csf = contentObj.GetComponent<ContentSizeFitter>();
-            if (csf == null)
-                csf = contentObj.AddComponent<ContentSizeFitter>();
-            csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-            csf.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
-
-            scrollComp.content = contentRect;
-
-            // --- Item Prefab Template (created in scene, will be used as template) ---
-            var itemTemplate = BuildShopItemTemplate(panelObj);
-
-            // --- ShopUI component ---
-            var shopUI = mgrObj.GetComponent<ShopUI>();
-            if (shopUI == null)
-                shopUI = mgrObj.AddComponent<ShopUI>();
-
-            var soShop = new SerializedObject(shopUI);
-            soShop.FindProperty("_panel").objectReferenceValue = panelRect;
-            soShop.FindProperty("_content").objectReferenceValue = contentRect;
-            soShop.FindProperty("_closeBtn").objectReferenceValue = closeBtnObj.GetComponent<Button>();
-            soShop.FindProperty("_itemPrefab").objectReferenceValue = itemTemplate;
-
-            // Wire shop items
-            var itemsProp = soShop.FindProperty("_items");
-            itemsProp.arraySize = shopItems.Length;
-            for (int i = 0; i < shopItems.Length; i++)
-                itemsProp.GetArrayElementAtIndex(i).objectReferenceValue = shopItems[i];
-
-            soShop.ApplyModifiedProperties();
-
-            // Wire ProtoUI shop reference
-            var protoUI = mgrObj.GetComponent<ProtoUI>();
-            if (protoUI != null)
-            {
-                var soUI = new SerializedObject(protoUI);
-                soUI.FindProperty("_shopUI").objectReferenceValue = shopUI;
-                soUI.ApplyModifiedProperties();
-            }
-
-            EditorUtility.SetDirty(panelObj);
-            Debug.Log("[ProtoSceneSetup] Shop UI hierarchy built.");
-        }
-
-        private static GameObject BuildShopItemTemplate(GameObject parent)
-        {
-            // This template lives in the scene (inactive). ShopUI instantiates copies at runtime.
-            var tmpl = FindOrCreateChild(parent, "ShopItemTemplate");
-            tmpl.SetActive(false);
-
-            var tmplRect = EnsureRectTransform(tmpl);
-            var le = tmpl.GetComponent<LayoutElement>();
-            if (le == null)
-                le = tmpl.AddComponent<LayoutElement>();
-            le.preferredWidth = 220f;
-            le.preferredHeight = 300f;
-
-            // Card background
-            var cardBgSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{UIRoot}/Components/RegularShop/shop_item_background_container.png");
-            var cardImg = tmpl.GetComponent<Image>();
-            if (cardImg == null)
-                cardImg = tmpl.AddComponent<Image>();
-            if (cardBgSprite != null)
-            {
-                cardImg.sprite = cardBgSprite;
-                cardImg.type = Image.Type.Sliced;
-            }
-            cardImg.color = new Color(0.96f, 0.90f, 0.78f, 1f);
-
-            // Button on the whole card
-            var btn = tmpl.GetComponent<Button>();
-            if (btn == null)
-                btn = tmpl.AddComponent<Button>();
-            btn.targetGraphic = cardImg;
-
-            // Icon area (top 60%)
-            var iconObj = FindOrCreateChild(tmpl, "Icon");
-            var iconRect = EnsureRectTransform(iconObj);
-            iconRect.anchorMin = new Vector2(0.1f, 0.35f);
-            iconRect.anchorMax = new Vector2(0.9f, 0.90f);
-            iconRect.offsetMin = Vector2.zero;
-            iconRect.offsetMax = Vector2.zero;
-
-            var iconImg = iconObj.GetComponent<Image>();
-            if (iconImg == null)
-                iconImg = iconObj.AddComponent<Image>();
-            iconImg.preserveAspect = true;
-            iconImg.raycastTarget = false;
-            iconImg.color = Color.white;
-
-            // Name label (middle)
-            var nameObj = FindOrCreateChild(tmpl, "Name");
-            var nameRect = EnsureRectTransform(nameObj);
-            nameRect.anchorMin = new Vector2(0.05f, 0.18f);
-            nameRect.anchorMax = new Vector2(0.95f, 0.35f);
-            nameRect.offsetMin = Vector2.zero;
-            nameRect.offsetMax = Vector2.zero;
-
-            var nameTxt = nameObj.GetComponent<Text>();
-            if (nameTxt == null)
-                nameTxt = nameObj.AddComponent<Text>();
-            nameTxt.text = "Item";
-            nameTxt.alignment = TextAnchor.MiddleCenter;
-            nameTxt.fontSize = 24;
-            nameTxt.fontStyle = FontStyle.Bold;
-            nameTxt.color = new Color(0.35f, 0.15f, 0.15f, 1f);
-            nameTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            nameTxt.raycastTarget = false;
-
-            // Price tag (bottom)
-            var priceObj = FindOrCreateChild(tmpl, "PriceTag");
-            var priceRect = EnsureRectTransform(priceObj);
-            priceRect.anchorMin = new Vector2(0.15f, 0.02f);
-            priceRect.anchorMax = new Vector2(0.85f, 0.18f);
-            priceRect.offsetMin = Vector2.zero;
-            priceRect.offsetMax = Vector2.zero;
-
-            var priceTagSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
-                $"{UIRoot}/Components/RegularShop/shop_item_price_tag.png");
-            var priceImg = priceObj.GetComponent<Image>();
-            if (priceImg == null)
-                priceImg = priceObj.AddComponent<Image>();
-            if (priceTagSprite != null)
-            {
-                priceImg.sprite = priceTagSprite;
-                priceImg.type = Image.Type.Sliced;
-            }
-            priceImg.color = new Color(0.78f, 0.47f, 0.47f, 1f);
-            priceImg.raycastTarget = false;
-
-            // Price text inside tag
-            var priceTxtObj = FindOrCreateChild(priceObj, "PriceText");
-            var priceTxtRect = EnsureRectTransform(priceTxtObj);
-            priceTxtRect.anchorMin = Vector2.zero;
-            priceTxtRect.anchorMax = Vector2.one;
-            priceTxtRect.offsetMin = Vector2.zero;
-            priceTxtRect.offsetMax = Vector2.zero;
-
-            var priceTxt = priceTxtObj.GetComponent<Text>();
-            if (priceTxt == null)
-                priceTxt = priceTxtObj.AddComponent<Text>();
-            priceTxt.text = "0";
-            priceTxt.alignment = TextAnchor.MiddleCenter;
-            priceTxt.fontSize = 22;
-            priceTxt.fontStyle = FontStyle.Bold;
-            priceTxt.color = Color.white;
-            priceTxt.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            priceTxt.raycastTarget = false;
-
-            // Wire ShopItemUI component
-            var itemUI = tmpl.GetComponent<ShopItemUI>();
-            if (itemUI == null)
-                itemUI = tmpl.AddComponent<ShopItemUI>();
-
-            var soItem = new SerializedObject(itemUI);
-            soItem.FindProperty("_background").objectReferenceValue = cardImg;
-            soItem.FindProperty("_iconImage").objectReferenceValue = iconImg;
-            soItem.FindProperty("_nameLabel").objectReferenceValue = nameTxt;
-            soItem.FindProperty("_priceLabel").objectReferenceValue = priceTxt;
-            soItem.FindProperty("_priceTag").objectReferenceValue = priceImg;
-            soItem.FindProperty("_button").objectReferenceValue = btn;
-            soItem.ApplyModifiedProperties();
-
-            return tmpl;
-        }
-
-        private static void AddToolbarIcon(GameObject zone, string name, string spritePath, int siblingIndex)
-        {
-            var existing = zone.transform.Find(name);
-            GameObject obj;
-            if (existing != null)
-            {
-                obj = existing.gameObject;
-            }
-            else
-            {
-                obj = new GameObject(name, typeof(RectTransform));
-                obj.transform.SetParent(zone.transform, false);
-            }
-
-            var rect = obj.GetComponent<RectTransform>();
-            rect.sizeDelta = new Vector2(80f, 80f);
-
-            var img = obj.GetComponent<Image>();
-            if (img == null)
-                img = obj.AddComponent<Image>();
-
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
-            if (sprite != null)
-                img.sprite = sprite;
-            img.preserveAspect = true;
-
-            // Place it as the N-th child (toolbar position)
-            obj.transform.SetSiblingIndex(siblingIndex);
-        }
-
-        private static GameObject FindOrCreateChild(GameObject parent, string name)
-        {
-            var existing = parent.transform.Find(name);
-            if (existing != null)
-                return existing.gameObject;
-
-            var obj = new GameObject(name, typeof(RectTransform));
-            obj.transform.SetParent(parent.transform, false);
-            return obj;
-        }
-
-        private static RectTransform EnsureRectTransform(GameObject obj)
-        {
-            var rect = obj.GetComponent<RectTransform>();
-            if (rect == null)
-                rect = obj.AddComponent<RectTransform>();
-            return rect;
         }
 
         private static void PlaceDecorations()

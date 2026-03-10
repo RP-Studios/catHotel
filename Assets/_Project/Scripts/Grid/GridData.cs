@@ -41,6 +41,12 @@ namespace CatHotel.Grid
             return c == CellType.Floor || c == CellType.Door;
         }
 
+        public bool IsWall(int x, int y)
+        {
+            var c = GetCell(x, y);
+            return c == CellType.Wall || c == CellType.InternalWall;
+        }
+
         public List<Vector2Int> GetFloorNeighbors(int x, int y)
         {
             var result = new List<Vector2Int>(4);
