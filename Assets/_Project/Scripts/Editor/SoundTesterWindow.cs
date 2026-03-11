@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using UnityEditor;
+using CatHotel.Audio;
 
 namespace CatHotel.Editor
 {
@@ -17,9 +18,9 @@ namespace CatHotel.Editor
         private string _searchFilter = "";
         private float _masterVolume = 1f;
 
-        // Runtime: one GO, multiple AudioSources (one per playing entry)
+        // Runtime: root GO + child GOs (one per playing entry, each with AudioSource + AudioAmplifier)
         private GameObject _runtimeGO;
-        private Dictionary<AudioEntry, AudioSource> _activeSources = new();
+        private Dictionary<AudioEntry, GameObject> _activeNodes = new();
 
         // Editor playback (Edit mode) — single clip only via AudioUtil
         private static readonly Type AudioUtilType;
@@ -74,7 +75,7 @@ namespace CatHotel.Editor
         {
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
-                _activeSources.Clear();
+                _activeNodes.Clear();
                 _runtimeGO = null;
                 _editorPlayingEntry = null;
             }
@@ -85,7 +86,6 @@ namespace CatHotel.Editor
             if (_runtimeGO != null) return;
 
             _runtimeGO = new GameObject("[SoundTester]");
-            _runtimeGO.AddComponent<AudioSource>().enabled = false; // placeholder
 
             if (UnityEngine.Object.FindFirstObjectByType<AudioListener>() == null)
                 _runtimeGO.AddComponent<AudioListener>();
@@ -96,7 +96,7 @@ namespace CatHotel.Editor
             if (_runtimeGO != null)
                 DestroyImmediate(_runtimeGO);
             _runtimeGO = null;
-            _activeSources.Clear();
+            _activeNodes.Clear();
         }
 
         private bool UseRuntime => Application.isPlaying;
@@ -105,17 +105,27 @@ namespace CatHotel.Editor
         {
             if (UseRuntime)
             {
-                if (_activeSources.ContainsKey(entry)) return;
+                if (_activeNodes.ContainsKey(entry)) return;
 
                 EnsureRuntime();
-                var source = _runtimeGO.AddComponent<AudioSource>();
+
+                // Each entry gets its own child GO so OnAudioFilterRead works per-source
+                var child = new GameObject($"[ST] {entry.FileName}");
+                child.transform.SetParent(_runtimeGO.transform);
+
+                var source = child.AddComponent<AudioSource>();
                 source.playOnAwake = false;
                 source.spatialBlend = 0f;
                 source.clip = entry.Clip;
                 source.loop = entry.Loop;
-                source.volume = entry.Volume * _masterVolume;
+                // Keep AudioSource.volume at 1; amplification is done by AudioAmplifier
+                source.volume = Mathf.Min(entry.Volume * _masterVolume, 1f);
+
+                var amp = child.AddComponent<AudioAmplifier>();
+                amp.gain = entry.Volume * _masterVolume;
+
                 source.Play();
-                _activeSources[entry] = source;
+                _activeNodes[entry] = child;
             }
             else
             {
@@ -130,11 +140,10 @@ namespace CatHotel.Editor
         {
             if (UseRuntime)
             {
-                if (_activeSources.TryGetValue(entry, out var source))
+                if (_activeNodes.TryGetValue(entry, out var node))
                 {
-                    source.Stop();
-                    DestroyImmediate(source);
-                    _activeSources.Remove(entry);
+                    if (node != null) DestroyImmediate(node);
+                    _activeNodes.Remove(entry);
                 }
             }
             else
@@ -151,15 +160,12 @@ namespace CatHotel.Editor
         {
             if (UseRuntime)
             {
-                foreach (var kv in _activeSources)
+                foreach (var kv in _activeNodes)
                 {
                     if (kv.Value != null)
-                    {
-                        kv.Value.Stop();
                         DestroyImmediate(kv.Value);
-                    }
                 }
-                _activeSources.Clear();
+                _activeNodes.Clear();
             }
 
             StopClipsMethod?.Invoke(null, null);
@@ -169,7 +175,11 @@ namespace CatHotel.Editor
         private bool IsEntryPlaying(AudioEntry entry)
         {
             if (UseRuntime)
-                return _activeSources.TryGetValue(entry, out var src) && src != null && src.isPlaying;
+            {
+                if (!_activeNodes.TryGetValue(entry, out var node) || node == null) return false;
+                var src = node.GetComponent<AudioSource>();
+                return src != null && src.isPlaying;
+            }
 
             if (_editorPlayingEntry == entry && IsPlayingMethod != null)
                 return (bool)IsPlayingMethod.Invoke(null, null);
@@ -180,24 +190,34 @@ namespace CatHotel.Editor
         private bool HasAnyPlaying()
         {
             if (UseRuntime)
-                return _activeSources.Count > 0;
+                return _activeNodes.Count > 0;
 
             return _editorPlayingEntry != null;
         }
 
         private void ApplyVolume(AudioEntry entry)
         {
-            if (UseRuntime && _activeSources.TryGetValue(entry, out var src) && src != null)
-                src.volume = entry.Volume * _masterVolume;
+            if (UseRuntime && _activeNodes.TryGetValue(entry, out var node) && node != null)
+            {
+                float combined = entry.Volume * _masterVolume;
+                var src = node.GetComponent<AudioSource>();
+                if (src != null) src.volume = Mathf.Min(combined, 1f);
+                var amp = node.GetComponent<AudioAmplifier>();
+                if (amp != null) amp.gain = combined;
+            }
         }
 
         private void ApplyMasterVolume()
         {
             if (!UseRuntime) return;
-            foreach (var kv in _activeSources)
+            foreach (var kv in _activeNodes)
             {
-                if (kv.Value != null)
-                    kv.Value.volume = kv.Key.Volume * _masterVolume;
+                if (kv.Value == null) continue;
+                float combined = kv.Key.Volume * _masterVolume;
+                var src = kv.Value.GetComponent<AudioSource>();
+                if (src != null) src.volume = Mathf.Min(combined, 1f);
+                var amp = kv.Value.GetComponent<AudioAmplifier>();
+                if (amp != null) amp.gain = combined;
             }
         }
 
@@ -284,7 +304,7 @@ namespace CatHotel.Editor
 
             GUILayout.Space(10);
 
-            int playingCount = UseRuntime ? _activeSources.Count : (_editorPlayingEntry != null ? 1 : 0);
+            int playingCount = UseRuntime ? _activeNodes.Count : (_editorPlayingEntry != null ? 1 : 0);
             string countLabel = playingCount > 0
                 ? $"{_entries.Count} sons | {playingCount} actifs"
                 : $"{_entries.Count} sons";
@@ -299,7 +319,7 @@ namespace CatHotel.Editor
             EditorGUI.BeginDisabledGroup(volDisabled);
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField("Master Volume", GUILayout.Width(95));
-            float newMaster = EditorGUILayout.Slider(_masterVolume, 0f, 1f);
+            float newMaster = EditorGUILayout.Slider(_masterVolume, 0f, 6f);
             if (Math.Abs(newMaster - _masterVolume) > 0.001f)
             {
                 _masterVolume = newMaster;
@@ -343,7 +363,6 @@ namespace CatHotel.Editor
         {
             bool isThisPlaying = IsEntryPlaying(entry);
 
-            Color bgColor = isThisPlaying ? new Color(0.3f, 0.5f, 0.3f, 0.15f) : Color.clear;
             var style = new GUIStyle(EditorStyles.helpBox);
             if (isThisPlaying)
             {
@@ -356,7 +375,7 @@ namespace CatHotel.Editor
             EditorGUILayout.BeginHorizontal(style);
 
             // Play / Stop button
-            string playLabel = isThisPlaying ? "■" : "▶";
+            string playLabel = isThisPlaying ? "\u25A0" : "\u25B6";
             GUI.backgroundColor = isThisPlaying ? new Color(1f, 0.4f, 0.4f) : Color.white;
             if (GUILayout.Button(playLabel, GUILayout.Width(28), GUILayout.Height(22)))
             {
@@ -372,8 +391,11 @@ namespace CatHotel.Editor
             if (newLoop != entry.Loop)
             {
                 entry.Loop = newLoop;
-                if (isThisPlaying && UseRuntime && _activeSources.TryGetValue(entry, out var src))
-                    src.loop = entry.Loop;
+                if (isThisPlaying && UseRuntime && _activeNodes.TryGetValue(entry, out var node) && node != null)
+                {
+                    var src = node.GetComponent<AudioSource>();
+                    if (src != null) src.loop = entry.Loop;
+                }
             }
 
             // Clip name
@@ -383,7 +405,7 @@ namespace CatHotel.Editor
             bool volDisabled = !UseRuntime;
             EditorGUI.BeginDisabledGroup(volDisabled);
             EditorGUILayout.LabelField("Vol", GUILayout.Width(25));
-            float newVol = EditorGUILayout.Slider(entry.Volume, 0f, 1f, GUILayout.MinWidth(100));
+            float newVol = EditorGUILayout.Slider(entry.Volume, 0f, 6f, GUILayout.MinWidth(100));
             if (Math.Abs(newVol - entry.Volume) > 0.001f)
             {
                 entry.Volume = newVol;
@@ -417,19 +439,25 @@ namespace CatHotel.Editor
         private void EditorUpdate()
         {
             // Clean up finished non-looping sources
-            if (UseRuntime && _activeSources.Count > 0)
+            if (UseRuntime && _activeNodes.Count > 0)
             {
                 var finished = new List<AudioEntry>();
-                foreach (var kv in _activeSources)
+                foreach (var kv in _activeNodes)
                 {
-                    if (kv.Value == null || !kv.Value.isPlaying)
+                    if (kv.Value == null)
+                    {
+                        finished.Add(kv.Key);
+                        continue;
+                    }
+                    var src = kv.Value.GetComponent<AudioSource>();
+                    if (src == null || !src.isPlaying)
                         finished.Add(kv.Key);
                 }
                 foreach (var entry in finished)
                 {
-                    if (_activeSources.TryGetValue(entry, out var src) && src != null)
-                        DestroyImmediate(src);
-                    _activeSources.Remove(entry);
+                    if (_activeNodes.TryGetValue(entry, out var node) && node != null)
+                        DestroyImmediate(node);
+                    _activeNodes.Remove(entry);
                 }
                 if (finished.Count > 0) Repaint();
             }
