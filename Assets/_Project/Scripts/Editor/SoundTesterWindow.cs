@@ -16,17 +16,17 @@ namespace CatHotel.Editor
         private Vector2 _scrollPos;
         private string _searchFilter = "";
         private float _masterVolume = 1f;
-        private AudioEntry _playingEntry;
 
-        // Runtime playback (Play mode)
+        // Runtime: one GO, multiple AudioSources (one per playing entry)
         private GameObject _runtimeGO;
-        private AudioSource _runtimeSource;
+        private Dictionary<AudioEntry, AudioSource> _activeSources = new();
 
-        // Editor playback (Edit mode) via AudioUtil reflection
+        // Editor playback (Edit mode) — single clip only via AudioUtil
         private static readonly Type AudioUtilType;
         private static readonly MethodInfo PlayClipMethod;
         private static readonly MethodInfo StopClipsMethod;
         private static readonly MethodInfo IsPlayingMethod;
+        private AudioEntry _editorPlayingEntry;
 
         static SoundTesterWindow()
         {
@@ -66,7 +66,7 @@ namespace CatHotel.Editor
         {
             EditorApplication.update -= EditorUpdate;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
-            Stop();
+            StopAll();
             DestroyRuntime();
         }
 
@@ -74,26 +74,21 @@ namespace CatHotel.Editor
         {
             if (state == PlayModeStateChange.ExitingPlayMode)
             {
-                _playingEntry = null;
-                _runtimeSource = null;
+                _activeSources.Clear();
                 _runtimeGO = null;
+                _editorPlayingEntry = null;
             }
         }
 
         private void EnsureRuntime()
         {
-            if (_runtimeGO != null && _runtimeSource != null) return;
+            if (_runtimeGO != null) return;
 
             _runtimeGO = new GameObject("[SoundTester]");
-            _runtimeSource = _runtimeGO.AddComponent<AudioSource>();
-            _runtimeSource.playOnAwake = false;
-            _runtimeSource.spatialBlend = 0f; // 2D
+            _runtimeGO.AddComponent<AudioSource>().enabled = false; // placeholder
 
-            // Ensure AudioListener exists
             if (UnityEngine.Object.FindFirstObjectByType<AudioListener>() == null)
                 _runtimeGO.AddComponent<AudioListener>();
-
-            Debug.Log("[SoundTester] AudioSource cree OK");
         }
 
         private void DestroyRuntime()
@@ -101,72 +96,114 @@ namespace CatHotel.Editor
             if (_runtimeGO != null)
                 DestroyImmediate(_runtimeGO);
             _runtimeGO = null;
-            _runtimeSource = null;
+            _activeSources.Clear();
         }
 
         private bool UseRuntime => Application.isPlaying;
 
-        private void Play(AudioEntry entry)
+        private void PlayEntry(AudioEntry entry)
         {
-            Stop();
-            _playingEntry = entry;
-
             if (UseRuntime)
             {
-                // Stop any AudioUtil preview that might be running
-                StopClipsMethod?.Invoke(null, null);
+                if (_activeSources.ContainsKey(entry)) return;
 
                 EnsureRuntime();
-                _runtimeSource.clip = entry.Clip;
-                _runtimeSource.loop = entry.Loop;
-                _runtimeSource.volume = entry.Volume * _masterVolume;
-                _runtimeSource.Play();
-
-                Debug.Log($"[SoundTester] Play: {entry.FileName} | clip null? {entry.Clip == null} " +
-                          $"| vol={_runtimeSource.volume:F2} | loop={entry.Loop} " +
-                          $"| isPlaying={_runtimeSource.isPlaying} | listener={UnityEngine.Object.FindFirstObjectByType<AudioListener>() != null}");
+                var source = _runtimeGO.AddComponent<AudioSource>();
+                source.playOnAwake = false;
+                source.spatialBlend = 0f;
+                source.clip = entry.Clip;
+                source.loop = entry.Loop;
+                source.volume = entry.Volume * _masterVolume;
+                source.Play();
+                _activeSources[entry] = source;
             }
             else
             {
+                // Edit mode: single clip only (AudioUtil limitation)
+                StopClipsMethod?.Invoke(null, null);
                 PlayClipMethod?.Invoke(null, new object[] { entry.Clip, 0, entry.Loop });
+                _editorPlayingEntry = entry;
             }
         }
 
-        private void Stop()
-        {
-            _playingEntry = null;
-
-            if (_runtimeSource != null && _runtimeSource.isPlaying)
-                _runtimeSource.Stop();
-
-            StopClipsMethod?.Invoke(null, null);
-        }
-
-        private bool IsPlaying()
+        private void StopEntry(AudioEntry entry)
         {
             if (UseRuntime)
-                return _runtimeSource != null && _runtimeSource.isPlaying;
+            {
+                if (_activeSources.TryGetValue(entry, out var source))
+                {
+                    source.Stop();
+                    DestroyImmediate(source);
+                    _activeSources.Remove(entry);
+                }
+            }
+            else
+            {
+                if (_editorPlayingEntry == entry)
+                {
+                    StopClipsMethod?.Invoke(null, null);
+                    _editorPlayingEntry = null;
+                }
+            }
+        }
 
-            if (IsPlayingMethod != null)
+        private void StopAll()
+        {
+            if (UseRuntime)
+            {
+                foreach (var kv in _activeSources)
+                {
+                    if (kv.Value != null)
+                    {
+                        kv.Value.Stop();
+                        DestroyImmediate(kv.Value);
+                    }
+                }
+                _activeSources.Clear();
+            }
+
+            StopClipsMethod?.Invoke(null, null);
+            _editorPlayingEntry = null;
+        }
+
+        private bool IsEntryPlaying(AudioEntry entry)
+        {
+            if (UseRuntime)
+                return _activeSources.TryGetValue(entry, out var src) && src != null && src.isPlaying;
+
+            if (_editorPlayingEntry == entry && IsPlayingMethod != null)
                 return (bool)IsPlayingMethod.Invoke(null, null);
 
             return false;
         }
 
-        private bool IsPlayingEntry(AudioEntry entry)
+        private bool HasAnyPlaying()
         {
-            return _playingEntry == entry && IsPlaying();
+            if (UseRuntime)
+                return _activeSources.Count > 0;
+
+            return _editorPlayingEntry != null;
         }
 
-        private void ApplyVolume()
+        private void ApplyVolume(AudioEntry entry)
         {
-            if (UseRuntime && _runtimeSource != null && _playingEntry != null)
-                _runtimeSource.volume = _playingEntry.Volume * _masterVolume;
+            if (UseRuntime && _activeSources.TryGetValue(entry, out var src) && src != null)
+                src.volume = entry.Volume * _masterVolume;
+        }
+
+        private void ApplyMasterVolume()
+        {
+            if (!UseRuntime) return;
+            foreach (var kv in _activeSources)
+            {
+                if (kv.Value != null)
+                    kv.Value.volume = kv.Key.Volume * _masterVolume;
+            }
         }
 
         private void RefreshAudioList()
         {
-            Stop();
+            StopAll();
             _entries.Clear();
 
             var guids = AssetDatabase.FindAssets("t:AudioClip", new[] { SearchRoot });
@@ -209,8 +246,8 @@ namespace CatHotel.Editor
             if (!Application.isPlaying)
             {
                 EditorGUILayout.HelpBox(
-                    "Mode Play requis pour le controle de volume.\n" +
-                    "En Edit mode, la lecture fonctionne mais le volume est fixe.",
+                    "Mode Play requis pour le multi-pistes et le controle de volume.\n" +
+                    "En Edit mode : lecture mono-piste, volume fixe.",
                     MessageType.Info);
             }
 
@@ -237,7 +274,7 @@ namespace CatHotel.Editor
                 RefreshAudioList();
 
             if (GUILayout.Button("Stop All", EditorStyles.toolbarButton, GUILayout.Width(60)))
-                Stop();
+                StopAll();
 
             GUILayout.Space(10);
             EditorGUILayout.LabelField("Recherche", GUILayout.Width(65));
@@ -246,7 +283,12 @@ namespace CatHotel.Editor
                 _searchFilter = "";
 
             GUILayout.Space(10);
-            EditorGUILayout.LabelField($"{_entries.Count} sons", EditorStyles.miniLabel, GUILayout.Width(60));
+
+            int playingCount = UseRuntime ? _activeSources.Count : (_editorPlayingEntry != null ? 1 : 0);
+            string countLabel = playingCount > 0
+                ? $"{_entries.Count} sons | {playingCount} actifs"
+                : $"{_entries.Count} sons";
+            EditorGUILayout.LabelField(countLabel, EditorStyles.miniLabel, GUILayout.Width(120));
 
             EditorGUILayout.EndHorizontal();
         }
@@ -261,7 +303,7 @@ namespace CatHotel.Editor
             if (Math.Abs(newMaster - _masterVolume) > 0.001f)
             {
                 _masterVolume = newMaster;
-                ApplyVolume();
+                ApplyMasterVolume();
             }
             EditorGUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
@@ -299,19 +341,29 @@ namespace CatHotel.Editor
 
         private void DrawAudioEntry(AudioEntry entry)
         {
-            EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
+            bool isThisPlaying = IsEntryPlaying(entry);
 
-            bool isThisPlaying = IsPlayingEntry(entry);
+            Color bgColor = isThisPlaying ? new Color(0.3f, 0.5f, 0.3f, 0.15f) : Color.clear;
+            var style = new GUIStyle(EditorStyles.helpBox);
+            if (isThisPlaying)
+            {
+                var tex = new Texture2D(1, 1);
+                tex.SetPixel(0, 0, new Color(0.2f, 0.35f, 0.2f, 0.3f));
+                tex.Apply();
+                style.normal.background = tex;
+            }
 
-            // Play / Stop
+            EditorGUILayout.BeginHorizontal(style);
+
+            // Play / Stop button
             string playLabel = isThisPlaying ? "■" : "▶";
             GUI.backgroundColor = isThisPlaying ? new Color(1f, 0.4f, 0.4f) : Color.white;
             if (GUILayout.Button(playLabel, GUILayout.Width(28), GUILayout.Height(22)))
             {
                 if (isThisPlaying)
-                    Stop();
+                    StopEntry(entry);
                 else
-                    Play(entry);
+                    PlayEntry(entry);
             }
             GUI.backgroundColor = Color.white;
 
@@ -320,13 +372,8 @@ namespace CatHotel.Editor
             if (newLoop != entry.Loop)
             {
                 entry.Loop = newLoop;
-                if (isThisPlaying)
-                {
-                    if (UseRuntime && _runtimeSource != null)
-                        _runtimeSource.loop = entry.Loop;
-                    else
-                        Play(entry);
-                }
+                if (isThisPlaying && UseRuntime && _activeSources.TryGetValue(entry, out var src))
+                    src.loop = entry.Loop;
             }
 
             // Clip name
@@ -340,7 +387,7 @@ namespace CatHotel.Editor
             if (Math.Abs(newVol - entry.Volume) > 0.001f)
             {
                 entry.Volume = newVol;
-                if (isThisPlaying) ApplyVolume();
+                if (isThisPlaying) ApplyVolume(entry);
             }
             EditorGUI.EndDisabledGroup();
 
@@ -369,13 +416,35 @@ namespace CatHotel.Editor
 
         private void EditorUpdate()
         {
-            if (_playingEntry != null && !IsPlaying())
+            // Clean up finished non-looping sources
+            if (UseRuntime && _activeSources.Count > 0)
             {
-                _playingEntry = null;
-                Repaint();
+                var finished = new List<AudioEntry>();
+                foreach (var kv in _activeSources)
+                {
+                    if (kv.Value == null || !kv.Value.isPlaying)
+                        finished.Add(kv.Key);
+                }
+                foreach (var entry in finished)
+                {
+                    if (_activeSources.TryGetValue(entry, out var src) && src != null)
+                        DestroyImmediate(src);
+                    _activeSources.Remove(entry);
+                }
+                if (finished.Count > 0) Repaint();
             }
 
-            if (_playingEntry != null)
+            // Edit mode: clear when clip finishes
+            if (!UseRuntime && _editorPlayingEntry != null)
+            {
+                if (IsPlayingMethod != null && !(bool)IsPlayingMethod.Invoke(null, null))
+                {
+                    _editorPlayingEntry = null;
+                    Repaint();
+                }
+            }
+
+            if (HasAnyPlaying())
                 Repaint();
         }
     }
