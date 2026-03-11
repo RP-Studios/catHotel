@@ -10,8 +10,9 @@ namespace CatHotel.Grid
         [SerializeField] private Tilemap _emptyTilemap;
         [SerializeField] private Tilemap _floorTilemap;
         [SerializeField] private Tilemap _wallTilemap;
-        [SerializeField] private Tilemap _intWallCrossTilemap;  // crosses (anchor 0,0, order 4)
-        [SerializeField] private Tilemap _intWallSegTilemap;    // wall segments (anchor 0,0, order 3)
+        [SerializeField] private Tilemap _intWallCornerTilemap; // corners (anchor 0,0, order 5)
+        [SerializeField] private Tilemap _intWallHSegTilemap;   // H segments (anchor 0,0, order 3)
+        [SerializeField] private Tilemap _intWallVSegTilemap;   // V segments (anchor 0,0, order 4)
         [SerializeField] private Tilemap _previewTilemap;
 
         [Header("Tiles")]
@@ -34,6 +35,11 @@ namespace CatHotel.Grid
         [SerializeField] private TileBase _intWallH;
         [SerializeField] private TileBase _intWallV;
         [SerializeField] private TileBase _intCroix;
+        [SerializeField] private TileBase _intTShape;
+        [SerializeField] private TileBase _intCornerLB;
+        [SerializeField] private TileBase _intCornerLT;
+        [SerializeField] private TileBase _intCornerRB;
+        [SerializeField] private TileBase _intCornerRT;
 
         [Header("Preview Colors")]
         [SerializeField] private Color _validColor   = new(0.2f, 0.8f, 0.2f, 0.5f);
@@ -47,6 +53,12 @@ namespace CatHotel.Grid
 
         public List<Vector2Int> Entrances { get; private set; } = new();
         public List<Vector2Int> CentralRoomFloorCells { get; private set; } = new();
+
+        // Rotation matrices for T-shape corners
+        static readonly Matrix4x4 Rot0   = Matrix4x4.identity;
+        static readonly Matrix4x4 Rot90  = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, 90),  Vector3.one);
+        static readonly Matrix4x4 Rot180 = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, 180), Vector3.one);
+        static readonly Matrix4x4 Rot270 = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0, 0, 270), Vector3.one);
 
         private void Awake()
         {
@@ -188,17 +200,14 @@ namespace CatHotel.Grid
                 }
             }
 
-            // Full rebuild of interior walls
             RebuildInteriorWalls();
         }
 
-        /// <summary>
-        /// Full rebuild of interior wall visuals (called from Start/RefreshAll).
-        /// </summary>
         private void RebuildInteriorWalls()
         {
-            if (_intWallCrossTilemap != null) _intWallCrossTilemap.ClearAllTiles();
-            if (_intWallSegTilemap != null)   _intWallSegTilemap.ClearAllTiles();
+            if (_intWallCornerTilemap != null) _intWallCornerTilemap.ClearAllTiles();
+            if (_intWallHSegTilemap != null)   _intWallHSegTilemap.ClearAllTiles();
+            if (_intWallVSegTilemap != null)   _intWallVSegTilemap.ClearAllTiles();
 
             for (int y = 0; y < GridData.Height; y++)
                 for (int x = 0; x < GridData.Width; x++)
@@ -207,65 +216,135 @@ namespace CatHotel.Grid
         }
 
         /// <summary>
-        /// Place a single InternalWall cell incrementally.
-        /// Cross always stays. Wall segments added between adjacent crosses.
+        /// Place a single InternalWall cell incrementally. Never removes existing tiles.
+        /// Floor → becomes InternalWall. Wall → keeps type but acts as anchor (corner + segments).
         /// </summary>
         public bool PlaceInternalWall(Vector2Int pos)
         {
             if (!_gridData.InBounds(pos.x, pos.y)) return false;
-            if (_gridData.GetCell(pos.x, pos.y) != CellType.Floor) return false;
 
-            _gridData.SetCell(pos.x, pos.y, CellType.InternalWall);
-            _floorTilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), _floorTile);
+            var cell = _gridData.GetCell(pos.x, pos.y);
 
-            // Place cross at this position
-            PlaceInteriorWallVisuals(pos.x, pos.y);
+            if (cell == CellType.Floor)
+            {
+                _gridData.SetCell(pos.x, pos.y, CellType.InternalWall);
+                _floorTilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), _floorTile);
+                PlaceInteriorWallVisuals(pos.x, pos.y);
+                return true;
+            }
 
-            return true;
+            if (cell == CellType.Wall)
+            {
+                // Wall keeps its type. No corner on it (it has its own visual).
+                // Just place segments to adjacent InternalWall cells and update their corners.
+                PlaceSegmentsFrom(pos.x, pos.y);
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
-        /// Add cross + wall segments for one InternalWall cell. Never clears existing tiles.
+        /// Update corner + segments for one InternalWall cell, and refresh neighbor corners.
         /// </summary>
         private void PlaceInteriorWallVisuals(int x, int y)
         {
-            var pos = new Vector3Int(x, y, 0);
+            // Update this corner
+            UpdateCornerAt(x, y);
 
-            // Always place a cross at this corner
-            if (_intWallCrossTilemap != null)
-                _intWallCrossTilemap.SetTile(pos, _intCroix);
+            // Update neighbor corners only if they are InternalWall (not exterior Wall)
+            if (IsIntWallOnly(x + 1, y)) UpdateCornerAt(x + 1, y);
+            if (IsIntWallOnly(x - 1, y)) UpdateCornerAt(x - 1, y);
+            if (IsIntWallOnly(x, y + 1)) UpdateCornerAt(x, y + 1);
+            if (IsIntWallOnly(x, y - 1)) UpdateCornerAt(x, y - 1);
 
-            // Check each neighbor: if it's also InternalWall, place a wall segment between us
-            // H segment goes RIGHT from the leftmost of the two cells
-            if (_gridData.InBounds(x + 1, y) && _gridData.GetCell(x + 1, y) == CellType.InternalWall)
-            {
-                if (_intWallSegTilemap != null && _intWallH != null)
-                    _intWallSegTilemap.SetTile(pos, _intWallH);
-            }
-            if (_gridData.InBounds(x - 1, y) && _gridData.GetCell(x - 1, y) == CellType.InternalWall)
-            {
-                if (_intWallSegTilemap != null && _intWallH != null)
-                    _intWallSegTilemap.SetTile(new Vector3Int(x - 1, y, 0), _intWallH);
-            }
-
-            // V segment goes UP from the lower of the two cells
-            if (_gridData.InBounds(x, y + 1) && _gridData.GetCell(x, y + 1) == CellType.InternalWall)
-            {
-                if (_intWallSegTilemap != null && _intWallV != null)
-                    _intWallSegTilemap.SetTile(pos, _intWallV);
-            }
-            if (_gridData.InBounds(x, y - 1) && _gridData.GetCell(x, y - 1) == CellType.InternalWall)
-            {
-                if (_intWallSegTilemap != null && _intWallV != null)
-                    _intWallSegTilemap.SetTile(new Vector3Int(x, y - 1, 0), _intWallV);
-            }
+            PlaceSegmentsFrom(x, y);
         }
 
-        private bool IsWallLike(int x, int y)
+        /// <summary>
+        /// Place segments from cell (x,y) to adjacent wall anchors.
+        /// Also updates neighbor InternalWall corners.
+        /// Used for both InternalWall and Wall cells.
+        /// </summary>
+        private void PlaceSegmentsFrom(int x, int y)
+        {
+            // H segment: placed at the LEFT cell of the pair
+            if (IsWallAnchor(x + 1, y) && _intWallHSegTilemap != null && _intWallH != null)
+                _intWallHSegTilemap.SetTile(new Vector3Int(x, y, 0), _intWallH);
+            if (IsWallAnchor(x - 1, y) && _intWallHSegTilemap != null && _intWallH != null)
+                _intWallHSegTilemap.SetTile(new Vector3Int(x - 1, y, 0), _intWallH);
+
+            // V segment: placed at the BOTTOM cell of the pair
+            if (IsWallAnchor(x, y + 1) && _intWallVSegTilemap != null && _intWallV != null)
+                _intWallVSegTilemap.SetTile(new Vector3Int(x, y, 0), _intWallV);
+            if (IsWallAnchor(x, y - 1) && _intWallVSegTilemap != null && _intWallV != null)
+                _intWallVSegTilemap.SetTile(new Vector3Int(x, y - 1, 0), _intWallV);
+
+            // Update neighbor InternalWall corners (they may now connect to this wall)
+            if (IsIntWallOnly(x + 1, y)) UpdateCornerAt(x + 1, y);
+            if (IsIntWallOnly(x - 1, y)) UpdateCornerAt(x - 1, y);
+            if (IsIntWallOnly(x, y + 1)) UpdateCornerAt(x, y + 1);
+            if (IsIntWallOnly(x, y - 1)) UpdateCornerAt(x, y - 1);
+        }
+
+        private void UpdateCornerAt(int x, int y)
+        {
+            if (_intWallCornerTilemap == null) return;
+
+            var pos = new Vector3Int(x, y, 0);
+            var (tile, matrix) = GetCornerTileAndMatrix(x, y);
+            _intWallCornerTilemap.SetTile(pos, tile);
+            _intWallCornerTilemap.SetTransformMatrix(pos, matrix);
+        }
+
+        private (TileBase tile, Matrix4x4 matrix) GetCornerTileAndMatrix(int x, int y)
+        {
+            // Use WallAnchor so interior walls can connect to exterior walls
+            bool r = IsWallAnchor(x + 1, y);
+            bool l = IsWallAnchor(x - 1, y);
+            bool u = IsWallAnchor(x, y + 1);
+            bool d = IsWallAnchor(x, y - 1);
+            int count = (r ? 1 : 0) + (l ? 1 : 0) + (u ? 1 : 0) + (d ? 1 : 0);
+
+            if (count == 4)
+                return (_intCroix, Rot0);
+
+            if (count == 3 && _intTShape != null)
+            {
+                // T-shape: base sprite has connections L,R,D (missing U)
+                if (!u) return (_intTShape, Rot0);
+                if (!r) return (_intTShape, Rot90);
+                if (!d) return (_intTShape, Rot180);
+                if (!l) return (_intTShape, Rot270);
+            }
+
+            if (count == 2)
+            {
+                // L-corners (adjacent walls forming a 90° angle)
+                if (r && u && _intCornerLB != null) return (_intCornerLB, Rot0);
+                if (l && u && _intCornerRB != null) return (_intCornerRB, Rot0);
+                if (r && d && _intCornerLT != null) return (_intCornerLT, Rot0);
+                if (l && d && _intCornerRT != null) return (_intCornerRT, Rot0);
+                // Straight line (opposite walls): no corner needed
+                return (null, Rot0);
+            }
+
+            // 0 or 1 neighbor: cross
+            return (_intCroix, Rot0);
+        }
+
+        /// <summary>Returns true for InternalWall only (for corner updates).</summary>
+        private bool IsIntWallOnly(int x, int y)
+        {
+            return _gridData.InBounds(x, y) && _gridData.GetCell(x, y) == CellType.InternalWall;
+        }
+
+        /// <summary>Returns true for InternalWall or exterior Wall (valid anchor for segments).</summary>
+        private bool IsWallAnchor(int x, int y)
         {
             if (!_gridData.InBounds(x, y)) return false;
             var c = _gridData.GetCell(x, y);
-            return c == CellType.Wall || c == CellType.InternalWall;
+            return c == CellType.InternalWall || c == CellType.Wall;
         }
 
         private TileBase GetExteriorWallTile(int x, int y)

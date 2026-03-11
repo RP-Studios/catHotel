@@ -39,10 +39,29 @@ namespace CatHotel.Input
             }
         }
 
+        private static readonly Vector2Int[] CardinalDirs =
+        {
+            Vector2Int.right, Vector2Int.left, Vector2Int.up, Vector2Int.down
+        };
+
         private void TryPlaceWall(Vector2Int pos)
         {
             if (_gridRenderer.PlaceInternalWall(pos))
+            {
                 Debug.Log($"[Build] Wall placed at {pos}");
+                return;
+            }
+
+            // If click landed on Empty cell (e.g. just outside room edge), try neighbors
+            foreach (var dir in CardinalDirs)
+            {
+                var neighbor = pos + dir;
+                if (_gridRenderer.PlaceInternalWall(neighbor))
+                {
+                    Debug.Log($"[Build] Wall placed at {neighbor} (snapped from {pos})");
+                    return;
+                }
+            }
         }
 
         private void HandleBuildModeToggle()

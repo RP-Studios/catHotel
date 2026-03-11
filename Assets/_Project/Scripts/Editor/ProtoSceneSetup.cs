@@ -547,14 +547,19 @@ namespace CatHotel.Editor
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Left.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Right.png", 256, FilterMode.Point);
 
-            // Interior wall sprites — PPU 256, pivot (0,0) so sprites stay inside cell bounds
+            // Interior wall sprites — centered on grid lines
             string iw = $"{SpritesRoot}/Walls/Interrior";
-            // H wall (256x26): bottom-left at anchor → extends right and up within cell
-            ConfigureSprite($"{iw}/WALL_h.png", 256, FilterMode.Point, new Vector2(0f, 0f));
-            // V wall (26x256): bottom-left at anchor → extends right and up within cell
-            ConfigureSprite($"{iw}/WALL_v.png", 256, FilterMode.Point, new Vector2(0f, 0f));
-            // Cross (26x26): bottom-left at anchor → sits at corner within cell
-            ConfigureSprite($"{iw}/CORNER_CROIX.png", 256, FilterMode.Point, new Vector2(0f, 0f));
+            // H wall: centered vertically on horizontal grid line
+            ConfigureSprite($"{iw}/WALL_h.png", 256, FilterMode.Point, new Vector2(0f, 0.5f));
+            // V wall: centered horizontally on vertical grid line
+            ConfigureSprite($"{iw}/WALL_v.png", 256, FilterMode.Point, new Vector2(0.5f, 0f));
+            // All corners: centered, PPU 245 (26/245 ≈ 0.106, matching wall thickness 26/256 ≈ 0.101)
+            ConfigureSprite($"{iw}/CORNER_CROIX.png",         245, FilterMode.Point, new Vector2(0.5f, 0.5f));
+            ConfigureSprite($"{iw}/CORNER_T_SHAPE.png",       245, FilterMode.Point, new Vector2(0.5f, 0.5f));
+            ConfigureSprite($"{iw}/CORNER_LEFT_BOTTOM.png",   245, FilterMode.Point, new Vector2(0.5f, 0.5f));
+            ConfigureSprite($"{iw}/CORNER_LEFT_TOP.png",      245, FilterMode.Point, new Vector2(0.5f, 0.5f));
+            ConfigureSprite($"{iw}/CORNER_RIGHT_BOTTOM.png",  245, FilterMode.Point, new Vector2(0.5f, 0.5f));
+            ConfigureSprite($"{iw}/CORNER_RIGHT_TOP.png",     245, FilterMode.Point, new Vector2(0.5f, 0.5f));
 
             // Object sprites — PPU 200 (same as cats) with Bilinear
             string[] objectSprites =
@@ -754,7 +759,8 @@ namespace CatHotel.Editor
             public TileBase wallTopLeft, wallTopRight;
             // Interior walls
             public TileBase intWallH, intWallV;
-            public TileBase intCroix;
+            public TileBase intCroix, intTShape;
+            public TileBase intCornerLB, intCornerLT, intCornerRB, intCornerRT;
         }
 
         private static readonly string[] FloorSpriteNames =
@@ -794,9 +800,14 @@ namespace CatHotel.Editor
                 wallTopLeft  = CreateTile($"{W}/WALL_H_Left.png",      $"{W}/WallTopLeftTile.asset"),
                 wallTopRight = CreateTile($"{W}/WALL_H_Right.png",     $"{W}/WallTopRightTile.asset"),
                 // Interior walls (cropped sprites with custom pivots)
-                intWallH    = CreateTile($"{IW}/WALL_h.png",      $"{IW}/IntWallHTile.asset"),
-                intWallV    = CreateTile($"{IW}/WALL_v.png",            $"{IW}/IntWallVTile.asset"),
+                intWallH    = CreateTile($"{IW}/WALL_h.png",               $"{IW}/IntWallHTile.asset"),
+                intWallV    = CreateTile($"{IW}/WALL_v.png",               $"{IW}/IntWallVTile.asset"),
                 intCroix    = CreateTile($"{IW}/CORNER_CROIX.png",         $"{IW}/IntCroixTile.asset"),
+                intTShape   = CreateTile($"{IW}/CORNER_T_SHAPE.png",       $"{IW}/IntTShapeTile.asset"),
+                intCornerLB = CreateTile($"{IW}/CORNER_LEFT_BOTTOM.png",   $"{IW}/IntCornerLBTile.asset"),
+                intCornerLT = CreateTile($"{IW}/CORNER_LEFT_TOP.png",      $"{IW}/IntCornerLTTile.asset"),
+                intCornerRB = CreateTile($"{IW}/CORNER_RIGHT_BOTTOM.png",  $"{IW}/IntCornerRBTile.asset"),
+                intCornerRT = CreateTile($"{IW}/CORNER_RIGHT_TOP.png",     $"{IW}/IntCornerRTTile.asset"),
             };
         }
 
@@ -861,17 +872,20 @@ namespace CatHotel.Editor
             var tmEmpty      = CreateTilemapChild(gridObj, "Tilemap_Empty",       0);
             var tmFloor      = CreateTilemapChild(gridObj, "Tilemap_Floor",       1);
             var tmWall       = CreateTilemapChild(gridObj, "Tilemap_Wall",        2);
-            var tmIntWallSeg   = CreateTilemapChild(gridObj, "Tilemap_IntWallSeg",   3);
-            var tmIntWallCross = CreateTilemapChild(gridObj, "Tilemap_IntWallCross", 4);
-            var tmPreview      = CreateTilemapChild(gridObj, "Tilemap_Preview",      5);
+            var tmIntWallHSeg   = CreateTilemapChild(gridObj, "Tilemap_IntWallHSeg",   3);
+            var tmIntWallVSeg   = CreateTilemapChild(gridObj, "Tilemap_IntWallVSeg",   4);
+            var tmIntWallCorner = CreateTilemapChild(gridObj, "Tilemap_IntWallCorner",  5);
+            var tmPreview       = CreateTilemapChild(gridObj, "Tilemap_Preview",        6);
 
             // Interior wall tilemaps anchor at cell corners (0,0) instead of center
-            tmIntWallSeg.tileAnchor   = Vector3.zero;
-            tmIntWallCross.tileAnchor = Vector3.zero;
+            tmIntWallHSeg.tileAnchor   = Vector3.zero;
+            tmIntWallVSeg.tileAnchor   = Vector3.zero;
+            tmIntWallCorner.tileAnchor = Vector3.zero;
 
             // Clean up old tilemaps from previous versions
             foreach (var old in new[] { "Tilemap_WallCorners", "Tilemap_IntWallH",
-                                        "Tilemap_IntWallV", "Tilemap_IntWall" })
+                                        "Tilemap_IntWallV", "Tilemap_IntWall",
+                                        "Tilemap_IntWallSeg", "Tilemap_IntWallCross" })
             {
                 var t = gridObj.transform.Find(old);
                 if (t != null) Object.DestroyImmediate(t.gameObject);
@@ -888,8 +902,9 @@ namespace CatHotel.Editor
             so.FindProperty("_emptyTilemap").objectReferenceValue      = tmEmpty;
             so.FindProperty("_floorTilemap").objectReferenceValue      = tmFloor;
             so.FindProperty("_wallTilemap").objectReferenceValue       = tmWall;
-            so.FindProperty("_intWallCrossTilemap").objectReferenceValue = tmIntWallCross;
-            so.FindProperty("_intWallSegTilemap").objectReferenceValue   = tmIntWallSeg;
+            so.FindProperty("_intWallCornerTilemap").objectReferenceValue = tmIntWallCorner;
+            so.FindProperty("_intWallHSegTilemap").objectReferenceValue  = tmIntWallHSeg;
+            so.FindProperty("_intWallVSegTilemap").objectReferenceValue  = tmIntWallVSeg;
             so.FindProperty("_previewTilemap").objectReferenceValue    = tmPreview;
             so.FindProperty("_emptyTile").objectReferenceValue          = tiles.empty;
             var floorsProp = so.FindProperty("_floorTiles");
@@ -905,9 +920,14 @@ namespace CatHotel.Editor
             so.FindProperty("_wallTopLeftTile").objectReferenceValue    = tiles.wallTopLeft;
             so.FindProperty("_wallTopRightTile").objectReferenceValue   = tiles.wallTopRight;
             // Interior wall tiles
-            so.FindProperty("_intWallH").objectReferenceValue     = tiles.intWallH;
-            so.FindProperty("_intWallV").objectReferenceValue     = tiles.intWallV;
-            so.FindProperty("_intCroix").objectReferenceValue     = tiles.intCroix;
+            so.FindProperty("_intWallH").objectReferenceValue      = tiles.intWallH;
+            so.FindProperty("_intWallV").objectReferenceValue      = tiles.intWallV;
+            so.FindProperty("_intCroix").objectReferenceValue      = tiles.intCroix;
+            so.FindProperty("_intTShape").objectReferenceValue     = tiles.intTShape;
+            so.FindProperty("_intCornerLB").objectReferenceValue   = tiles.intCornerLB;
+            so.FindProperty("_intCornerLT").objectReferenceValue   = tiles.intCornerLT;
+            so.FindProperty("_intCornerRB").objectReferenceValue   = tiles.intCornerRB;
+            so.FindProperty("_intCornerRT").objectReferenceValue   = tiles.intCornerRT;
             so.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
