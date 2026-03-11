@@ -8,7 +8,7 @@ namespace CatHotel.Input
     {
         [Header("Zoom")]
         [SerializeField] private float _minOrthoSize = 3f;
-        [SerializeField] private float _maxOrthoSize = 17f;
+        [SerializeField] private float _maxOrthoSize = 10f;
         [SerializeField] private float _zoomSpeed    = 0.5f;
 
         [Header("Inertia")]

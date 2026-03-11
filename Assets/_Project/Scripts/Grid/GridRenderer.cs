@@ -88,7 +88,7 @@ namespace CatHotel.Grid
 
         private void BuildInitialLayout()
         {
-            var centralRect = new RectInt(5, 9, 17, 16);
+            var centralRect = new RectInt(11, 4, 26, 24);
             FillRoom(centralRect);
             _roomRegistry.RegisterRoom(centralRect);
 

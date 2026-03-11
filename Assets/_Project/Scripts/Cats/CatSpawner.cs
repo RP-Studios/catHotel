@@ -40,6 +40,7 @@ namespace CatHotel.Cats
 
         [Header("Special Cats")]
         [SerializeField] private CatBreed _cleoBreed;
+        [SerializeField] private CatBreed _aristoteBreed;
 
         [Header("Auto Spawn")]
         [SerializeField] private float _spawnInterval = 5f;
@@ -88,8 +89,9 @@ namespace CatHotel.Cats
             }
             Debug.Log($"[CatSpawner] Registered {_bedSpots.Count} bed spots");
 
-            // Spawn unique special cat: Cleo
+            // Spawn unique special cats
             SpawnSpecialCat(_cleoBreed);
+            SpawnSpecialCat(_aristoteBreed);
         }
 
         public BedSpot ClaimNearestBed(Vector2Int from)

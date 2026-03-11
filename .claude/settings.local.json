@@ -25,7 +25,11 @@
       "Bash(python3 -c \":*)",
       "Bash(xxd gen.js)",
       "Bash(xxd gen-one.js)",
-      "Bash(ls \"d:/Unity/catHotel_github/Assets/_Project/Art/Environment/Walls/\"*.png)"
+      "Bash(ls \"d:/Unity/catHotel_github/Assets/_Project/Art/Environment/Walls/\"*.png)",
+      "Bash(find /d/Unity/catHotel_github/Assets/_Project/Art/Cats -iname *.png -type f)",
+      "Bash(grep -r \"SadWalk\\\\|sadwalk\" /d/Unity/catHotel_github/Assets/_Project --include=*.cs --include=*.yaml)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs -I {} basename {})"
     ]
   }
 }

@@ -37,6 +37,10 @@ namespace CatHotel.Editor
         private const string CleoAnimRoot = CleoSpritesRoot;
         private const string CleoControllerPath = CleoSpritesRoot + "/CatCleo.controller";
 
+        private const string AristoteSpritesRoot = "Assets/_Project/Art/SpecialCats/Aristote";
+        private const string AristoteAnimRoot = AristoteSpritesRoot;
+        private const string AristoteControllerPath = AristoteSpritesRoot + "/CatAristote.controller";
+
         private const string CloudRoot = "Assets/_Project/Art/Effects/Combat";
         private const string CloudControllerPath = CloudRoot + "/FightCloud.controller";
 
@@ -140,6 +144,9 @@ namespace CatHotel.Editor
             // Fighting Out (8f @512, 8 FPS)
             ("Fighting/europeen_fighting_out_left.png",  "eur1_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/europeen_fighting_out_right.png", "eur1_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f @256, 12 FPS) — only Right direction
+            ("SadWalk/europeen1_base_walk_sad_right.png", "eur1_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
         // ==================== EUROPEEN 2 ====================
@@ -229,6 +236,9 @@ namespace CatHotel.Editor
             // Fighting Out (8f @512, 8 FPS)
             ("Fighting/europeen2_fighting_out_left.png",  "eur2_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/europeen2_fighting_out_right.png", "eur2_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f @256, 12 FPS)
+            ("SadWalk/europeen2_base_walk_sad_right.png", "eur2_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
         // ==================== EUROPEEN 3 ====================
@@ -319,6 +329,9 @@ namespace CatHotel.Editor
             // Fighting Out (8f @512, 8 FPS)
             ("Fighting/europeen3_fighting_out_left.png",  "eur3_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/europeen3_fighting_out_right.png", "eur3_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f @256, 12 FPS)
+            ("SadWalk/europeen3_base_walk_sad_right.png", "eur3_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
         // ==================== SIAMOIS ====================
@@ -409,6 +422,9 @@ namespace CatHotel.Editor
             // Fighting Out (8f @512, 8 FPS)
             ("Fighting/siamois_fighting_out_left.png",  "siam_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/siamois_fighting_out_right.png", "siam_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f @256, 12 FPS)
+            ("SadWalk/siamois_base_walk_sad_right.png", "siam_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
         // ==================== CLEO (Special Cat) ====================
@@ -482,6 +498,100 @@ namespace CatHotel.Editor
             // Fighting Out (8f @512, 8 FPS)
             ("Fighting/siamois_cleo_fighting_out_left.png",  "cleo_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/siamois_cleo_fighting_out_right.png", "cleo_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f @256, 12 FPS)
+            ("SadWalk/siamois_cleo_walk_sad_right.png", "cleo_sadwalk_right", "SadWalk_Right", 8, 12f),
+        };
+
+        // ==================== ARISTOTE (Special Cat) ====================
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] AristoteAnimConfigs =
+        {
+            // Walk (8f @256, 12 FPS)
+            ("Walk/europeen_aristote_walk_face.png",  "ari_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/europeen_aristote_walk_back.png",  "ari_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/europeen_aristote_walk_left.png",  "ari_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/europeen_aristote_walk_right.png", "ari_walk_right", "Walk_Right", 8, 12f),
+
+            // Idle1 (6f @256, 6 FPS)
+            ("Idle 1/europeen_aristote_idle1_face.png",  "ari_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/europeen_aristote_idle1_back.png",  "ari_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/europeen_aristote_idle1_left.png",  "ari_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/europeen_aristote_idle1_right.png", "ari_idle1_right", "Idle1_Right", 6, 6f),
+
+            // Idle2 (6f @256, 6 FPS)
+            ("Idle 2/europeen_aristote_idle2_face.png",  "ari_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/europeen_aristote_idle2_left.png",  "ari_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/europeen_aristote_idle2_right.png", "ari_idle2_right", "Idle2_Right", 6, 6f),
+
+            // Idle3 (8f @256, 8 FPS)
+            ("Idle 3/europeen_aristote_idle3_face.png",  "ari_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/europeen_aristote_idle3_back.png",  "ari_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/europeen_aristote_idle3_left.png",  "ari_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/europeen_aristote_idle3_right.png", "ari_idle3_right", "Idle3_Right", 8, 8f),
+
+            // Sleep (9f @256, 4.5 FPS)
+            ("Sleep/europeen_aristote_sleeping_face.png",  "ari_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/europeen_aristote_sleeping_left.png",  "ari_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/europeen_aristote_sleeping_right.png", "ari_sleeping_right", "Sleep_Right", 9, 4.5f),
+
+            // Eat (face 12f @256, 6 FPS | left/right 10f @512, 5 FPS)
+            ("Eating/europeen_aristote_eating_face.png",  "ari_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/europeen_aristote_eating_left.png",  "ari_eating_left",  "Eat_Left",  10, 5f),
+            ("Eating/europeen_aristote_eating_right.png", "ari_eating_right", "Eat_Right", 10, 5f),
+
+            // Drink (face 8f @256, 4 FPS | left/right 8f @512, 4 FPS)
+            ("Drunking/europeen_aristote_drunking_face.png",  "ari_drunking_face",  "Drink_Front", 8, 4f),
+            ("Drunking/europeen_aristote_drunking_left.png",  "ari_drunking_left",  "Drink_Left",  8, 4f),
+            ("Drunking/europeen_aristote_drunking_right.png", "ari_drunking_right", "Drink_Right", 8, 4f),
+
+            // Cleaning (11f @256, 5.5 FPS)
+            ("Cleaning/europeen_aristote_cleaning_face.png",  "ari_cleaning_face",  "Clean_Front", 11, 5.5f),
+            ("Cleaning/europeen_aristote_cleaning_left.png",  "ari_cleaning_left",  "Clean_Left",  11, 5.5f),
+            ("Cleaning/europeen_aristote_cleaning_right.png", "ari_cleaning_right", "Clean_Right", 11, 5.5f),
+
+            // Playing (23f @512, 11.5 FPS)
+            ("Playing/europeen_aristote_playing_face.png",  "ari_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/europeen_aristote_playing_left.png",  "ari_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/europeen_aristote_playing_right.png", "ari_playing_right", "Play_Right", 23, 11.5f),
+
+            // Playing In (3f @512, 6 FPS)
+            ("Playing/europeen_aristote_playing_in_face.png",  "ari_playing_in_face",  "Play_In_Front", 3, 6f),
+            ("Playing/europeen_aristote_playing_in_left.png",  "ari_playing_in_left",  "Play_In_Left",  3, 6f),
+            ("Playing/europeen_aristote_playing_in_right.png", "ari_playing_in_right", "Play_In_Right", 3, 6f),
+
+            // Playing Boucle (16f @512, 8 FPS)
+            ("Playing/europeen_aristote_playing_boucle_face.png",  "ari_playing_boucle_face",  "Play_Boucle_Front", 16, 8f),
+            ("Playing/europeen_aristote_playing_boucle_left.png",  "ari_playing_boucle_left",  "Play_Boucle_Left",  17, 8.5f),
+            ("Playing/europeen_aristote_playing_boucle_right.png", "ari_playing_boucle_right", "Play_Boucle_Right", 17, 8.5f),
+
+            // Playing Out (face 4f, left/right 3f @512, 6 FPS)
+            ("Playing/europeen_aristote_playing_out_face.png",  "ari_playing_out_face",  "Play_Out_Front", 4, 6f),
+            ("Playing/europeen_aristote_playing_out_left.png",  "ari_playing_out_left",  "Play_Out_Left",  3, 6f),
+            ("Playing/europeen_aristote_playing_out_right.png", "ari_playing_out_right", "Play_Out_Right", 3, 6f),
+
+            // Happy (20f @512, 10 FPS)
+            ("Happy/europeen_aristote_happy_face.png",  "ari_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/europeen_aristote_happy_left.png",  "ari_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/europeen_aristote_happy_right.png", "ari_happy_right", "Happy_Right", 20, 10f),
+
+            // Unhappy (6f @512, 6 FPS)
+            ("Unhappy/europeen_aristote_unhappy_face.png",  "ari_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/europeen_aristote_unhappy_left.png",  "ari_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/europeen_aristote_unhappy_right.png", "ari_unhappy_right", "Unhappy_Right", 6, 6f),
+
+            // Petting (13f @256, 6.5 FPS)
+            ("Petting/europeen_aristote_petting_face.png", "ari_petting_face", "Pet_Front", 13, 6.5f),
+
+            // Fighting In (15f @512, 7.5 FPS)
+            ("Fighting/europeen_aristote_fighting_in_left.png",  "ari_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/europeen_aristote_fighting_in_right.png", "ari_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+
+            // Fighting Out (8f @512, 8 FPS)
+            ("Fighting/europeen_aristote_fighting_out_left.png",  "ari_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/europeen_aristote_fighting_out_right.png", "ari_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f @256, 12 FPS)
+            ("SadWalk/europeen_aristote_walk_sad_right.png", "ari_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
         [MenuItem("Cat Hotel/Setup Proto Scene")]
@@ -496,6 +606,7 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(Eur3AnimRoot, Eur3AnimConfigs);
             ProcessAnimConfigs(SiamoisAnimRoot, SiamoisAnimConfigs);
             ProcessAnimConfigs(CleoAnimRoot, CleoAnimConfigs);
+            ProcessAnimConfigs(AristoteAnimRoot, AristoteAnimConfigs);
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
             ProcessAnimConfigs(PettingRoot, HandPetAnimConfigs);
             AssetDatabase.Refresh();
@@ -506,11 +617,12 @@ namespace CatHotel.Editor
             var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
             var siamoisController = CreateAnimController(SiamoisControllerPath, SiamoisAnimRoot, SiamoisAnimConfigs);
             var cleoController = CreateAnimController(CleoControllerPath, CleoAnimRoot, CleoAnimConfigs);
+            var aristoteController = CreateAnimController(AristoteControllerPath, AristoteAnimRoot, AristoteAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, cloudController, handPetController);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, aristoteController, cloudController, handPetController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
+                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -842,6 +954,7 @@ namespace CatHotel.Editor
             RuntimeAnimatorController eur3Controller,
             RuntimeAnimatorController siamoisController,
             RuntimeAnimatorController cleoController,
+            RuntimeAnimatorController aristoteController,
             RuntimeAnimatorController cloudController,
             RuntimeAnimatorController handPetController)
         {
@@ -982,6 +1095,17 @@ namespace CatHotel.Editor
                 AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_BACK.png");
             cleoProp.FindPropertyRelative("controller").objectReferenceValue = cleoController;
 
+            // Wire Aristote (special unique cat)
+            var aristoteProp = soSpawner.FindProperty("_aristoteBreed");
+            aristoteProp.FindPropertyRelative("name").stringValue = "Aristote";
+            aristoteProp.FindPropertyRelative("frontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_FRONT.png");
+            aristoteProp.FindPropertyRelative("rightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_RIGHT.png");
+            aristoteProp.FindPropertyRelative("backSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_BACK.png");
+            aristoteProp.FindPropertyRelative("controller").objectReferenceValue = aristoteController;
+
             soSpawner.FindProperty("_fightCloudController").objectReferenceValue = cloudController;
             soSpawner.FindProperty("_handPetController").objectReferenceValue = handPetController;
             soSpawner.ApplyModifiedProperties();
@@ -1079,23 +1203,23 @@ namespace CatHotel.Editor
             // Central room: x=5-21, y=10-23. Top wall at y=24.
 
             // --- Shelves on top wall tiles (2 heights) ---
-            // High (y=24.65) and low (y=24.25), both on the wall row y=24
-            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(8.5f,  24.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(12.5f, 24.25f, 0), 3);
-            PlaceSprite(root, "Shelf_High_2",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(16.5f, 24.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_2",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(19.5f, 24.25f, 0), 3);
+            // Top wall row is y=27 for new room RectInt(11,4,26,24)
+            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(16.5f, 27.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(22.5f, 27.25f, 0), 3);
+            PlaceSprite(root, "Shelf_High_2",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(28.5f, 27.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_2",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(33.5f, 27.25f, 0), 3);
 
             // --- Plants ---
-            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(6.5f,  22.5f, 0), 5);
-            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(20.5f, 21.5f, 0), 5);
-            PlaceSprite(root, "Plante_2",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(19.5f, 11.5f, 0), 5);
-            PlaceSprite(root, "PlantBig_2", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(6.5f,  12.5f, 0), 5);
+            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(13.5f, 24.5f, 0), 5);
+            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(34.5f, 23.5f, 0), 5);
+            PlaceSprite(root, "Plante_2",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(33.5f, 8.5f,  0), 5);
+            PlaceSprite(root, "PlantBig_2", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(13.5f, 9.5f,  0), 5);
 
             // --- Beds ---
-            PlaceSprite(root, "Bed_1",       $"{ObjectsRoot}/Beds/BED.png",        new Vector3(9.5f,  18.5f, 0), 5);
-            PlaceSprite(root, "Coussin_1",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(14.5f, 13.5f, 0), 5);
-            PlaceSprite(root, "LuxBed_1",    $"{ObjectsRoot}/Beds/LUXOUS_BED.png", new Vector3(12.5f, 20.5f, 0), 5);
-            PlaceSprite(root, "Coussin_2",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(17.5f, 16.5f, 0), 5);
+            PlaceSprite(root, "Bed_1",       $"{ObjectsRoot}/Beds/BED.png",        new Vector3(17.5f, 20.5f, 0), 5);
+            PlaceSprite(root, "Coussin_1",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(24.5f, 12.5f, 0), 5);
+            PlaceSprite(root, "LuxBed_1",    $"{ObjectsRoot}/Beds/LUXOUS_BED.png", new Vector3(21.5f, 22.5f, 0), 5);
+            PlaceSprite(root, "Coussin_2",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(30.5f, 16.5f, 0), 5);
 
             EditorUtility.SetDirty(root);
         }

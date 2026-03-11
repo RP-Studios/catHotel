@@ -57,6 +57,7 @@ namespace CatHotel.Cats
         private Tween _pendingAction;
         private CatDirection _currentDir;
         private bool _isWalking;
+        private bool _useSadWalk;
         private bool _isFighting;
         private string _chosenRestState;
         private BedSpot _claimedBed;
@@ -462,6 +463,7 @@ namespace CatHotel.Cats
             }
 
             _isWalking = true;
+            _useSadWalk = Random.value < 0.3f; // 30% chance to use sad walk
             _chosenRestState = null;
             _moveSequence = DOTween.Sequence();
 
@@ -491,7 +493,14 @@ namespace CatHotel.Cats
         private void SetWalkDirection(CatDirection dir)
         {
             _currentDir = dir;
-            PlayAnimState($"Walk_{dir}");
+            if (_useSadWalk && dir == CatDirection.Right)
+            {
+                PlayAnimState("SadWalk_Right");
+            }
+            else
+            {
+                PlayAnimState($"Walk_{dir}");
+            }
         }
 
         // --- Helpers ---
