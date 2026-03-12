@@ -81,20 +81,33 @@ namespace CatHotel.Grid
             DrawBorderWalls();
             BuildInitialLayout();
             RefreshAll();
-
-            Debug.Log($"[GridRenderer] Grid initialized: {GridData.Width}x{GridData.Height}, " +
-                $"CentralFloor: {CentralRoomFloorCells.Count}");
         }
 
         private void BuildInitialLayout()
         {
-            var centralRect = new RectInt(11, 4, 26, 24);
+            var centralRect = new RectInt(1, 1, 22, 14);
             FillRoom(centralRect);
             _roomRegistry.RegisterRoom(centralRect);
 
             for (int y = centralRect.yMin + 1; y < centralRect.yMax - 1; y++)
-                for (int x = centralRect.xMin; x < centralRect.xMax; x++)
+                for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
                     CentralRoomFloorCells.Add(new Vector2Int(x, y));
+
+            // Create entrances on the left side
+            int entranceX = centralRect.xMin - 1;         // x=0 (outside room)
+            int wallX = centralRect.xMin;                  // x=1 (left wall — punch through)
+            int entrance1Y = centralRect.yMin + 4;        // y=5
+            int entrance2Y = centralRect.yMax - 5;        // y=10
+
+            // Punch Door cells through outside + wall so cats can walk in
+            _gridData.SetCell(entranceX, entrance1Y, CellType.Door);
+            _gridData.SetCell(entranceX, entrance2Y, CellType.Door);
+            _gridData.SetCell(wallX, entrance1Y, CellType.Door);
+            _gridData.SetCell(wallX, entrance2Y, CellType.Door);
+
+            Entrances.Add(new Vector2Int(entranceX, entrance1Y));
+            Entrances.Add(new Vector2Int(entranceX, entrance2Y));
+
         }
 
         private void FillRoom(RectInt rect)
@@ -103,8 +116,9 @@ namespace CatHotel.Grid
             {
                 for (int x = rect.xMin; x < rect.xMax; x++)
                 {
-                    bool isTopOrBottom = y == rect.yMin || y == rect.yMax - 1;
-                    if (isTopOrBottom)
+                    bool isBorder = y == rect.yMin || y == rect.yMax - 1
+                                 || x == rect.xMin || x == rect.xMax - 1;
+                    if (isBorder)
                     {
                         if (!_gridData.IsWalkable(x, y))
                             _gridData.SetCell(x, y, CellType.Wall);
@@ -179,8 +193,8 @@ namespace CatHotel.Grid
                     {
                         _floorTilemap.SetTile(pos, _floorTile);
 
-                        bool edgeLeft  = !_gridData.InBounds(x - 1, y) || _gridData.GetCell(x - 1, y) == CellType.Empty;
-                        bool edgeRight = !_gridData.InBounds(x + 1, y) || _gridData.GetCell(x + 1, y) == CellType.Empty;
+                        bool edgeLeft  = !_gridData.InBounds(x - 1, y) || !_gridData.IsWalkable(x - 1, y);
+                        bool edgeRight = !_gridData.InBounds(x + 1, y) || !_gridData.IsWalkable(x + 1, y);
 
                         if (edgeLeft && !edgeRight)
                             _wallTilemap.SetTile(pos, _wallRightMidTile);

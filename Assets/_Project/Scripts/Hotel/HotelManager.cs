@@ -1,0 +1,353 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using CatHotel.Cats;
+using CatHotel.Core;
+using CatHotel.Economy;
+using CatHotel.Grid;
+using CatHotel.Services;
+
+namespace CatHotel.Hotel
+{
+    /// <summary>
+    /// Central game orchestrator. Manages cat arrivals (pension/refuge),
+    /// revenue ticks, departures, and ties all systems together.
+    /// </summary>
+    public class HotelManager : MonoBehaviour
+    {
+        [Header("Config")]
+        [SerializeField] private GameConfig _config;
+        [SerializeField] private CatBreedData[] _availableBreeds;
+
+        [Header("References")]
+        [SerializeField] private GridRenderer _gridRenderer;
+        [SerializeField] private EconomyManager _economy;
+        [SerializeField] private ReputationManager _reputation;
+        [SerializeField] private CatSpawner _catSpawner;
+
+        private readonly List<CatInstance> _cats = new();
+        private float _arrivalTimer;
+        private float _revenueTimer;
+
+        public IReadOnlyList<CatInstance> Cats => _cats;
+        public GameConfig Config => _config;
+        public EconomyManager Economy => _economy;
+        public ReputationManager Reputation => _reputation;
+        public int CatCount => _cats.Count;
+        public float ArrivalTimer => _arrivalTimer;
+
+        public event Action<CatInstance> OnCatArrived;
+        public event Action<CatInstance> OnCatDeparted;
+
+        private IEnumerator Start()
+        {
+            // Auth (non-bloquant, timeout 5s)
+            if (AuthManager.Instance != null)
+            {
+                var authTask = AuthManager.Instance.InitializeAsync();
+                float timeout = 5f;
+                while (!authTask.IsCompleted && timeout > 0f)
+                {
+                    timeout -= Time.deltaTime;
+                    yield return null;
+                }
+                if (!authTask.IsCompleted)
+                    Debug.LogWarning("[Hotel] Auth timeout — continuing offline");
+            }
+
+            if (_economy != null && _config != null)
+                _economy.Init(_config);
+
+            if (_reputation != null)
+                _reputation.Init(0, 0);
+
+            // Wait one frame for GridRenderer.Start() to build the room and entrances
+            yield return null;
+
+            // Spawn first cat immediately
+            TrySpawnCat();
+        }
+
+        private void Update()
+        {
+            if (_config == null) return;
+
+            UpdateArrivals();
+            UpdateRevenueTicks();
+            UpdateDepartures();
+            UpdatePensionTimers();
+        }
+
+        private void UpdateArrivals()
+        {
+            _arrivalTimer += Time.deltaTime;
+            if (_arrivalTimer < _config.arrivalInterval) return;
+            _arrivalTimer = 0f;
+
+            if (_cats.Count >= _config.maxCats) return;
+
+            TrySpawnCat();
+        }
+
+        private void UpdateRevenueTicks()
+        {
+            _revenueTimer += Time.deltaTime;
+            if (_revenueTimer < _config.revenueTickInterval) return;
+            _revenueTimer = 0f;
+
+            foreach (var cat in _cats)
+            {
+                if (cat.Happiness == null || cat.Entity == null) continue;
+                _economy.ProcessRevenueTick(
+                    cat.Happiness, cat.Breed, cat.Entity.transform, cat.IsSpecial);
+            }
+        }
+
+        private void UpdateDepartures()
+        {
+            for (int i = _cats.Count - 1; i >= 0; i--)
+            {
+                var cat = _cats[i];
+                if (cat.Happiness == null) continue;
+
+                if (cat.Happiness.ShouldLeave && cat.State != CatState.Leaving)
+                {
+                    StartCatDeparture(cat, CatState.Leaving);
+                }
+            }
+        }
+
+        private void UpdatePensionTimers()
+        {
+            for (int i = _cats.Count - 1; i >= 0; i--)
+            {
+                var cat = _cats[i];
+                if (cat.Mode != CatMode.Pension) continue;
+                if (cat.State == CatState.Leaving || cat.State == CatState.Pickup) continue;
+
+                cat.PensionTimeRemaining -= Time.deltaTime;
+                if (cat.PensionTimeRemaining <= 0f)
+                {
+                    ProcessPensionEnd(cat);
+                }
+            }
+        }
+
+        private void TrySpawnCat()
+        {
+            var entrances = _gridRenderer.Entrances;
+            if (entrances == null || entrances.Count == 0) return;
+
+            // Pick a breed the player has unlocked
+            var breed = PickRandomBreed();
+            if (breed == null) return;
+
+            // Decide pension vs refuge
+            bool isPension = UnityEngine.Random.value < _config.pensionProbability;
+            var mode = isPension ? CatMode.Pension : CatMode.Refuge;
+
+            // Pick entrance
+            var entrance = entrances[UnityEngine.Random.Range(0, entrances.Count)];
+
+            // Special variants disabled for J1
+            bool isSpecial = false;
+
+            // Create the cat GameObject
+            var go = new GameObject($"Cat_{_cats.Count}_{breed.breedName}");
+            go.transform.SetParent(transform);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = isSpecial && breed.specialFrontSprite != null
+                ? breed.specialFrontSprite : breed.frontSprite;
+            sr.sortingOrder = 10;
+
+            if (breed.controller != null)
+            {
+                var animator = go.AddComponent<Animator>();
+                var ctrl = isSpecial && breed.specialController != null
+                    ? breed.specialController : breed.controller;
+                animator.runtimeAnimatorController = ctrl;
+                animator.enabled = false;
+            }
+
+            float scale = breed.size * UnityEngine.Random.Range(0.9f, 1.1f);
+            go.transform.localScale = new Vector3(scale, scale, 1f);
+
+            // Add CatNeeds & CatHappiness BEFORE CatEntity.Init() so _needs is found
+            var needs = go.AddComponent<CatNeeds>();
+            needs.Init(breed, _config, isSpecial);
+
+            int repDeficit = _reputation.GetDeficit(breed.minReputation);
+            needs.SetReputationDeficit(repDeficit);
+
+            var happiness = go.AddComponent<CatHappiness>();
+            happiness.Init(needs, _config);
+
+            // Add CatEntity last — Init() calls GetComponent<CatNeeds>()
+            var entity = go.AddComponent<CatEntity>();
+            var frontSpr = isSpecial && breed.specialFrontSprite != null ? breed.specialFrontSprite : breed.frontSprite;
+            var rightSpr = isSpecial && breed.specialRightSprite != null ? breed.specialRightSprite : breed.rightSprite;
+            var backSpr = isSpecial && breed.specialBackSprite != null ? breed.specialBackSprite : breed.backSprite;
+            entity.SetSprites(frontSpr, rightSpr, backSpr);
+            entity.SetBreed(breed);
+            entity.Init(_gridRenderer.Data, entrance, _catSpawner);
+
+            // Pick a name
+            string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
+
+            // Pension duration
+            float pensionDuration = isPension
+                ? UnityEngine.Random.Range(breed.stayDurationRange.x, breed.stayDurationRange.y)
+                : 0f;
+
+            var instance = new CatInstance
+            {
+                Entity = entity,
+                Needs = needs,
+                Happiness = happiness,
+                Breed = breed,
+                Mode = mode,
+                IsSpecial = isSpecial,
+                CatName = catName,
+                State = CatState.Arriving,
+                PensionTimeRemaining = pensionDuration,
+                PensionDuration = pensionDuration
+            };
+
+            _cats.Add(instance);
+            if (_catSpawner != null) _catSpawner.RegisterCat(entity);
+            OnCatArrived?.Invoke(instance);
+
+            // Walk from entrance to a random floor cell
+            var floorCells = _gridRenderer.CentralRoomFloorCells;
+            if (floorCells.Count > 0)
+            {
+                var target = floorCells[UnityEngine.Random.Range(0, floorCells.Count)];
+                entity.WalkToTarget(target, () => instance.State = CatState.Idle);
+            }
+            else
+            {
+                instance.State = CatState.Idle;
+            }
+
+        }
+
+        private CatBreedData PickRandomBreed()
+        {
+            // Filter to unlocked breeds
+            var unlocked = new List<CatBreedData>();
+            foreach (var breed in _availableBreeds)
+            {
+                if (_reputation.IsBreedUnlocked(breed.minReputation))
+                    unlocked.Add(breed);
+            }
+            if (unlocked.Count == 0) return null;
+            return unlocked[UnityEngine.Random.Range(0, unlocked.Count)];
+        }
+
+        private void ProcessPensionEnd(CatInstance cat)
+        {
+            // Calculate payment
+            float avgHappiness = cat.Happiness.Value;
+            float payment = _config.pensionBaseRate * cat.PensionDuration * (avgHappiness / 100f)
+                * cat.Breed.revenueMultiplier;
+            int coins = Mathf.RoundToInt(payment);
+
+            // Tip if happy
+            if (avgHappiness > 80f)
+                coins += Mathf.RoundToInt(coins * _config.tipPercent);
+
+            _economy.AddCoins(coins);
+
+            // Reputation penalty if unhappy
+            if (avgHappiness < 50f)
+                _reputation.AddPoints(-1);
+            else if (avgHappiness > 80f)
+                _reputation.AddPoints(1);
+
+            StartCatDeparture(cat, CatState.Pickup);
+        }
+
+        /// <summary>Process adoption for a refuge cat (called when adopter arrives).</summary>
+        public void ProcessAdoption(CatInstance cat)
+        {
+            if (cat.Mode != CatMode.Refuge) return;
+
+            float fee = cat.Breed.revenueMultiplier * _config.adoptionFeeMultiplier
+                * 100f * (cat.Happiness.Value / 100f);
+            int coins = Mathf.RoundToInt(fee);
+            _economy.AddCoins(coins);
+
+            int repBonus = Mathf.RoundToInt(5f + 10f * (cat.Breed.minReputation / 9f));
+            _reputation.AddPoints(repBonus);
+
+            StartCatDeparture(cat, CatState.Adopted);
+        }
+
+        private void StartCatDeparture(CatInstance cat, CatState reason)
+        {
+            cat.State = reason;
+
+            var entrances = _gridRenderer.Entrances;
+            if (entrances != null && entrances.Count > 0)
+            {
+                var exit = entrances[UnityEngine.Random.Range(0, entrances.Count)];
+                cat.Entity.WalkToTarget(exit, () => FinalizeDeparture(cat));
+            }
+            else
+            {
+                FinalizeDeparture(cat);
+            }
+        }
+
+        private void FinalizeDeparture(CatInstance cat)
+        {
+            _cats.Remove(cat);
+            if (_catSpawner != null && cat.Entity != null)
+                _catSpawner.UnregisterCat(cat.Entity);
+            CatNames.ReleaseName(cat.CatName);
+            OnCatDeparted?.Invoke(cat);
+
+            // Remove floating coin for this cat
+            if (_economy != null && cat.Entity != null)
+                _economy.RemoveCoinForCat(cat.Entity.transform);
+
+            if (cat.Entity != null)
+                Destroy(cat.Entity.gameObject);
+        }
+
+        /// <summary>Get average happiness across all cats.</summary>
+        public float GetAverageHappiness()
+        {
+            if (_cats.Count == 0) return 100f;
+            float sum = 0f;
+            foreach (var cat in _cats)
+            {
+                if (cat.Happiness != null)
+                    sum += cat.Happiness.Value;
+            }
+            return sum / _cats.Count;
+        }
+    }
+
+    /// <summary>Runtime data for a single cat in the hotel.</summary>
+    public class CatInstance
+    {
+        public CatEntity Entity;
+        public CatNeeds Needs;
+        public CatHappiness Happiness;
+        public CatBreedData Breed;
+        public CatMode Mode;
+        public CatState State;
+        public bool IsSpecial;
+        public string CatName;
+
+        // Pension tracking
+        public float PensionDuration;
+        public float PensionTimeRemaining;
+
+        // Adoption tracking
+        public float HappyDuration; // seconds continuously happy (for adopter trigger)
+    }
+}

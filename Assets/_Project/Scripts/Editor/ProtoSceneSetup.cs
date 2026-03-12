@@ -9,7 +9,9 @@ using CatHotel.Grid;
 using CatHotel.Input;
 using CatHotel.Cats;
 using CatHotel.UI;
-
+using CatHotel.Core;
+using CatHotel.Economy;
+using CatHotel.Hotel;
 
 namespace CatHotel.Editor
 {
@@ -969,10 +971,18 @@ namespace CatHotel.Editor
             var cam = camObj.GetComponent<Camera>();
             cam.orthographic = true;
             cam.backgroundColor = new Color(0.12f, 0.12f, 0.15f);
-            camObj.transform.position = new Vector3(24f, 16f, -10f);
+            camObj.transform.position = new Vector3(12f, 8f, -10f);
 
-            if (camObj.GetComponent<CameraController>() == null)
-                camObj.AddComponent<CameraController>();
+            var camCtrl = camObj.GetComponent<CameraController>();
+            if (camCtrl == null)
+                camCtrl = camObj.AddComponent<CameraController>();
+
+            // Force camera bounds for half-size grid
+            var camSo = new SerializedObject(camCtrl);
+            camSo.FindProperty("_minOrthoSize").floatValue = 1.5f;
+            camSo.FindProperty("_maxOrthoSize").floatValue = 5f;
+            camSo.FindProperty("_gridMax").vector2Value = new Vector2(24f, 16f);
+            camSo.ApplyModifiedProperties();
 
             // --- Grid parent ---
             var gridObj = FindOrCreate("Grid");
@@ -1052,63 +1062,98 @@ namespace CatHotel.Editor
             soBuilder.FindProperty("_camera").objectReferenceValue       = cam;
             soBuilder.ApplyModifiedProperties();
 
-            // --- CatSpawner ---
+            // --- CatSpawner (lightweight service) ---
             var spawner = mgrObj.GetComponent<CatSpawner>();
             if (spawner == null)
                 spawner = mgrObj.AddComponent<CatSpawner>();
 
             var soSpawner = new SerializedObject(spawner);
             soSpawner.FindProperty("_gridRenderer").objectReferenceValue = renderer;
-
-            // Wire breeds array (4 breeds)
-            var breedsProperty = soSpawner.FindProperty("_breeds");
-            breedsProperty.arraySize = 4;
-
-            // Breed 0: Europeen
-            SetBreed(breedsProperty, 0, "Europeen", CatSpritesRoot,
-                "CAT_EUR_FRONT.png", "CAT_EUR_RIGHT.png", "CAT_EUR_BACK.png",
-                eurController);
-
-            // Breed 1: Europeen2
-            SetBreed(breedsProperty, 1, "Europeen2", Eur2SpritesRoot,
-                "CAT_EUR_02_FRONT.png", "CAT_EUR_02_RIGHT.png", "CAT_EUR_02_BACK.png",
-                eur2Controller);
-
-            // Breed 2: Europeen3
-            SetBreed(breedsProperty, 2, "Europeen3", Eur3SpritesRoot,
-                "CAT_EUR_03_FRONT.png", "CAT_EUR_03_RIGHT.png", "CAT_EUR_03_BACK.png",
-                eur3Controller);
-
-            // Breed 3: Siamois
-            SetBreed(breedsProperty, 3, "Siamois", SiamoisSpritesRoot,
-                "CAT_SIAMESE_FRONT.png", "CAT_SIAMESE_RIGHT.png", "CAT_SIAMESE_BACK.png",
-                siamoisController);
-
-            // Wire Cleo (special unique cat)
-            var cleoProp = soSpawner.FindProperty("_cleoBreed");
-            cleoProp.FindPropertyRelative("name").stringValue = "Cleo";
-            cleoProp.FindPropertyRelative("frontSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png");
-            cleoProp.FindPropertyRelative("rightSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png");
-            cleoProp.FindPropertyRelative("backSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_BACK.png");
-            cleoProp.FindPropertyRelative("controller").objectReferenceValue = cleoController;
-
-            // Wire Aristote (special unique cat)
-            var aristoteProp = soSpawner.FindProperty("_aristoteBreed");
-            aristoteProp.FindPropertyRelative("name").stringValue = "Aristote";
-            aristoteProp.FindPropertyRelative("frontSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_FRONT.png");
-            aristoteProp.FindPropertyRelative("rightSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_RIGHT.png");
-            aristoteProp.FindPropertyRelative("backSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_BACK.png");
-            aristoteProp.FindPropertyRelative("controller").objectReferenceValue = aristoteController;
-
             soSpawner.FindProperty("_fightCloudController").objectReferenceValue = cloudController;
             soSpawner.FindProperty("_handPetController").objectReferenceValue = handPetController;
             soSpawner.ApplyModifiedProperties();
+
+            // --- Create CatBreedData SO assets ---
+            var breedAssets = CreateBreedAssets(
+                eurController, eur2Controller, eur3Controller,
+                siamoisController, cleoController, aristoteController);
+
+            // --- Create GameConfig SO asset ---
+            var gameConfig = CreateOrLoadAsset<GameConfig>("Assets/_Project/Data/GameConfig.asset");
+
+            // --- EconomyManager ---
+            var economyMgr = mgrObj.GetComponent<EconomyManager>();
+            if (economyMgr == null)
+                economyMgr = mgrObj.AddComponent<EconomyManager>();
+
+            var soEconomy = new SerializedObject(economyMgr);
+            soEconomy.FindProperty("_config").objectReferenceValue = gameConfig;
+            soEconomy.ApplyModifiedProperties();
+
+            // --- ReputationManager ---
+            var repMgr = mgrObj.GetComponent<ReputationManager>();
+            if (repMgr == null)
+                repMgr = mgrObj.AddComponent<ReputationManager>();
+
+            // --- HotelManager ---
+            var hotelMgr = mgrObj.GetComponent<HotelManager>();
+            if (hotelMgr == null)
+                hotelMgr = mgrObj.AddComponent<HotelManager>();
+
+            var soHotel = new SerializedObject(hotelMgr);
+            soHotel.FindProperty("_config").objectReferenceValue = gameConfig;
+            soHotel.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+            soHotel.FindProperty("_economy").objectReferenceValue = economyMgr;
+            soHotel.FindProperty("_reputation").objectReferenceValue = repMgr;
+            soHotel.FindProperty("_catSpawner").objectReferenceValue = spawner;
+
+            var breedsProp = soHotel.FindProperty("_availableBreeds");
+            breedsProp.arraySize = breedAssets.Length;
+            for (int i = 0; i < breedAssets.Length; i++)
+                breedsProp.GetArrayElementAtIndex(i).objectReferenceValue = breedAssets[i];
+            soHotel.ApplyModifiedProperties();
+
+            // --- HudManager ---
+            var hudMgr = mgrObj.GetComponent<HudManager>();
+            if (hudMgr == null)
+                hudMgr = mgrObj.AddComponent<HudManager>();
+
+            var soHud = new SerializedObject(hudMgr);
+            soHud.FindProperty("_hotel").objectReferenceValue = hotelMgr;
+            soHud.FindProperty("_economy").objectReferenceValue = economyMgr;
+            soHud.FindProperty("_reputation").objectReferenceValue = repMgr;
+            soHud.ApplyModifiedProperties();
+
+            // --- CatInfoPanel ---
+            var catInfoPanel = mgrObj.GetComponent<CatInfoPanel>();
+            if (catInfoPanel == null)
+                catInfoPanel = mgrObj.AddComponent<CatInfoPanel>();
+
+            var soCatInfo = new SerializedObject(catInfoPanel);
+            soCatInfo.FindProperty("_hotel").objectReferenceValue = hotelMgr;
+            soCatInfo.ApplyModifiedProperties();
+
+            // --- OptionsPanel ---
+            var optionsPanel = mgrObj.GetComponent<OptionsPanel>();
+            if (optionsPanel == null)
+                optionsPanel = mgrObj.AddComponent<OptionsPanel>();
+
+            // --- FloatingCoinView ---
+            var coinView = mgrObj.GetComponent<FloatingCoinView>();
+            if (coinView == null)
+                coinView = mgrObj.AddComponent<FloatingCoinView>();
+
+            var coinSprite = AssetDatabase.LoadAssetAtPath<Sprite>(
+                "Assets/_Project/Art/UI/Icons/Minimalist/catCoin.png");
+            var soCoinView = new SerializedObject(coinView);
+            soCoinView.FindProperty("_economy").objectReferenceValue = economyMgr;
+            soCoinView.FindProperty("_coinSprite").objectReferenceValue = coinSprite;
+            soCoinView.FindProperty("_catSpawner").objectReferenceValue = spawner;
+            soCoinView.FindProperty("_catInfoPanel").objectReferenceValue = catInfoPanel;
+            soCoinView.ApplyModifiedProperties();
+
+            // --- Interactive Hotel Objects ---
+            PlaceHotelObjects();
 
             // --- Canvas ---
             var canvasObj = FindOrCreate("Canvas");
@@ -1179,8 +1224,9 @@ namespace CatHotel.Editor
             soUI.FindProperty("_zoneCenter").objectReferenceValue = zoneCenter;
             soUI.ApplyModifiedProperties();
 
-            // --- Decorations ---
-            PlaceDecorations();
+            // --- Cleanup stale decorations ---
+            var oldDeco = GameObject.Find("Decorations");
+            if (oldDeco != null) Object.DestroyImmediate(oldDeco);
 
             // --- Mark dirty ---
             EditorUtility.SetDirty(camObj);
@@ -1192,6 +1238,105 @@ namespace CatHotel.Editor
                 UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
         }
 
+        private static void PlaceHotelObjects()
+        {
+            // Destroy previous container
+            var old = GameObject.Find("HotelObjects");
+            if (old != null) Object.DestroyImmediate(old);
+
+            var root = new GameObject("HotelObjects");
+            const string D = "Assets/_Project/Data/Objects";
+
+            // Central room: x=2-21, y=2-13 (floor area)
+            // Place objects spread around the room — 1 per need type + 1 extra food
+
+            // Food bowls — satisfies Hunger (maxUsers=3 each to avoid starvation)
+            var foodData = CreateObjectAsset($"{D}/Obj_FoodBowl.asset", "Gamelle",
+                ObjectCategory.Food, 30, 1f, 5f, maxUsers: 3);
+            PlaceHotelObject(root, "FoodBowl_1", $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png",
+                new Vector2Int(5, 4), foodData);
+            PlaceHotelObject(root, "FoodBowl_2", $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png",
+                new Vector2Int(17, 10), foodData);
+
+            // Litter box — satisfies Clean
+            var litterData = CreateObjectAsset($"{D}/Obj_Litter.asset", "Litière",
+                ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 2);
+            PlaceHotelObject(root, "Litter_1", $"{ObjectsRoot}/Litter/LITTER_BOX_Clean.png",
+                new Vector2Int(19, 3), litterData);
+
+            // Wool ball — satisfies Play
+            var ballData = CreateObjectAsset($"{D}/Obj_WoolBall.asset", "Balle de laine",
+                ObjectCategory.Play, 20, 1f, 4f, maxUsers: 2);
+            PlaceHotelObject(root, "WoolBall_1", $"{ObjectsRoot}/Toys/WOOL_BALL.png",
+                new Vector2Int(10, 11), ballData);
+
+            // Bed — satisfies Sleep
+            var bedData = CreateObjectAsset($"{D}/Obj_Bed.asset", "Lit",
+                ObjectCategory.Sleep, 80, 1.3f, 6f, maxUsers: 2);
+            PlaceHotelObject(root, "Bed_1", $"{ObjectsRoot}/Beds/BED.png",
+                new Vector2Int(14, 7), bedData);
+
+            EditorUtility.SetDirty(root);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Setup] Placed hotel objects with HotelObject components.");
+        }
+
+        private static HotelObjectData CreateObjectAsset(string path, string displayName,
+            ObjectCategory category, int cost, float efficiency, float useDuration, int maxUsers = 1)
+        {
+            var data = CreateOrLoadAsset<HotelObjectData>(path);
+            var so = new SerializedObject(data);
+            so.FindProperty("displayName").stringValue = displayName;
+            so.FindProperty("category").enumValueIndex = (int)category;
+            so.FindProperty("cost").intValue = cost;
+            so.FindProperty("efficiency").floatValue = efficiency;
+            so.FindProperty("useDuration").floatValue = useDuration;
+            so.FindProperty("maxUsers").intValue = maxUsers;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(data);
+            return data;
+        }
+
+        private static void PlaceHotelObject(GameObject parent, string name, string spritePath,
+            Vector2Int gridPos, HotelObjectData data)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+            if (sprite == null)
+            {
+                Debug.LogWarning($"[Setup] Object sprite not found: {spritePath}");
+                return;
+            }
+
+            var go = new GameObject(name);
+            go.transform.SetParent(parent.transform, false);
+            go.transform.position = new Vector3(gridPos.x + 0.5f, gridPos.y + 0.5f, 0f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.sortingOrder = 5;
+
+            // Clamp so object fits within its grid size (max 1 tile per cell)
+            Vector2Int objSize = data != null ? data.size : Vector2Int.one;
+            float spriteW = sprite.bounds.size.x;
+            float spriteH = sprite.bounds.size.y;
+            float maxW = objSize.x; // 1 world unit per tile
+            float maxH = objSize.y;
+            if (spriteW > maxW || spriteH > maxH)
+            {
+                float scale = Mathf.Min(maxW / spriteW, maxH / spriteH);
+                go.transform.localScale = new Vector3(scale, scale, 1f);
+            }
+
+            var hotelObj = go.AddComponent<HotelObject>();
+            // Use SerializedObject to set private _data field
+            var so = new SerializedObject(hotelObj);
+            so.FindProperty("_data").objectReferenceValue = data;
+            so.ApplyModifiedProperties();
+
+            // Store grid position (Init is called at runtime via OnEnable, but we set it here)
+            hotelObj.Init(data, gridPos);
+        }
+
         private static void PlaceDecorations()
         {
             // Destroy previous decorations container
@@ -1200,26 +1345,15 @@ namespace CatHotel.Editor
 
             var root = new GameObject("Decorations");
 
-            // Central room: x=5-21, y=10-23. Top wall at y=24.
+            // Central room: x=1-22, y=1-14. Top wall at y=14.
 
-            // --- Shelves on top wall tiles (2 heights) ---
-            // Top wall row is y=27 for new room RectInt(11,4,26,24)
-            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(16.5f, 27.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(22.5f, 27.25f, 0), 3);
-            PlaceSprite(root, "Shelf_High_2",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(28.5f, 27.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_2",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(33.5f, 27.25f, 0), 3);
+            // --- Shelves on top wall ---
+            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(7.5f, 14.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(16.5f, 14.25f, 0), 3);
 
             // --- Plants ---
-            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(13.5f, 24.5f, 0), 5);
-            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(34.5f, 23.5f, 0), 5);
-            PlaceSprite(root, "Plante_2",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(33.5f, 8.5f,  0), 5);
-            PlaceSprite(root, "PlantBig_2", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(13.5f, 9.5f,  0), 5);
-
-            // --- Beds ---
-            PlaceSprite(root, "Bed_1",       $"{ObjectsRoot}/Beds/BED.png",        new Vector3(17.5f, 20.5f, 0), 5);
-            PlaceSprite(root, "Coussin_1",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(24.5f, 12.5f, 0), 5);
-            PlaceSprite(root, "LuxBed_1",    $"{ObjectsRoot}/Beds/LUXOUS_BED.png", new Vector3(21.5f, 22.5f, 0), 5);
-            PlaceSprite(root, "Coussin_2",   $"{ObjectsRoot}/Beds/COUSSIN.png",    new Vector3(30.5f, 16.5f, 0), 5);
+            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(3.5f, 13.5f, 0), 5);
+            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(20.5f, 13.5f, 0), 5);
 
             EditorUtility.SetDirty(root);
         }
@@ -1241,23 +1375,17 @@ namespace CatHotel.Editor
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = sprite;
             sr.sortingOrder = sortingOrder;
+
+            // Clamp so decoration fits within 1 tile max
+            float spriteW = sprite.bounds.size.x;
+            float spriteH = sprite.bounds.size.y;
+            if (spriteW > 1f || spriteH > 1f)
+            {
+                float scale = Mathf.Min(1f / spriteW, 1f / spriteH);
+                go.transform.localScale = new Vector3(scale, scale, 1f);
+            }
         }
 
-        private static void SetBreed(SerializedProperty breedsProperty, int index,
-            string name, string spritesRoot,
-            string frontFile, string rightFile, string backFile,
-            RuntimeAnimatorController controller)
-        {
-            var b = breedsProperty.GetArrayElementAtIndex(index);
-            b.FindPropertyRelative("name").stringValue = name;
-            b.FindPropertyRelative("frontSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{spritesRoot}/{frontFile}");
-            b.FindPropertyRelative("rightSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{spritesRoot}/{rightFile}");
-            b.FindPropertyRelative("backSprite").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<Sprite>($"{spritesRoot}/{backFile}");
-            b.FindPropertyRelative("controller").objectReferenceValue = controller;
-        }
 
         private static Tilemap CreateTilemapChild(GameObject parent, string name, int sortOrder)
         {
@@ -1322,6 +1450,130 @@ namespace CatHotel.Editor
             if (obj == null)
                 obj = new GameObject(name);
             return obj;
+        }
+
+        // --- ScriptableObject asset creation ---
+
+        private static T CreateOrLoadAsset<T>(string path) where T : ScriptableObject
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<T>(path);
+            if (existing != null) return existing;
+
+            // Ensure directory exists
+            string dir = System.IO.Path.GetDirectoryName(path);
+            if (!AssetDatabase.IsValidFolder(dir))
+            {
+                string[] parts = dir.Replace("\\", "/").Split('/');
+                string current = parts[0];
+                for (int i = 1; i < parts.Length; i++)
+                {
+                    string next = current + "/" + parts[i];
+                    if (!AssetDatabase.IsValidFolder(next))
+                        AssetDatabase.CreateFolder(current, parts[i]);
+                    current = next;
+                }
+            }
+
+            var asset = ScriptableObject.CreateInstance<T>();
+            AssetDatabase.CreateAsset(asset, path);
+            AssetDatabase.SaveAssets();
+            return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+
+        private static CatBreedData CreateBreedAsset(string assetPath, string breedName,
+            string spritesRoot, string frontFile, string rightFile, string backFile,
+            RuntimeAnimatorController controller,
+            float demand = 1f, float hTrait = 1f, float sTrait = 1f, float pTrait = 1f, float cTrait = 1f,
+            float size = 1f, float speed = 1f, int minRep = 0, bool aggressive = false)
+        {
+            var breed = CreateOrLoadAsset<CatBreedData>(assetPath);
+            var so = new SerializedObject(breed);
+
+            so.FindProperty("breedName").stringValue = breedName;
+            so.FindProperty("minReputation").intValue = minRep;
+            so.FindProperty("isAggressive").boolValue = aggressive;
+            so.FindProperty("frontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{spritesRoot}/{frontFile}");
+            so.FindProperty("rightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{spritesRoot}/{rightFile}");
+            so.FindProperty("backSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{spritesRoot}/{backFile}");
+            so.FindProperty("controller").objectReferenceValue = controller;
+            so.FindProperty("demandMultiplier").floatValue = demand;
+            so.FindProperty("hungerTrait").floatValue = hTrait;
+            so.FindProperty("sleepTrait").floatValue = sTrait;
+            so.FindProperty("playTrait").floatValue = pTrait;
+            so.FindProperty("cleanTrait").floatValue = cTrait;
+            so.FindProperty("size").floatValue = size;
+            so.FindProperty("speed").floatValue = speed;
+
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(breed);
+            return breed;
+        }
+
+        private static CatBreedData[] CreateBreedAssets(
+            RuntimeAnimatorController eurCtrl, RuntimeAnimatorController eur2Ctrl,
+            RuntimeAnimatorController eur3Ctrl, RuntimeAnimatorController siamoisCtrl,
+            RuntimeAnimatorController cleoCtrl, RuntimeAnimatorController aristoteCtrl)
+        {
+            const string D = "Assets/_Project/Data/Breeds";
+
+            // Europeen variants (all minRep 0, balanced stats)
+            var eur1 = CreateBreedAsset($"{D}/Breed_Europeen.asset", "Européen",
+                CatSpritesRoot, "CAT_EUR_FRONT.png", "CAT_EUR_RIGHT.png", "CAT_EUR_BACK.png",
+                eurCtrl);
+
+            var eur2 = CreateBreedAsset($"{D}/Breed_Europeen2.asset", "Européen 2",
+                Eur2SpritesRoot, "CAT_EUR_02_FRONT.png", "CAT_EUR_02_RIGHT.png", "CAT_EUR_02_BACK.png",
+                eur2Ctrl);
+
+            var eur3 = CreateBreedAsset($"{D}/Breed_Europeen3.asset", "Européen 3",
+                Eur3SpritesRoot, "CAT_EUR_03_FRONT.png", "CAT_EUR_03_RIGHT.png", "CAT_EUR_03_BACK.png",
+                eur3Ctrl);
+
+            // Siamois (minRep 2, plays more, GDD: Play +50%, demand 1.2, speed 1.2, size 0.9)
+            var siam = CreateBreedAsset($"{D}/Breed_Siamois.asset", "Siamois",
+                SiamoisSpritesRoot, "CAT_SIAMESE_FRONT.png", "CAT_SIAMESE_RIGHT.png", "CAT_SIAMESE_BACK.png",
+                siamoisCtrl,
+                demand: 1.2f, pTrait: 1.5f, size: 0.9f, speed: 1.2f, minRep: 2);
+
+            // Wire special cat data on Europeen breed (Aristote)
+            var soEur = new SerializedObject(eur1);
+            soEur.FindProperty("hasSpecialVariant").boolValue = true;
+            soEur.FindProperty("specialName").stringValue = "Aristote";
+            soEur.FindProperty("specialChance").floatValue = 0.08f;
+            soEur.FindProperty("specialRevenueMult").floatValue = 2f;
+            soEur.FindProperty("specialDemandMult").floatValue = 1.5f;
+            soEur.FindProperty("specialFrontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_FRONT.png");
+            soEur.FindProperty("specialRightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_RIGHT.png");
+            soEur.FindProperty("specialBackSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{AristoteSpritesRoot}/CAT_EUR_Aristote_BACK.png");
+            soEur.FindProperty("specialController").objectReferenceValue = aristoteCtrl;
+            soEur.ApplyModifiedProperties();
+
+            // Wire Cleo as special on Siamois
+            var soSiam = new SerializedObject(siam);
+            soSiam.FindProperty("hasSpecialVariant").boolValue = true;
+            soSiam.FindProperty("specialName").stringValue = "Cléo";
+            soSiam.FindProperty("specialChance").floatValue = 0.07f;
+            soSiam.FindProperty("specialRevenueMult").floatValue = 2.2f;
+            soSiam.FindProperty("specialDemandMult").floatValue = 1.6f;
+            soSiam.FindProperty("specialFrontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png");
+            soSiam.FindProperty("specialRightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png");
+            soSiam.FindProperty("specialBackSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{CleoSpritesRoot}/CAT_EUR_Cleo_BACK.png");
+            soSiam.FindProperty("specialController").objectReferenceValue = cleoCtrl;
+            soSiam.ApplyModifiedProperties();
+
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Setup] Created breed SO assets.");
+
+            return new[] { eur1, eur2, eur3, siam };
         }
     }
 }

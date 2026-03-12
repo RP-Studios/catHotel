@@ -10,8 +10,8 @@ namespace CatHotel.Grid
             Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
         };
 
-        public const int Width  = 48;
-        public const int Height = 32;
+        public const int Width  = 24;
+        public const int Height = 16;
 
         private readonly CellType[] _cells;
 

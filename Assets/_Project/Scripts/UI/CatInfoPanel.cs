@@ -1,0 +1,286 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using TMPro;
+using DG.Tweening;
+using CatHotel.Hotel;
+using CatHotel.Cats;
+
+namespace CatHotel.UI
+{
+    /// <summary>
+    /// Manages the "CatInformationPannel" overlay.
+    /// Slides in from the right, displays cat stats, closes on "CloseImage" tap.
+    /// </summary>
+    public class CatInfoPanel : MonoBehaviour
+    {
+        [SerializeField] private HotelManager _hotel;
+
+        private RectTransform _panel;
+        private RectTransform _closeRect;
+        private bool _isOpen;
+        private CatInstance _currentCat;
+
+        // Text fields
+        private TMP_Text _catName;
+        private TMP_Text _catSpecies;
+        private TMP_Text _timeRemaining;
+
+        // Need bars (image Right offset: 150 = 0%, 0 = 100%)
+        private RectTransform _happinessBar;
+        private TMP_Text _happinessText;
+        private RectTransform _angerBar;
+        private TMP_Text _angerText;
+        private RectTransform _sleepBar;
+        private TMP_Text _sleepText;
+        private RectTransform _playBar;
+        private TMP_Text _playText;
+        private RectTransform _cleanBar;
+        private TMP_Text _cleanText;
+
+        private const float BarMaxRight = 150f;
+        private float _panelWidth;
+        private Tween _slideTween;
+
+        private void Start()
+        {
+            // GameObject.Find doesn't find inactive objects — search all transforms
+            var panelObj = FindInactiveByName("CatInformationPanel");
+            if (panelObj == null)
+            {
+                Debug.LogWarning("[CatInfoPanel] 'CatInformationPanel' not found in scene.");
+                return;
+            }
+
+            // Ensure active so we can get rect dimensions and animate
+            panelObj.SetActive(true);
+
+            _panel = panelObj.GetComponent<RectTransform>();
+
+            // Ensure panel has a raycastable background so IsPointerOverGameObject works
+            var panelImg = panelObj.GetComponent<Image>();
+            if (panelImg == null)
+            {
+                panelImg = panelObj.AddComponent<Image>();
+                panelImg.color = Color.clear;
+            }
+            panelImg.raycastTarget = true;
+
+            // Force layout rebuild to get correct rect width
+            Canvas.ForceUpdateCanvases();
+            _panelWidth = _panel.rect.width;
+            if (_panelWidth <= 0f) _panelWidth = 800f; // fallback
+
+            // Start hidden (off-screen right)
+            var pos = _panel.anchoredPosition;
+            pos.x = _panelWidth;
+            _panel.anchoredPosition = pos;
+
+            // Store CloseImage RectTransform for hit-testing in Update
+            var closeTransform = FindInChildren(panelObj.transform, "CloseImage");
+            if (closeTransform != null)
+            {
+                _closeRect = closeTransform.GetComponent<RectTransform>();
+                if (closeTransform.GetComponent<ButtonJuice>() == null)
+                    closeTransform.gameObject.AddComponent<ButtonJuice>();
+            }
+
+            // Text fields
+            _catName = FindText(panelObj, "CatName");
+            _catSpecies = FindText(panelObj, "CatSpeciesValue");
+            _timeRemaining = FindText(panelObj, "TimeRemainingPensionValue");
+
+            // Need bars + values
+            _happinessBar = FindBar(panelObj, "HapinessImageValue");
+            _happinessText = FindText(panelObj, "HapinessValue");
+            _angerBar = FindBar(panelObj, "AngerImageValue");
+            _angerText = FindText(panelObj, "AngerValue");
+            _sleepBar = FindBar(panelObj, "SleepImageValue");
+            _sleepText = FindText(panelObj, "SleepValue");
+            _playBar = FindBar(panelObj, "PlayImageValue");
+            _playText = FindText(panelObj, "PlayValue");
+            _cleanBar = FindBar(panelObj, "CleanImageValue");
+            _cleanText = FindText(panelObj, "CleanValue");
+        }
+
+        private void Update()
+        {
+            if (!_isOpen) return;
+
+            // Detect tap on CloseImage via pointer (bypass UI event system)
+            if (_closeRect != null)
+            {
+                var pointer = Pointer.current;
+                if (pointer != null && pointer.press.wasPressedThisFrame)
+                {
+                    Vector2 screenPos = pointer.position.ReadValue();
+                    if (RectTransformUtility.RectangleContainsScreenPoint(_closeRect, screenPos, null))
+                    {
+                        Close();
+                        return;
+                    }
+                }
+            }
+
+            if (_currentCat == null) return;
+            RefreshValues();
+        }
+
+        public void Show(CatInstance cat)
+        {
+            if (_panel == null || cat == null) return;
+
+            _currentCat = cat;
+            _isOpen = true;
+
+            // Fill static info
+            if (_catName != null) _catName.text = cat.CatName;
+            if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
+
+            RefreshValues();
+
+            // Slide in from right
+            _slideTween?.Kill();
+            _slideTween = _panel.DOAnchorPosX(0f, 0.35f).SetEase(Ease.OutBack);
+        }
+
+        public void Close()
+        {
+            if (_panel == null) return;
+
+            _isOpen = false;
+            _currentCat = null;
+
+            _slideTween?.Kill();
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f).SetEase(Ease.InCubic);
+        }
+
+        public bool IsOpen => _isOpen;
+
+        /// <summary>Find CatInstance from a CatEntity.</summary>
+        public CatInstance FindCatInstance(CatEntity entity)
+        {
+            if (_hotel == null || entity == null) return null;
+            foreach (var cat in _hotel.Cats)
+                if (cat.Entity == entity)
+                    return cat;
+            return null;
+        }
+
+        private void RefreshValues()
+        {
+            var cat = _currentCat;
+            if (cat == null) return;
+
+            // Time remaining pension
+            if (_timeRemaining != null)
+            {
+                if (cat.Mode == Core.CatMode.Pension && cat.PensionTimeRemaining > 0f)
+                    _timeRemaining.text = FormatTime(cat.PensionTimeRemaining);
+                else
+                    _timeRemaining.text = "--:--:--";
+            }
+
+            // Happiness
+            if (cat.Happiness != null)
+            {
+                SetBar(_happinessBar, _happinessText, cat.Happiness.Value);
+            }
+
+            // Needs (Anger = Hunger)
+            if (cat.Needs != null)
+            {
+                SetBar(_angerBar, _angerText, cat.Needs.Hunger);
+                SetBar(_sleepBar, _sleepText, cat.Needs.Sleep);
+                SetBar(_playBar, _playText, cat.Needs.Play);
+                SetBar(_cleanBar, _cleanText, cat.Needs.Clean);
+            }
+        }
+
+        // Bar color thresholds
+        private static readonly Color BarColorHigh   = new(0.71f, 0.72f, 0.27f, 1f); // #B5B946
+        private static readonly Color BarColorMid    = new(0.98f, 0.91f, 0.70f, 1f); // #F9E7B2
+        private static readonly Color BarColorLow    = new(0.34f, 0.22f, 0.12f, 1f); // #56381E
+        private static readonly Color BarColorCrit   = new(0.83f, 0.31f, 0.31f, 1f); // #D34E4E
+
+        private static void SetBar(RectTransform bar, TMP_Text text, float value01to100)
+        {
+            int pct = Mathf.RoundToInt(value01to100);
+            if (text != null) text.text = $"{pct}%";
+            if (bar != null)
+            {
+                // Right offset: 150 at 0%, 0 at 100%
+                float right = BarMaxRight * (1f - value01to100 / 100f);
+                var offset = bar.offsetMax;
+                offset.x = -right;
+                bar.offsetMax = offset;
+
+                // Color based on value
+                var img = bar.GetComponent<Image>();
+                if (img != null)
+                {
+                    img.color = pct > 75 ? BarColorHigh
+                              : pct > 50 ? BarColorMid
+                              : pct > 25 ? BarColorLow
+                              : BarColorCrit;
+                }
+            }
+        }
+
+        private static string FormatTime(float seconds)
+        {
+            int total = Mathf.CeilToInt(seconds);
+            int h = total / 3600;
+            int m = (total % 3600) / 60;
+            int s = total % 60;
+            return $"{h:D2}:{m:D2}:{s:D2}";
+        }
+
+        private static TMP_Text FindText(GameObject root, string childName)
+        {
+            var t = FindInChildren(root.transform, childName);
+            if (t == null) return null;
+            return t.GetComponent<TMP_Text>();
+        }
+
+        private static RectTransform FindBar(GameObject root, string childName)
+        {
+            var t = FindInChildren(root.transform, childName);
+            if (t == null) return null;
+            return t.GetComponent<RectTransform>();
+        }
+
+        private static Transform FindInChildren(Transform parent, string name)
+        {
+            // Recursive search through all children
+            foreach (Transform child in parent)
+            {
+                if (child.name == name) return child;
+                var found = FindInChildren(child, name);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        /// <summary>Find a GameObject by name even if it's inactive.</summary>
+        private static GameObject FindInactiveByName(string name)
+        {
+            // First try the fast path (active objects)
+            var go = GameObject.Find(name);
+            if (go != null) return go;
+
+            // Search all root objects including inactive
+            for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            {
+                var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded) continue;
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    var found = FindInChildren(root.transform, name);
+                    if (found != null) return found.gameObject;
+                }
+            }
+            return null;
+        }
+    }
+}

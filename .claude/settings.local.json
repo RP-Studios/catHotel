@@ -29,7 +29,15 @@
       "Bash(find /d/Unity/catHotel_github/Assets/_Project/Art/Cats -iname *.png -type f)",
       "Bash(grep -r \"SadWalk\\\\|sadwalk\" /d/Unity/catHotel_github/Assets/_Project --include=*.cs --include=*.yaml)",
       "Bash(xargs grep:*)",
-      "Bash(xargs -I {} basename {})"
+      "Bash(xargs -I {} basename {})",
+      "Bash(find Assets/_Project/Data/Objects -name *.asset)",
+      "Bash(find Assets/_Project -name BED.png -o -name FOOD_BOWL*.png)",
+      "Bash(xargs cat:*)",
+      "Bash(xargs ls:*)",
+      "Bash(for dir:*)",
+      "Bash(do echo:*)",
+      "Read(//d/Unity/catHotel_github/Assets/_Project/Scripts/Services/**)",
+      "Bash(done)"
     ]
   }
 }

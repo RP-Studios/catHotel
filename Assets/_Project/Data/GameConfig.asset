@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 637e660c51cbd054fa8387d5295f6173, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Core.GameConfig
+  hungerDecay: 0.7
+  sleepDecay: 0.5
+  playDecay: 0.6
+  cleanDecay: 0.45
+  seekThreshold: 60
+  criticalThreshold: 20
+  happyThreshold: 70
+  neutralThreshold: 40
+  unhappyLeaveThreshold: 20
+  leaveDelay: 8
+  revenueTickInterval: 10
+  revenueHappy: 5
+  revenueNeutral: 2
+  pensionBaseRate: 0.5
+  tipPercent: 0.2
+  adoptionHappyDuration: 30
+  adoptionFeeMultiplier: 2
+  maxCats: 20
+  arrivalInterval: 30
+  pensionProbability: 0.7
+  petHappinessBoost: 5
+  petCooldown: 30
+  fightHappinessThreshold: 50
+  fightRange: 3
+  fightDuration: 3
+  fightPenalty: 25
+  fightCooldown: 15
+  capriceCheckInterval: 30
+  capriceChanceNormal: 0.08
+  capricePenalty: 20
+  startingCoins: 500
+  startingGems: 0
+  roomCostPerCell: 10
+  comfortNeutral: 50
+  comfortHappinessScale: 0.2
+  overcrowdedThreshold: 0.8
+  overcrowdedPenalty: 20

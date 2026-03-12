@@ -788,6 +788,8 @@ Si la réputation tombe sous le minimum requis d'une race :
 | **Neutral Darker** | Or mat | `#C5A748` | hsl(46, 52%, 53%) |
 | **Brown Reference** | Marron | `#56381E` | hsl(28, 48%, 23%) |
 | **Brown Darker** | Marron fonce | `#33281F` | hsl(28, 24%, 16%) |
+| **Green Lighter** | Vert clair | `#B5B946` | hsl(62, 45%, 50%) |
+| **Green Darker** | Vert fonce | `#949735` | hsl(62, 48%, 40%) |
 
 **Usage :**
 

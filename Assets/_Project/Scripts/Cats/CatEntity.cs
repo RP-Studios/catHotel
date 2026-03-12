@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
 using CatHotel.Grid;
+using CatHotel.Core;
+using CatHotel.Hotel;
 
 namespace CatHotel.Cats
 {
@@ -21,24 +23,6 @@ namespace CatHotel.Cats
         [SerializeField] private int   _wanderStepsMin = 2;
         [SerializeField] private int   _wanderStepsMax = 6;
 
-        [Header("Rest Activities")]
-        [SerializeField, Range(0f, 1f)] private float _sleepChance = 0.12f;
-        [SerializeField, Range(0f, 1f)] private float _eatChance   = 0.15f;
-        [SerializeField, Range(0f, 1f)] private float _drinkChance = 0.12f;
-        [SerializeField, Range(0f, 1f)] private float _cleanChance = 0.12f;
-        [SerializeField, Range(0f, 1f)] private float _playChance  = 0.12f;
-        [SerializeField, Range(0f, 1f)] private float _fightChance = 0.15f;
-        [SerializeField] private float _sleepTimeMin = 3f;
-        [SerializeField] private float _sleepTimeMax = 5f;
-        [SerializeField] private float _eatTimeMin   = 3f;
-        [SerializeField] private float _eatTimeMax   = 5f;
-        [SerializeField] private float _drinkTimeMin = 3f;
-        [SerializeField] private float _drinkTimeMax = 5f;
-        [SerializeField] private float _cleanTimeMin = 3f;
-        [SerializeField] private float _cleanTimeMax = 5f;
-        [SerializeField] private float _playTimeMin  = 3f;
-        [SerializeField] private float _playTimeMax  = 5f;
-
         // Idle: multiple variants per direction, chosen randomly
         private static readonly string[][] IdleStates =
         {
@@ -52,6 +36,8 @@ namespace CatHotel.Cats
         private Animator _animator;
         private GridData _grid;
         private CatSpawner _spawner;
+        private CatNeeds _needs;
+        private CatBreedData _breed;
         private Vector2Int _gridPos;
         private Sequence _moveSequence;
         private Tween _pendingAction;
@@ -62,7 +48,30 @@ namespace CatHotel.Cats
         private string _chosenRestState;
         private BedSpot _claimedBed;
 
+        // Object interaction
+        private HotelObject _targetObject;
+        private bool _isUsingObject;
+
         public Vector2Int GridPos => _gridPos;
+        public bool IsFighting => _isFighting;
+        public bool IsUsingObject => _isUsingObject;
+        public SpriteRenderer SpriteRenderer => _sr;
+        public CatBreedData Breed => _breed;
+
+        /// <summary>
+        /// Sync _gridPos with actual world position.
+        /// Must be called whenever a walk sequence is killed mid-way,
+        /// otherwise _gridPos stays at the start of the interrupted walk
+        /// and all subsequent pathfinding uses a stale position.
+        /// </summary>
+        private void SyncGridPos()
+        {
+            Vector3 pos = transform.position;
+            var newPos = new Vector2Int(
+                Mathf.FloorToInt(pos.x),
+                Mathf.FloorToInt(pos.y));
+            _gridPos = newPos;
+        }
 
         public void SetSprites(Sprite front, Sprite right, Sprite back)
         {
@@ -78,16 +87,26 @@ namespace CatHotel.Cats
             _gridPos = startCell;
             _sr = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
+            _needs = GetComponent<CatNeeds>();
             transform.position = CellToWorld(startCell);
 
             _currentDir = CatDirection.Front;
             EnterRest();
         }
 
+        /// <summary>Set breed data for speed multiplier.</summary>
+        public void SetBreed(CatBreedData breed)
+        {
+            _breed = breed;
+            if (breed != null)
+                _cellMoveTime = 0.7f / breed.speed;
+        }
+
         private void OnDestroy()
         {
             _moveSequence?.Kill();
             _pendingAction?.Kill();
+            ReleaseCurrentObject();
             if (_claimedBed != null && _spawner != null)
             {
                 _spawner.ReleaseBed(_claimedBed);
@@ -97,13 +116,9 @@ namespace CatHotel.Cats
 
         // --- Emotes (one-shot, triggered externally) ---
 
-        /// <summary>Play happy animation once (2s), then return to idle.</summary>
         public void PlayHappy() => PlayEmote("Happy", 2f);
-
-        /// <summary>Play unhappy animation once (1s), then return to idle.</summary>
         public void PlayUnhappy() => PlayEmote("Unhappy", 1f);
 
-        /// <summary>Play petting animation (2s) with hand overlay, then return to idle.</summary>
         public void PlayPetting(RuntimeAnimatorController handController)
         {
             if (_isFighting) return;
@@ -112,13 +127,12 @@ namespace CatHotel.Cats
             _pendingAction?.Kill();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseCurrentObject();
             ReleaseBedIfClaimed();
 
-            // Face front for petting
             _currentDir = CatDirection.Front;
             PlayAnimState("Pet_Front");
 
-            // Spawn hand overlay above cat
             GameObject handGo = null;
             if (handController != null)
             {
@@ -147,14 +161,24 @@ namespace CatHotel.Cats
             }
         }
 
+        private void ReleaseCurrentObject()
+        {
+            if (_targetObject != null)
+            {
+                _targetObject.Release(GetInstanceID());
+                _targetObject = null;
+            }
+            _isUsingObject = false;
+        }
+
         private void PlayEmote(string prefix, float duration)
         {
             if (_isFighting) return;
-            // Interrupt whatever the cat is doing
             _moveSequence?.Kill();
             _pendingAction?.Kill();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseCurrentObject();
             ReleaseBedIfClaimed();
 
             string state = DirectionalState(prefix, _currentDir);
@@ -169,9 +193,6 @@ namespace CatHotel.Cats
 
         // --- Combat ---
 
-        public bool IsFighting => _isFighting;
-        public SpriteRenderer SpriteRenderer => _sr;
-
         private bool CanFight()
         {
             if (_animator == null || _isFighting) return false;
@@ -181,9 +202,11 @@ namespace CatHotel.Cats
         private bool TryInitiateFight()
         {
             if (_spawner == null || !CanFight()) return false;
-            if (Random.value >= _fightChance) return false;
 
-            // Check left and right neighbors
+            // Only fight if happiness is low (GDD: < 50%)
+            var happiness = GetComponent<CatHappiness>();
+            if (happiness != null && happiness.Value >= 50f) return false;
+
             var leftPos = new Vector2Int(_gridPos.x - 1, _gridPos.y);
             var rightPos = new Vector2Int(_gridPos.x + 1, _gridPos.y);
 
@@ -193,7 +216,6 @@ namespace CatHotel.Cats
             if (neighbor == null || !neighbor.CanFight())
                 return false;
 
-            // Determine who is left and who is right
             CatEntity leftCat = _gridPos.x < neighbor.GridPos.x ? this : neighbor;
             CatEntity rightCat = _gridPos.x < neighbor.GridPos.x ? neighbor : this;
 
@@ -208,6 +230,7 @@ namespace CatHotel.Cats
             _pendingAction?.Kill();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseCurrentObject();
             ReleaseBedIfClaimed();
         }
 
@@ -216,10 +239,15 @@ namespace CatHotel.Cats
             left.EnterFight();
             right.EnterFight();
 
+            // Apply happiness penalty (GDD: -25)
+            var leftH = left.GetComponent<CatHappiness>();
+            var rightH = right.GetComponent<CatHappiness>();
+            leftH?.ApplyFightPenalty();
+            rightH?.ApplyFightPenalty();
+
             var seq = DOTween.Sequence();
             GameObject cloudGo = null;
 
-            // Phase 1: Fight In (2s)
             seq.AppendCallback(() =>
             {
                 left._currentDir = CatDirection.Right;
@@ -229,7 +257,6 @@ namespace CatHotel.Cats
             });
             seq.AppendInterval(2f);
 
-            // Phase 2: Hide cats, show cloud (10s)
             seq.AppendCallback(() =>
             {
                 left._sr.enabled = false;
@@ -242,25 +269,24 @@ namespace CatHotel.Cats
                 var cloudSr = cloudGo.AddComponent<SpriteRenderer>();
                 cloudSr.sortingOrder = 15;
 
-                var cloudAnim = cloudGo.AddComponent<Animator>();
-                cloudAnim.runtimeAnimatorController = _spawner.FightCloudController;
+                if (_spawner != null)
+                {
+                    var cloudAnim = cloudGo.AddComponent<Animator>();
+                    cloudAnim.runtimeAnimatorController = _spawner.FightCloudController;
+                }
             });
-            seq.AppendInterval(10f);
+            seq.AppendInterval(3f); // GDD: 3 seconds
 
-            // Phase 3: Destroy cloud, show cats, Fight Out (1s)
             seq.AppendCallback(() =>
             {
                 if (cloudGo != null) Object.Destroy(cloudGo);
-
                 left._sr.enabled = true;
                 right._sr.enabled = true;
-
                 left.PlayAnimState("Fight_Out_Right");
                 right.PlayAnimState("Fight_Out_Left");
             });
             seq.AppendInterval(1f);
 
-            // Phase 4: Return to normal
             seq.AppendCallback(() =>
             {
                 left._isFighting = false;
@@ -270,107 +296,81 @@ namespace CatHotel.Cats
             });
         }
 
-        // --- Rest: idle / sleep / eat / drink / clean ---
+        // --- Need-Driven AI ---
 
+        /// <summary>
+        /// Main decision point. Checks needs and decides what to do next.
+        /// Priority: Combat > Seek object for urgent need > Idle/Wander.
+        /// </summary>
         private void EnterRest()
         {
+            SyncGridPos();
             _isWalking = false;
             _chosenRestState = null;
+            ReleaseCurrentObject();
 
             if (TryInitiateFight()) return;
-
-            float roll = Random.value;
-            float cursor = 0f;
-
-            cursor += _sleepChance;
-            if (roll < cursor)
-            {
-                StartSleep();
-                return;
-            }
-
-            cursor += _eatChance;
-            if (roll < cursor)
-            {
-                StartRestActivity("Eat", _eatTimeMin, _eatTimeMax);
-                return;
-            }
-
-            cursor += _drinkChance;
-            if (roll < cursor)
-            {
-                StartRestActivity("Drink", _drinkTimeMin, _drinkTimeMax);
-                return;
-            }
-
-            cursor += _cleanChance;
-            if (roll < cursor)
-            {
-                StartRestActivity("Clean", _cleanTimeMin, _cleanTimeMax);
-                return;
-            }
-
-            cursor += _playChance;
-            if (roll < cursor)
-            {
-                StartRestActivity("Play", _playTimeMin, _playTimeMax);
-                return;
-            }
-
+            if (_needs != null && TrySeekObject()) return;
             EnterIdle();
         }
 
-        private void StartRestActivity(string prefix, float timeMin, float timeMax)
+        /// <summary>
+        /// Find the most urgent need and walk to an object that satisfies it.
+        /// </summary>
+        private bool TrySeekObject()
         {
-            _chosenRestState = DirectionalState(prefix, _currentDir);
-            PlayAnimState(_chosenRestState);
+            var urgentNeed = _needs.GetMostUrgentNeed();
+            if (urgentNeed == null) return false;
 
-            float duration = Random.Range(timeMin, timeMax);
-            _pendingAction = DOVirtual.DelayedCall(duration, () =>
+            var obj = ObjectRegistry.FindNearest(urgentNeed.Value, _gridPos);
+            if (obj == null) return false;
+            if (!obj.TryReserve(GetInstanceID())) return false;
+
+            _targetObject = obj;
+            _isUsingObject = false;
+
+            WalkToTarget(obj.GridPos, () => StartUsingObject(urgentNeed.Value));
+            return true;
+        }
+
+        /// <summary>
+        /// Cat arrived at object. Play use animation and satisfy need over time.
+        /// </summary>
+        private void StartUsingObject(NeedType need)
+        {
+            if (_targetObject == null)
             {
-                _chosenRestState = null;
                 EnterIdle();
-            });
-        }
-
-        private void StartSleep()
-        {
-            if (_spawner == null)
-            {
-                SleepInPlace();
                 return;
             }
 
-            var bed = _spawner.ClaimNearestBed(_gridPos);
-            if (bed == null)
+            _isUsingObject = true;
+
+            string animPrefix = need switch
             {
-                SleepInPlace();
-                return;
-            }
+                NeedType.Hunger => "Eat",
+                NeedType.Sleep => "Sleep",
+                NeedType.Play => "Play",
+                NeedType.Clean => "Clean",
+                _ => "Eat"
+            };
 
-            _claimedBed = bed;
-            WalkToTarget(bed.GridPos, () =>
-            {
-                _chosenRestState = DirectionalState("Sleep", _currentDir);
-                PlayAnimState(_chosenRestState);
-
-                _pendingAction = DOVirtual.DelayedCall(10f, () =>
-                {
-                    _spawner.ReleaseBed(_claimedBed);
-                    _claimedBed = null;
-                    _chosenRestState = null;
-                    EnterIdle();
-                });
-            });
-        }
-
-        private void SleepInPlace()
-        {
-            _chosenRestState = DirectionalState("Sleep", _currentDir);
+            _chosenRestState = DirectionalState(animPrefix, _currentDir);
             PlayAnimState(_chosenRestState);
 
-            _pendingAction = DOVirtual.DelayedCall(10f, () =>
+            float duration = _targetObject.Data.useDuration;
+            float ratePerSec = _targetObject.SatisfactionRate;
+            float elapsed = 0f;
+
+            _pendingAction = DOVirtual.Float(0f, duration, duration, t =>
             {
+                float dt = t - elapsed;
+                elapsed = t;
+                if (_needs != null)
+                    _needs.Satisfy(need, ratePerSec * dt);
+            }).OnComplete(() =>
+            {
+                ReleaseCurrentObject();
                 _chosenRestState = null;
                 EnterIdle();
             });
@@ -389,35 +389,39 @@ namespace CatHotel.Cats
             PlayAnimState(_chosenRestState);
 
             float idleTime = Random.Range(_idleTimeMin, _idleTimeMax);
-            _pendingAction = DOVirtual.DelayedCall(idleTime, Wander);
+            _pendingAction = DOVirtual.DelayedCall(idleTime, () =>
+            {
+                // After idle, check needs again before wandering
+                if (_needs != null && TrySeekObject()) return;
+                Wander();
+            });
         }
 
         // --- Targeted Movement (BFS pathfinding) ---
 
-        /// <summary>
-        /// Walk to a specific target cell using BFS pathfinding.
-        /// On arrival, enter normal rest/wander behavior.
-        /// </summary>
         public void WalkToTarget(Vector2Int target)
         {
             WalkToTarget(target, null);
         }
 
-        /// <summary>
-        /// Walk to a target cell. If onArrival is set, call it instead of EnterRest.
-        /// </summary>
         public void WalkToTarget(Vector2Int target, System.Action onArrival)
         {
             if (_isFighting) return;
             _moveSequence?.Kill();
             _pendingAction?.Kill();
+            SyncGridPos();
             _isWalking = false;
             _chosenRestState = null;
 
             var path = _grid.FindPath(_gridPos, target);
             if (path == null || path.Count < 2)
             {
-                if (onArrival != null) onArrival();
+                if (onArrival != null)
+                {
+                    onArrival();
+                    if (!_isWalking && !_isUsingObject && !_isFighting)
+                        EnterRest();
+                }
                 else EnterRest();
                 return;
             }
@@ -444,8 +448,11 @@ namespace CatHotel.Cats
             _moveSequence.OnComplete(() =>
             {
                 _gridPos = finalCell;
+                _isWalking = false;
                 if (onArrival != null) onArrival();
-                else EnterRest();
+                // If callback didn't start a new action, restart AI
+                if (!_isWalking && !_isUsingObject && !_isFighting)
+                    EnterRest();
             });
         }
 
@@ -453,6 +460,7 @@ namespace CatHotel.Cats
 
         private void Wander()
         {
+            SyncGridPos();
             int steps = Random.Range(_wanderStepsMin, _wanderStepsMax + 1);
             var path = BuildRandomPath(steps);
 
@@ -463,7 +471,7 @@ namespace CatHotel.Cats
             }
 
             _isWalking = true;
-            _useSadWalk = Random.value < 0.3f; // 30% chance to use sad walk
+            _useSadWalk = Random.value < 0.3f;
             _chosenRestState = null;
             _moveSequence = DOTween.Sequence();
 
@@ -494,18 +502,13 @@ namespace CatHotel.Cats
         {
             _currentDir = dir;
             if (_useSadWalk && dir == CatDirection.Right)
-            {
                 PlayAnimState("SadWalk_Right");
-            }
             else
-            {
                 PlayAnimState($"Walk_{dir}");
-            }
         }
 
         // --- Helpers ---
 
-        /// <summary>Returns "{prefix}_Front/Left/Right". Back → Front fallback.</summary>
         private static string DirectionalState(string prefix, CatDirection dir)
         {
             return dir == CatDirection.Back
@@ -526,7 +529,6 @@ namespace CatHotel.Cats
             }
             else
             {
-                // No anim for this state → show static sprite
                 _animator.enabled = false;
                 switch (_currentDir)
                 {

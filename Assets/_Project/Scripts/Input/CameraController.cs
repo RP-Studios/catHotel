@@ -7,8 +7,8 @@ namespace CatHotel.Input
     public class CameraController : MonoBehaviour
     {
         [Header("Zoom")]
-        [SerializeField] private float _minOrthoSize = 3f;
-        [SerializeField] private float _maxOrthoSize = 10f;
+        [SerializeField] private float _minOrthoSize = 1.5f;
+        [SerializeField] private float _maxOrthoSize = 5f;
         [SerializeField] private float _zoomSpeed    = 0.5f;
 
         [Header("Inertia")]
@@ -16,7 +16,7 @@ namespace CatHotel.Input
 
         [Header("Bounds")]
         [SerializeField] private Vector2 _gridMin = Vector2.zero;
-        [SerializeField] private Vector2 _gridMax = new(48f, 32f);
+        [SerializeField] private Vector2 _gridMax = new(24f, 16f);
         [SerializeField] private float   _padding = 0.5f;
 
         private Camera _cam;

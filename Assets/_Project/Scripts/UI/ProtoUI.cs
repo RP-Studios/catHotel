@@ -73,8 +73,7 @@ namespace CatHotel.UI
 
         private void OnSpawnPressed()
         {
-            if (_catSpawner == null) return;
-            _catSpawner.SpawnInitialCats();
+            // Spawn is now handled by HotelManager automatically
         }
 
         private void OnPetPressed()
@@ -85,14 +84,16 @@ namespace CatHotel.UI
 
         private void OnHappyPressed()
         {
-            var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
-            if (cat != null) cat.PlayHappy();
+            if (_catSpawner == null || _catSpawner.AllCats.Count == 0) return;
+            var cat = _catSpawner.AllCats[Random.Range(0, _catSpawner.AllCats.Count)];
+            cat.PlayHappy();
         }
 
         private void OnUnhappyPressed()
         {
-            var cat = _catSpawner != null ? _catSpawner.GetRandomCat() : null;
-            if (cat != null) cat.PlayUnhappy();
+            if (_catSpawner == null || _catSpawner.AllCats.Count == 0) return;
+            var cat = _catSpawner.AllCats[Random.Range(0, _catSpawner.AllCats.Count)];
+            cat.PlayUnhappy();
         }
 
         private void OnShopPressed()
