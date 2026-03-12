@@ -34,6 +34,11 @@ namespace CatHotel.UI
         private const float TimerImageRightFull = 160f;
         private const float TimerImageRightEmpty = 5f;
 
+        // Dirty-checking: cache previous values to avoid redundant UI updates
+        private int _prevCapacityPct = -1;
+        private int _prevComfort = -1;
+        private int _prevTimerSec = -1;
+
         private void Start()
         {
             _coinsText = FindText("CoinsCounter");
@@ -126,6 +131,8 @@ namespace CatHotel.UI
             int current = _hotel.CatCount;
             int max = _hotel.Config != null ? _hotel.Config.maxCats : 20;
             int pct = max > 0 ? Mathf.RoundToInt((float)current / max * 100f) : 0;
+            if (pct == _prevCapacityPct) return;
+            _prevCapacityPct = pct;
             _capacityText.text = $"{pct}%";
         }
 
@@ -135,13 +142,16 @@ namespace CatHotel.UI
 
             int max = _hotel.Config != null ? _hotel.Config.maxCats : 20;
             float comfort = ObjectRegistry.CalculateComfort(_hotel.CatCount, max);
-            _comfortText.text = $"{Mathf.RoundToInt(comfort)}";
+            int rounded = Mathf.RoundToInt(comfort);
+            if (rounded == _prevComfort) return;
+            _prevComfort = rounded;
+            _comfortText.text = $"{rounded}";
         }
 
         private void UpdateFloor()
         {
-            if (_floorText == null) return;
-            // For now, single floor
+            // Static value — set once then skip
+            if (_floorText == null || _floorText.text == "RDC") return;
             _floorText.text = "RDC";
         }
 
@@ -151,26 +161,31 @@ namespace CatHotel.UI
 
             float interval = _hotel.Config.arrivalInterval;
             float remaining = interval - _hotel.ArrivalTimer;
+            int sec = Mathf.CeilToInt(remaining);
 
-            if (_timerText != null)
+            // Only update text when the displayed second changes
+            if (sec != _prevTimerSec)
             {
-                if (remaining >= 60f)
+                _prevTimerSec = sec;
+
+                if (_timerText != null)
                 {
-                    int min = Mathf.FloorToInt(remaining / 60f);
-                    int sec = Mathf.FloorToInt(remaining % 60f);
-                    _timerText.text = $"{min}min {sec:00}s";
-                }
-                else
-                {
-                    int sec = Mathf.CeilToInt(remaining);
-                    _timerText.text = $"{sec}s";
+                    if (remaining >= 60f)
+                    {
+                        int min = sec / 60;
+                        int s = sec % 60;
+                        _timerText.text = $"{min}min {s:00}s";
+                    }
+                    else
+                    {
+                        _timerText.text = $"{sec}s";
+                    }
                 }
             }
 
             if (_timerImage != null)
             {
                 float t = Mathf.Clamp01(remaining / interval);
-                // t=1 means full wait → right=160 (hidden), t=0 means imminent → right=5 (shown)
                 float right = Mathf.Lerp(TimerImageRightEmpty, TimerImageRightFull, t);
                 var offset = _timerImage.offsetMax;
                 offset.x = -right;

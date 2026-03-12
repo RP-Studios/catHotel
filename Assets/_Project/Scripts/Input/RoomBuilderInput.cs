@@ -48,7 +48,10 @@ namespace CatHotel.Input
         {
             if (_gridRenderer.PlaceInternalWall(pos))
             {
+
+#if UNITY_EDITOR
                 Debug.Log($"[Build] Wall placed at {pos}");
+#endif
                 return;
             }
 
@@ -58,7 +61,9 @@ namespace CatHotel.Input
                 var neighbor = pos + dir;
                 if (_gridRenderer.PlaceInternalWall(neighbor))
                 {
+#if UNITY_EDITOR
                     Debug.Log($"[Build] Wall placed at {neighbor} (snapped from {pos})");
+#endif
                     return;
                 }
             }
@@ -82,14 +87,19 @@ namespace CatHotel.Input
             {
                 _gridRenderer.ShowGrid();
                 if (_camController != null) _camController.PanLocked = true;
+
+#if UNITY_EDITOR
                 Debug.Log("[Build] Build mode ON (B to exit)");
+#endif
             }
             else
             {
                 _gridRenderer.ClearPreview();
                 _gridRenderer.HideGrid();
                 if (_camController != null) _camController.PanLocked = false;
+#if UNITY_EDITOR
                 Debug.Log("[Build] Build mode OFF");
+#endif
             }
         }
 

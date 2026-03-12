@@ -45,20 +45,26 @@ namespace CatHotel.Core
 
             string json = JsonUtility.ToJson(data, true);
             File.WriteAllText(FilePath, json);
+#if UNITY_EDITOR
             Debug.Log($"[Save] Saved to {FilePath}");
+#endif
         }
 
         public static SaveData Load()
         {
             if (!File.Exists(FilePath))
             {
+#if UNITY_EDITOR
                 Debug.Log("[Save] No save file found, starting fresh.");
+#endif
                 return null;
             }
 
             string json = File.ReadAllText(FilePath);
             var data = JsonUtility.FromJson<SaveData>(json);
+#if UNITY_EDITOR
             Debug.Log($"[Save] Loaded: {data.coins}$, {data.cats.Count} cats, rep {data.reputationLevel}");
+#endif
             return data;
         }
 
@@ -67,7 +73,9 @@ namespace CatHotel.Core
             if (File.Exists(FilePath))
             {
                 File.Delete(FilePath);
+#if UNITY_EDITOR
                 Debug.Log("[Save] Save file deleted.");
+#endif
             }
         }
     }

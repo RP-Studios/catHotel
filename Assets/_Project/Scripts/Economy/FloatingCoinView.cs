@@ -156,13 +156,13 @@ namespace CatHotel.Economy
                     basePos = coin.WorldPosition;
                 }
 
-                // Bob
-                float bob = Mathf.Sin(Time.time * _bobSpeed + coin.SpawnTime) * _bobAmplitude;
+                // Bob: PingPong is cheaper than Sin
+                float bobT = Mathf.PingPong(Time.time * _bobSpeed + coin.SpawnTime, 1f);
+                float bob = (bobT * 2f - 1f) * _bobAmplitude;
                 go.transform.position = basePos + Vector3.up * bob;
 
-                // Spin (2D: oscillate scaleX)
-                float angle = (Time.time - coin.SpawnTime) * _spinSpeed;
-                float scaleX = Mathf.Abs(Mathf.Cos(angle * Mathf.Deg2Rad));
+                // Spin: triangle wave instead of Cos
+                float scaleX = Mathf.PingPong((Time.time - coin.SpawnTime) * _spinSpeed / 180f, 1f);
 
                 // Scale based on stacks: 1.0 at 1 stack → 1.5 at 5 stacks
                 float stackScale = 1f + (coin.Stacks - 1) * 0.125f; // 1.0, 1.125, 1.25, 1.375, 1.5

@@ -37,7 +37,11 @@
       "Bash(for dir:*)",
       "Bash(do echo:*)",
       "Read(//d/Unity/catHotel_github/Assets/_Project/Scripts/Services/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art\" -name \"*.png\" -type f -exec ls -lhS {} +)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets\" -name \"*.png\" -type f -exec du -ch {} +)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets\" -name \"*.png\" -type f -exec ls -lhS {} +)",
+      "Bash(du -sh \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\"/*)"
     ]
   }
 }

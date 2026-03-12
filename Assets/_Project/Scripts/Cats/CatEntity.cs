@@ -52,6 +52,9 @@ namespace CatHotel.Cats
         private HotelObject _targetObject;
         private bool _isUsingObject;
 
+        // Pooled path buffer to avoid GC allocation per wander
+        private readonly List<Vector2Int> _pathBuffer = new(8);
+
         public Vector2Int GridPos => _gridPos;
         public bool IsFighting => _isFighting;
         public bool IsUsingObject => _isUsingObject;
@@ -551,24 +554,24 @@ namespace CatHotel.Cats
 
         private List<Vector2Int> BuildRandomPath(int steps)
         {
-            var path = new List<Vector2Int>(steps);
+            _pathBuffer.Clear();
             Vector2Int current = _gridPos;
 
             for (int i = 0; i < steps; i++)
             {
                 var neighbors = _grid.GetFloorNeighbors(current.x, current.y);
 
-                if (path.Count >= 1)
-                    neighbors.Remove(path.Count >= 2 ? path[^2] : _gridPos);
+                if (_pathBuffer.Count >= 1)
+                    neighbors.Remove(_pathBuffer.Count >= 2 ? _pathBuffer[^2] : _gridPos);
 
                 if (neighbors.Count == 0) break;
 
                 Vector2Int next = neighbors[Random.Range(0, neighbors.Count)];
-                path.Add(next);
+                _pathBuffer.Add(next);
                 current = next;
             }
 
-            return path;
+            return _pathBuffer;
         }
 
         private static CatDirection DeltaToDirection(Vector2Int delta)

@@ -30,6 +30,10 @@ namespace CatHotel.Hotel
         private float _arrivalTimer;
         private float _revenueTimer;
 
+        // Tick-based update for departures + pension (no need to check every frame)
+        private const float CatTickInterval = 0.5f;
+        private float _catTickTimer;
+
         public IReadOnlyList<CatInstance> Cats => _cats;
         public GameConfig Config => _config;
         public EconomyManager Economy => _economy;
@@ -75,8 +79,15 @@ namespace CatHotel.Hotel
 
             UpdateArrivals();
             UpdateRevenueTicks();
-            UpdateDepartures();
-            UpdatePensionTimers();
+
+            // Departures + pension merged into a single tick (0.5s is fine for these checks)
+            _catTickTimer += Time.deltaTime;
+            if (_catTickTimer >= CatTickInterval)
+            {
+                float dt = _catTickTimer;
+                _catTickTimer = 0f;
+                UpdateCats(dt);
+            }
         }
 
         private void UpdateArrivals()
@@ -104,29 +115,25 @@ namespace CatHotel.Hotel
             }
         }
 
-        private void UpdateDepartures()
+        /// <summary>Single merged loop for departures + pension timers (tick-based).</summary>
+        private void UpdateCats(float dt)
         {
             for (int i = _cats.Count - 1; i >= 0; i--)
             {
                 var cat = _cats[i];
-                if (cat.Happiness == null) continue;
 
-                if (cat.Happiness.ShouldLeave && cat.State != CatState.Leaving)
+                // Departure check
+                if (cat.Happiness != null && cat.Happiness.ShouldLeave && cat.State != CatState.Leaving)
                 {
                     StartCatDeparture(cat, CatState.Leaving);
+                    continue;
                 }
-            }
-        }
 
-        private void UpdatePensionTimers()
-        {
-            for (int i = _cats.Count - 1; i >= 0; i--)
-            {
-                var cat = _cats[i];
+                // Pension timer
                 if (cat.Mode != CatMode.Pension) continue;
                 if (cat.State == CatState.Leaving || cat.State == CatState.Pickup) continue;
 
-                cat.PensionTimeRemaining -= Time.deltaTime;
+                cat.PensionTimeRemaining -= dt;
                 if (cat.PensionTimeRemaining <= 0f)
                 {
                     ProcessPensionEnd(cat);
@@ -233,17 +240,19 @@ namespace CatHotel.Hotel
 
         }
 
+        // Reusable buffer to avoid allocation per spawn
+        private readonly List<CatBreedData> _unlockedBuffer = new();
+
         private CatBreedData PickRandomBreed()
         {
-            // Filter to unlocked breeds
-            var unlocked = new List<CatBreedData>();
+            _unlockedBuffer.Clear();
             foreach (var breed in _availableBreeds)
             {
                 if (_reputation.IsBreedUnlocked(breed.minReputation))
-                    unlocked.Add(breed);
+                    _unlockedBuffer.Add(breed);
             }
-            if (unlocked.Count == 0) return null;
-            return unlocked[UnityEngine.Random.Range(0, unlocked.Count)];
+            if (_unlockedBuffer.Count == 0) return null;
+            return _unlockedBuffer[UnityEngine.Random.Range(0, _unlockedBuffer.Count)];
         }
 
         private void ProcessPensionEnd(CatInstance cat)

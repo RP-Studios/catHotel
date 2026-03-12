@@ -198,10 +198,16 @@ namespace CatHotel.Input
 
         private void ApplyInertia()
         {
-            if (_isPanning || _velocity.sqrMagnitude < 0.01f) return;
+            if (_isPanning || _velocity.sqrMagnitude < 0.01f)
+            {
+                _velocity = Vector3.zero;
+                return;
+            }
 
             transform.position += _velocity * Time.unscaledDeltaTime;
-            _velocity *= Mathf.Exp(-_inertiaDamping * Time.unscaledDeltaTime);
+            // Linear approximation of Exp decay — cheaper, visually identical
+            float decay = Mathf.Max(0f, 1f - _inertiaDamping * Time.unscaledDeltaTime);
+            _velocity *= decay;
 
             if (_velocity.sqrMagnitude < 0.01f)
                 _velocity = Vector3.zero;

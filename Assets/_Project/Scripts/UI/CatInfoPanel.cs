@@ -42,6 +42,16 @@ namespace CatHotel.UI
         private float _panelWidth;
         private Tween _slideTween;
 
+        // Dirty-checking: only refresh UI when values change
+        private const float RefreshInterval = 0.2f;
+        private float _refreshTimer;
+        private int _prevHappiness = -1;
+        private int _prevHunger = -1;
+        private int _prevSleep = -1;
+        private int _prevPlay = -1;
+        private int _prevClean = -1;
+        private int _prevTimeSec = -1;
+
         private void Start()
         {
             // GameObject.Find doesn't find inactive objects — search all transforms
@@ -123,6 +133,10 @@ namespace CatHotel.UI
             }
 
             if (_currentCat == null) return;
+
+            _refreshTimer += Time.deltaTime;
+            if (_refreshTimer < RefreshInterval) return;
+            _refreshTimer = 0f;
             RefreshValues();
         }
 
@@ -132,6 +146,8 @@ namespace CatHotel.UI
 
             _currentCat = cat;
             _isOpen = true;
+            _refreshTimer = 0f;
+            ResetDirtyState();
 
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
@@ -176,25 +192,38 @@ namespace CatHotel.UI
             if (_timeRemaining != null)
             {
                 if (cat.Mode == Core.CatMode.Pension && cat.PensionTimeRemaining > 0f)
-                    _timeRemaining.text = FormatTime(cat.PensionTimeRemaining);
-                else
+                {
+                    int sec = Mathf.CeilToInt(cat.PensionTimeRemaining);
+                    if (sec != _prevTimeSec)
+                    {
+                        _prevTimeSec = sec;
+                        _timeRemaining.text = FormatTime(cat.PensionTimeRemaining);
+                    }
+                }
+                else if (_prevTimeSec != 0)
+                {
+                    _prevTimeSec = 0;
                     _timeRemaining.text = "--:--:--";
+                }
             }
 
             // Happiness
             if (cat.Happiness != null)
-            {
-                SetBar(_happinessBar, _happinessText, cat.Happiness.Value);
-            }
+                SetBarIfChanged(_happinessBar, _happinessText, cat.Happiness.Value, ref _prevHappiness);
 
             // Needs (Anger = Hunger)
             if (cat.Needs != null)
             {
-                SetBar(_angerBar, _angerText, cat.Needs.Hunger);
-                SetBar(_sleepBar, _sleepText, cat.Needs.Sleep);
-                SetBar(_playBar, _playText, cat.Needs.Play);
-                SetBar(_cleanBar, _cleanText, cat.Needs.Clean);
+                SetBarIfChanged(_angerBar, _angerText, cat.Needs.Hunger, ref _prevHunger);
+                SetBarIfChanged(_sleepBar, _sleepText, cat.Needs.Sleep, ref _prevSleep);
+                SetBarIfChanged(_playBar, _playText, cat.Needs.Play, ref _prevPlay);
+                SetBarIfChanged(_cleanBar, _cleanText, cat.Needs.Clean, ref _prevClean);
             }
+        }
+
+        private void ResetDirtyState()
+        {
+            _prevHappiness = _prevHunger = _prevSleep = _prevPlay = _prevClean = _prevTimeSec = -1;
         }
 
         // Bar color thresholds
@@ -203,19 +232,20 @@ namespace CatHotel.UI
         private static readonly Color BarColorLow    = new(0.34f, 0.22f, 0.12f, 1f); // #56381E
         private static readonly Color BarColorCrit   = new(0.83f, 0.31f, 0.31f, 1f); // #D34E4E
 
-        private static void SetBar(RectTransform bar, TMP_Text text, float value01to100)
+        private static void SetBarIfChanged(RectTransform bar, TMP_Text text, float value01to100, ref int prevPct)
         {
             int pct = Mathf.RoundToInt(value01to100);
+            if (pct == prevPct) return;
+            prevPct = pct;
+
             if (text != null) text.text = $"{pct}%";
             if (bar != null)
             {
-                // Right offset: 150 at 0%, 0 at 100%
                 float right = BarMaxRight * (1f - value01to100 / 100f);
                 var offset = bar.offsetMax;
                 offset.x = -right;
                 bar.offsetMax = offset;
 
-                // Color based on value
                 var img = bar.GetComponent<Image>();
                 if (img != null)
                 {

@@ -19,6 +19,10 @@ namespace CatHotel.Cats
         private bool _isSpecial;
         private int _reputationDeficit; // how many levels below min reputation
 
+        // Tick-based update: needs don't need per-frame precision
+        private const float TickInterval = 0.2f;
+        private float _tickAccumulator;
+
         public float Hunger => _hunger;
         public float Sleep => _sleep;
         public float Play => _play;
@@ -47,7 +51,12 @@ namespace CatHotel.Cats
         {
             if (_config == null) return;
 
-            float dt = Time.deltaTime;
+            _tickAccumulator += Time.deltaTime;
+            if (_tickAccumulator < TickInterval) return;
+
+            float dt = _tickAccumulator;
+            _tickAccumulator = 0f;
+
             _hunger = Mathf.Max(0f, _hunger - GetDecayRate(NeedType.Hunger) * dt);
             _sleep = Mathf.Max(0f, _sleep - GetDecayRate(NeedType.Sleep) * dt);
             _play = Mathf.Max(0f, _play - GetDecayRate(NeedType.Play) * dt);

@@ -23,6 +23,10 @@ namespace CatHotel.Cats
         // Tracks time spent below leave threshold
         private float _unhappyTimer;
 
+        // Tick-based update: happiness formula doesn't need per-frame precision
+        private const float TickInterval = 0.25f;
+        private float _tickAccumulator;
+
         public float Value => _happiness;
         public bool IsHappy => _happiness >= _config.happyThreshold;
         public bool IsNeutral => _happiness >= _config.neutralThreshold && _happiness < _config.happyThreshold;
@@ -55,17 +59,23 @@ namespace CatHotel.Cats
         {
             if (_needs == null || _config == null) return;
 
+            _tickAccumulator += Time.deltaTime;
+            if (_tickAccumulator < TickInterval) return;
+
+            float dt = _tickAccumulator;
+            _tickAccumulator = 0f;
+
             // Decay pet bonus over cooldown period
             if (_petBonusTimer > 0f)
             {
-                _petBonusTimer -= Time.deltaTime;
+                _petBonusTimer -= dt;
                 if (_petBonusTimer <= 0f)
                     _petBonus = 0f;
             }
 
             // Decay fight penalty over time (recover 5/s)
             if (_fightPenalty > 0f)
-                _fightPenalty = Mathf.Max(0f, _fightPenalty - 5f * Time.deltaTime);
+                _fightPenalty = Mathf.Max(0f, _fightPenalty - 5f * dt);
 
             // GDD formula
             float needsAvg = _needs.Average;
@@ -78,7 +88,7 @@ namespace CatHotel.Cats
 
             // Track time below leave threshold
             if (_happiness < _config.unhappyLeaveThreshold)
-                _unhappyTimer += Time.deltaTime;
+                _unhappyTimer += dt;
             else
                 _unhappyTimer = 0f;
         }

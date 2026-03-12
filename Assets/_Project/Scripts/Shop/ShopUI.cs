@@ -77,7 +77,9 @@ namespace CatHotel.Shop
         private void HandleItemClicked(ShopItemData item)
         {
             OnItemSelected?.Invoke(item);
+#if UNITY_EDITOR
             Debug.Log($"[ShopUI] Selected: {item.displayName} ({item.price} coins)");
+#endif
         }
 
         private void OnDestroy()

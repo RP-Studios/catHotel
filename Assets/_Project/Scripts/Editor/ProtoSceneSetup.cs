@@ -1081,6 +1081,10 @@ namespace CatHotel.Editor
             // --- Create GameConfig SO asset ---
             var gameConfig = CreateOrLoadAsset<GameConfig>("Assets/_Project/Data/GameConfig.asset");
 
+            // --- AppLifecycleManager (frame rate, pause, accelerometer) ---
+            if (mgrObj.GetComponent<CatHotel.Core.AppLifecycleManager>() == null)
+                mgrObj.AddComponent<CatHotel.Core.AppLifecycleManager>();
+
             // --- EconomyManager ---
             var economyMgr = mgrObj.GetComponent<EconomyManager>();
             if (economyMgr == null)
