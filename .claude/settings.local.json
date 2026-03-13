@@ -42,7 +42,12 @@
       "Bash(find \"d:/Unity/catHotel_github/Assets\" -name \"*.png\" -type f -exec du -ch {} +)",
       "Bash(find \"d:/Unity/catHotel_github/Assets\" -name \"*.png\" -type f -exec ls -lhS {} +)",
       "Bash(du -sh \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\"/*)",
-      "Bash(grep -r Européen d:/Unity/catHotel_github --include=*.asset)"
+      "Bash(grep -r Européen d:/Unity/catHotel_github --include=*.asset)",
+      "Bash(find d:UnitycatHotel_githubLibraryPackageCache -name *levelplay* -o -name *ironsource*)",
+      "Bash(find d:UnitycatHotel_githubPackages -name *.md -o -name *.txt)",
+      "Bash(find d:UnitycatHotel_githubLibraryPackageCachecom.unity.services.levelplay@eee782b8b69d -name *.md -o -name README*)",
+      "Bash(find d:UnitycatHotel_githubLibraryPackageCachecom.unity.services.levelplay@eee782b8b69dSamples~ -name *.cs)",
+      "Bash(grep -i \"\\\\.cs$\")"
     ]
   }
 }

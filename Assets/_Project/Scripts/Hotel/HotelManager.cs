@@ -66,6 +66,18 @@ namespace CatHotel.Hotel
             if (_reputation != null)
                 _reputation.Init(0, 0);
 
+            // Initialize ads (non-blocking)
+            var adManager = AdManager.Instance ?? FindAnyObjectByType<AdManager>();
+            if (adManager != null)
+            {
+                adManager.OnAdCompleted += OnRewardedAdCompleted;
+                adManager.InitializeAds();
+            }
+            else
+            {
+                Debug.LogWarning("[Hotel] AdManager not found in scene");
+            }
+
             // Wait one frame for GridRenderer.Start() to build the room and entrances
             yield return null;
 
@@ -381,6 +393,12 @@ namespace CatHotel.Hotel
 
             if (cat.Entity != null)
                 Destroy(cat.Entity.gameObject);
+        }
+
+        private void OnRewardedAdCompleted()
+        {
+            if (RevenueBoostManager.Instance != null)
+                RevenueBoostManager.Instance.ActivateBoost();
         }
 
         /// <summary>Get average happiness across all cats.</summary>

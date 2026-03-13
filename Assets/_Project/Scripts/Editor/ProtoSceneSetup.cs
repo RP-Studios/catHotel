@@ -12,6 +12,7 @@ using CatHotel.UI;
 using CatHotel.Core;
 using CatHotel.Economy;
 using CatHotel.Hotel;
+using CatHotel.Services;
 
 namespace CatHotel.Editor
 {
@@ -1127,6 +1128,49 @@ namespace CatHotel.Editor
             soHud.FindProperty("_economy").objectReferenceValue = economyMgr;
             soHud.FindProperty("_reputation").objectReferenceValue = repMgr;
             soHud.ApplyModifiedProperties();
+
+            // --- AuthManager ---
+            var authObj = FindOrCreate("[AuthManager]");
+            var authMgr = authObj.GetComponent<AuthManager>();
+            if (authMgr == null)
+                authMgr = authObj.AddComponent<AuthManager>();
+
+            var authConfig = AssetDatabase.LoadAssetAtPath<AuthConfig>(
+                "Assets/_Project/Data/AuthConfig.asset");
+            if (authConfig != null)
+            {
+                var soAuth = new SerializedObject(authMgr);
+                soAuth.FindProperty("_config").objectReferenceValue = authConfig;
+                soAuth.ApplyModifiedProperties();
+            }
+
+            // --- AdManager ---
+            var adObj = FindOrCreate("[AdManager]");
+            var adMgr = adObj.GetComponent<AdManager>();
+            if (adMgr == null)
+                adMgr = adObj.AddComponent<AdManager>();
+
+            var adConfig = AssetDatabase.LoadAssetAtPath<AdConfig>(
+                "Assets/_Project/Data/AdConfig.asset");
+            if (adConfig != null)
+            {
+                var soAd = new SerializedObject(adMgr);
+                soAd.FindProperty("_config").objectReferenceValue = adConfig;
+                soAd.ApplyModifiedProperties();
+            }
+
+            // --- RevenueBoostManager ---
+            var boostObj = FindOrCreate("[RevenueBoostManager]");
+            var boostMgr = boostObj.GetComponent<RevenueBoostManager>();
+            if (boostMgr == null)
+                boostMgr = boostObj.AddComponent<RevenueBoostManager>();
+
+            if (adConfig != null)
+            {
+                var soBoost = new SerializedObject(boostMgr);
+                soBoost.FindProperty("_config").objectReferenceValue = adConfig;
+                soBoost.ApplyModifiedProperties();
+            }
 
             // --- CatInfoPanel ---
             var catInfoPanel = mgrObj.GetComponent<CatInfoPanel>();

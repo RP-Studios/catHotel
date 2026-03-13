@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CatHotel.Cats;
 using CatHotel.Core;
+using CatHotel.Services;
 
 namespace CatHotel.Economy
 {
@@ -85,6 +86,10 @@ namespace CatHotel.Economy
             int baseRevenue = _config.coinsPerServiceUse;
             float mult = breed.revenueMultiplier;
             if (isSpecial) mult *= breed.specialRevenueMult;
+
+            // Apply ad boost multiplier
+            if (RevenueBoostManager.Instance != null)
+                mult *= RevenueBoostManager.Instance.BoostMultiplier;
 
             int amount = Mathf.RoundToInt(baseRevenue * mult);
             if (amount <= 0) return;

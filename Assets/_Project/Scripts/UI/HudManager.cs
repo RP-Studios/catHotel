@@ -1,7 +1,9 @@
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 using CatHotel.Hotel;
 using CatHotel.Economy;
+using CatHotel.Services;
 
 namespace CatHotel.UI
 {
@@ -46,6 +48,11 @@ namespace CatHotel.UI
         private const float TimerImageRightFull = 160f;
         private const float TimerImageRightEmpty = 5f;
 
+        // Ad boost UI
+        private Button _addBoostButton;
+        private TMP_Text _cooldownTimeValue;
+        private TMP_Text _remainingAds;
+
         // Dirty-checking: cache previous values to avoid redundant UI updates
         private int _prevCapacityPct = -1;
         private int _prevComfort = -1;
@@ -77,6 +84,17 @@ namespace CatHotel.UI
             if (timerImgObj != null)
                 _timerImage = timerImgObj.GetComponent<RectTransform>();
 
+            // Ad boost
+            var addBoostObj = GameObject.Find("AddBoost");
+            if (addBoostObj != null)
+            {
+                _addBoostButton = addBoostObj.GetComponent<Button>();
+                if (_addBoostButton != null)
+                    _addBoostButton.onClick.AddListener(OnAdBoostClicked);
+            }
+            _cooldownTimeValue = FindText("CooldownTimeValue");
+            _remainingAds = FindText("RemainingAds");
+
             if (_economy != null)
             {
                 _economy.OnCoinsChanged += OnCoinsChanged;
@@ -103,6 +121,7 @@ namespace CatHotel.UI
             UpdateFloor();
             UpdateTimer();
             UpdateLevel();
+            UpdateAdBoostUI();
         }
 
         private void OnCoinsChanged(int newTotal)
@@ -282,6 +301,43 @@ namespace CatHotel.UI
                     _pexImage.offsetMax = offset;
                 }
             }
+        }
+
+        private void OnAdBoostClicked()
+        {
+            if (AdManager.Instance != null)
+                AdManager.Instance.ShowRewardedAd();
+        }
+
+        private void UpdateAdBoostUI()
+        {
+            var boost = RevenueBoostManager.Instance;
+            var ads = AdManager.Instance;
+
+            // Cooldown: show remaining boost time or empty
+            if (_cooldownTimeValue != null)
+            {
+                if (boost != null && boost.IsBoosted)
+                {
+                    int sec = Mathf.CeilToInt(boost.BoostTimeRemaining);
+                    _cooldownTimeValue.text = $"x2 {sec}s";
+                }
+                else
+                {
+                    _cooldownTimeValue.text = "";
+                }
+            }
+
+            // Remaining ads today
+            if (_remainingAds != null && ads != null)
+            {
+                int remaining = ads.DailyCap - ads.AdsWatchedToday;
+                _remainingAds.text = $"{remaining}";
+            }
+
+            // Enable/disable button
+            if (_addBoostButton != null)
+                _addBoostButton.interactable = ads != null && ads.IsAdReady && !ads.HasReachedDailyCap;
         }
 
         private static TMP_Text FindText(string name)
