@@ -21,6 +21,8 @@ namespace CatHotel.UI
         private RectTransform _paramsRect;
         private RectTransform _mainMenuRect;
 
+        private ParametersPanel _parametersPanel;
+
         public bool IsOpen => _isOpen;
 
         private void Start()
@@ -59,6 +61,11 @@ namespace CatHotel.UI
             AddJuice(_paramsRect);
             AddJuice(_mainMenuRect);
 
+            // Get or add ParametersPanel on same object
+            _parametersPanel = GetComponent<ParametersPanel>();
+            if (_parametersPanel == null)
+                _parametersPanel = gameObject.AddComponent<ParametersPanel>();
+
             // Wire "System" button to open this panel
             var systemObj = GameObject.Find("System");
             if (systemObj != null)
@@ -92,11 +99,11 @@ namespace CatHotel.UI
                 return;
             }
 
-            // Params => not available yet
+            // Params => open ParametersPanel
             if (_paramsRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_paramsRect, screenPos, null))
             {
-                // TODO: open params panel
+                OpenParameters();
                 return;
             }
 
@@ -113,8 +120,11 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = true;
+            Time.timeScale = 0f;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f).SetEase(Ease.OutBack);
+            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
+                .SetEase(Ease.OutBack)
+                .SetUpdate(true);
         }
 
         public void Close()
@@ -122,7 +132,18 @@ namespace CatHotel.UI
             if (_panel == null) return;
             _isOpen = false;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f).SetEase(Ease.InCubic);
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+                .SetEase(Ease.InCubic)
+                .SetUpdate(true)
+                .OnComplete(() => Time.timeScale = 1f);
+        }
+
+        private void OpenParameters()
+        {
+            if (_parametersPanel == null) return;
+            Close();
+            _parametersPanel.Open();
+            _parametersPanel.OnClosed = Open; // Return to OptionsPanel when ParametersPanel closes
         }
 
         private static void AddJuice(RectTransform rt)

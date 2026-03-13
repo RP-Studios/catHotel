@@ -7,12 +7,13 @@ using CatHotel.Core;
 using CatHotel.Economy;
 using CatHotel.Grid;
 using CatHotel.Services;
+using CatHotel.UI;
 
 namespace CatHotel.Hotel
 {
     /// <summary>
     /// Central game orchestrator. Manages cat arrivals (pension/refuge),
-    /// revenue ticks, departures, and ties all systems together.
+    /// service-based revenue, departures, and ties all systems together.
     /// </summary>
     public class HotelManager : MonoBehaviour
     {
@@ -28,7 +29,6 @@ namespace CatHotel.Hotel
 
         private readonly List<CatInstance> _cats = new();
         private float _arrivalTimer;
-        private float _revenueTimer;
 
         // Tick-based update for departures + pension (no need to check every frame)
         private const float CatTickInterval = 0.5f;
@@ -78,7 +78,6 @@ namespace CatHotel.Hotel
             if (_config == null) return;
 
             UpdateArrivals();
-            UpdateRevenueTicks();
 
             // Departures + pension merged into a single tick (0.5s is fine for these checks)
             _catTickTimer += Time.deltaTime;
@@ -101,20 +100,6 @@ namespace CatHotel.Hotel
             TrySpawnCat();
         }
 
-        private void UpdateRevenueTicks()
-        {
-            _revenueTimer += Time.deltaTime;
-            if (_revenueTimer < _config.revenueTickInterval) return;
-            _revenueTimer = 0f;
-
-            foreach (var cat in _cats)
-            {
-                if (cat.Happiness == null || cat.Entity == null) continue;
-                _economy.ProcessRevenueTick(
-                    cat.Happiness, cat.Breed, cat.Entity.transform, cat.IsSpecial);
-            }
-        }
-
         /// <summary>Single merged loop for departures + pension timers (tick-based).</summary>
         private void UpdateCats(float dt)
         {
@@ -122,8 +107,16 @@ namespace CatHotel.Hotel
             {
                 var cat = _cats[i];
 
-                // Departure check
-                if (cat.Happiness != null && cat.Happiness.ShouldLeave && cat.State != CatState.Leaving)
+                // Sample happiness for average tracking
+                if (cat.Happiness != null && cat.State == CatState.Idle)
+                {
+                    cat.HappinessSum += cat.Happiness.Value;
+                    cat.HappinessSamples++;
+                }
+
+                // Departure check (skip cats already leaving or being picked up)
+                if (cat.Happiness != null && cat.Happiness.ShouldLeave
+                    && cat.State != CatState.Leaving && cat.State != CatState.Pickup)
                 {
                     StartCatDeparture(cat, CatState.Leaving);
                     continue;
@@ -141,6 +134,16 @@ namespace CatHotel.Hotel
             }
         }
 
+        /// <summary>Called when a cat finishes using a service object. Spawns a floating coin.</summary>
+        private void OnCatServiceUsed(CatInstance cat)
+        {
+            if (cat.Entity == null || cat.Happiness == null) return;
+            if (cat.Happiness.IsUnhappy) return;
+
+            _economy.ProcessRevenueTick(
+                cat.Happiness, cat.Breed, cat.Entity.transform, cat.IsSpecial);
+        }
+
         private void TrySpawnCat()
         {
             var entrances = _gridRenderer.Entrances;
@@ -150,9 +153,8 @@ namespace CatHotel.Hotel
             var breed = PickRandomBreed();
             if (breed == null) return;
 
-            // Decide pension vs refuge
-            bool isPension = UnityEngine.Random.value < _config.pensionProbability;
-            var mode = isPension ? CatMode.Pension : CatMode.Refuge;
+            // All cats are pension for now
+            var mode = CatMode.Pension;
 
             // Pick entrance
             var entrance = entrances[UnityEngine.Random.Range(0, entrances.Count)];
@@ -203,10 +205,8 @@ namespace CatHotel.Hotel
             // Pick a name
             string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
 
-            // Pension duration
-            float pensionDuration = isPension
-                ? UnityEngine.Random.Range(breed.stayDurationRange.x, breed.stayDurationRange.y)
-                : 0f;
+            // Pension duration: 1-5 minutes
+            float pensionDuration = UnityEngine.Random.Range(60f, 300f);
 
             var instance = new CatInstance
             {
@@ -221,6 +221,9 @@ namespace CatHotel.Hotel
                 PensionTimeRemaining = pensionDuration,
                 PensionDuration = pensionDuration
             };
+
+            // Generate a floating coin each time this cat finishes using a service
+            entity.OnServiceUsed += () => OnCatServiceUsed(instance);
 
             _cats.Add(instance);
             if (_catSpawner != null) _catSpawner.RegisterCat(entity);
@@ -257,25 +260,77 @@ namespace CatHotel.Hotel
 
         private void ProcessPensionEnd(CatInstance cat)
         {
+            cat.State = CatState.Pickup;
+            cat.Entity.SetDeparting();
+
+            // Walk to exit first
+            var entrances = _gridRenderer.Entrances;
+            if (entrances != null && entrances.Count > 0)
+            {
+                var exit = entrances[UnityEngine.Random.Range(0, entrances.Count)];
+                cat.Entity.WalkToTarget(exit, () => ShowPensionEndPanel(cat));
+            }
+            else
+            {
+                ShowPensionEndPanel(cat);
+            }
+        }
+
+        private void ShowPensionEndPanel(CatInstance cat)
+        {
             // Calculate payment
-            float avgHappiness = cat.Happiness.Value;
-            float payment = _config.pensionBaseRate * cat.PensionDuration * (avgHappiness / 100f)
+            float happiness = cat.Happiness.Value;
+            float avgHappiness = cat.AverageHappiness;
+            float payment = _config.pensionBaseRate * cat.PensionDuration * (happiness / 100f)
                 * cat.Breed.revenueMultiplier;
-            int coins = Mathf.RoundToInt(payment);
+            int baseCoins = Mathf.RoundToInt(payment);
 
-            // Tip if happy
-            if (avgHappiness > 80f)
-                coins += Mathf.RoundToInt(coins * _config.tipPercent);
+            int tipCoins = 0;
+            if (happiness > 80f)
+                tipCoins = Mathf.RoundToInt(baseCoins * _config.tipPercent);
 
-            _economy.AddCoins(coins);
+            int totalCoins = baseCoins + tipCoins;
 
-            // Reputation penalty if unhappy
-            if (avgHappiness < 50f)
-                _reputation.AddPoints(-1);
-            else if (avgHappiness > 80f)
-                _reputation.AddPoints(1);
+            // Get front sprite
+            Sprite frontSprite = cat.IsSpecial && cat.Breed.specialFrontSprite != null
+                ? cat.Breed.specialFrontSprite : cat.Breed.frontSprite;
 
-            StartCatDeparture(cat, CatState.Pickup);
+            // Pause game
+            Time.timeScale = 0f;
+
+            // Show panel
+            var panel = GetComponent<EndPensionPanel>();
+            if (panel != null)
+            {
+                panel.Show(new PensionEndData
+                {
+                    CatSprite = frontSprite,
+                    CatName = cat.CatName,
+                    AvgHappiness = avgHappiness,
+                    BaseCoins = baseCoins,
+                    TipCoins = tipCoins,
+                    TotalCoins = totalCoins
+                }, () =>
+                {
+                    // Collect callback — unpause, add coins, award XP, finalize departure
+                    Time.timeScale = 1f;
+                    _economy.AddCoins(totalCoins);
+
+                    _reputation.AwardPensionXp(happiness, cat.IsSpecial,
+                        _cats.Count, GetAverageHappiness(), _economy.TrySpend);
+
+                    FinalizeDeparture(cat);
+                });
+            }
+            else
+            {
+                // Fallback if no panel — old behavior
+                Time.timeScale = 1f;
+                _economy.AddCoins(totalCoins);
+                _reputation.AwardPensionXp(happiness, cat.IsSpecial,
+                    _cats.Count, GetAverageHappiness(), _economy.TrySpend);
+                FinalizeDeparture(cat);
+            }
         }
 
         /// <summary>Process adoption for a refuge cat (called when adopter arrives).</summary>
@@ -288,8 +343,9 @@ namespace CatHotel.Hotel
             int coins = Mathf.RoundToInt(fee);
             _economy.AddCoins(coins);
 
-            int repBonus = Mathf.RoundToInt(5f + 10f * (cat.Breed.minReputation / 9f));
-            _reputation.AddPoints(repBonus);
+            // Award XP for completed adoption
+            _reputation.AwardAdoptionXp(cat.Happiness.Value, cat.IsSpecial,
+                _cats.Count, GetAverageHappiness(), _economy.TrySpend);
 
             StartCatDeparture(cat, CatState.Adopted);
         }
@@ -297,6 +353,7 @@ namespace CatHotel.Hotel
         private void StartCatDeparture(CatInstance cat, CatState reason)
         {
             cat.State = reason;
+            cat.Entity.SetDeparting();
 
             var entrances = _gridRenderer.Entrances;
             if (entrances != null && entrances.Count > 0)
@@ -355,6 +412,11 @@ namespace CatHotel.Hotel
         // Pension tracking
         public float PensionDuration;
         public float PensionTimeRemaining;
+
+        // Average happiness tracking (sampled each tick)
+        public float HappinessSum;
+        public int HappinessSamples;
+        public float AverageHappiness => HappinessSamples > 0 ? HappinessSum / HappinessSamples : 0f;
 
         // Adoption tracking
         public float HappyDuration; // seconds continuously happy (for adopter trigger)

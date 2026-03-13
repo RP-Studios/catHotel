@@ -5,39 +5,69 @@ namespace CatHotel.Hotel
 {
     /// <summary>
     /// Manages reputation level (0-10). Controls breed unlocks and cat limits.
+    /// Level-up requires BOTH: cumulative XP threshold AND enough happy cats.
+    /// XP is earned from completed pensions and adoptions.
     /// GDD section 8.
     /// </summary>
     public class ReputationManager : MonoBehaviour
     {
         private static readonly ReputationLevel[] Levels = new[]
         {
-            new ReputationLevel(0,  "Débutant",          0,  0,    0,    5),
-            new ReputationLevel(1,  "Amateur",           3,  60,   100,  10),
-            new ReputationLevel(2,  "Compétent",         5,  65,   200,  15),
-            new ReputationLevel(3,  "Professionnel",     7,  70,   350,  20),
-            new ReputationLevel(4,  "Expert",            10, 72,   500,  25),
-            new ReputationLevel(5,  "Renommé",           12, 75,   750,  30),
-            new ReputationLevel(6,  "Célèbre",           14, 77,   1000, 35),
-            new ReputationLevel(7,  "Prestigieux",       16, 80,   1500, 40),
-            new ReputationLevel(8,  "Élite",             18, 82,   2000, 45),
-            new ReputationLevel(9,  "Légendaire",        20, 85,   3000, 50),
-            new ReputationLevel(10, "Maître des Chats",  25, 88,   5000, 55),
+            //                                              cats  happiness  cost   maxCats  xpThreshold
+            new ReputationLevel(0,  "Débutant",          0,  0,    0,    5,    0),
+            new ReputationLevel(1,  "Amateur",           3,  60,   100,  10,   50),
+            new ReputationLevel(2,  "Compétent",         5,  65,   200,  15,   150),
+            new ReputationLevel(3,  "Professionnel",     7,  70,   350,  20,   350),
+            new ReputationLevel(4,  "Expert",            10, 72,   500,  25,   700),
+            new ReputationLevel(5,  "Renommé",           12, 75,   750,  30,   1200),
+            new ReputationLevel(6,  "Célèbre",           14, 77,   1000, 35,   1950),
+            new ReputationLevel(7,  "Prestigieux",       16, 80,   1500, 40,   3000),
+            new ReputationLevel(8,  "Élite",             18, 82,   2000, 45,   4500),
+            new ReputationLevel(9,  "Légendaire",        20, 85,   3000, 50,   6500),
+            new ReputationLevel(10, "Maître des Chats",  25, 88,   5000, 55,   10000),
         };
 
+        // XP rewards
+        public const int XpPension = 10;
+        public const int XpAdoption = 25;
+        public const float XpHappyBonus = 1.5f;   // x1.5 if happiness > 80%
+        public const float XpSpecialMultiplier = 2f; // x2 for special cats
+        public const float HappyBonusThreshold = 80f;
+
         private int _level;
-        private int _reputationPoints; // accumulated from adoptions and good pension service
+        private int _xp;
 
         public int Level => _level;
+        public int Xp => _xp;
         public string LevelName => Levels[_level].Name;
         public int MaxCats => Levels[_level].MaxCats;
         public ReputationLevel CurrentLevel => Levels[_level];
 
-        public event Action<int> OnLevelChanged;
+        /// <summary>Get the next level data, or null if already max.</summary>
+        public ReputationLevel? NextLevel => _level < 10 ? Levels[_level + 1] : null;
 
-        public void Init(int level, int points)
+        /// <summary>XP progress within current level (0-1).</summary>
+        public float XpProgress
+        {
+            get
+            {
+                if (_level >= 10) return 1f;
+                var next = Levels[_level + 1];
+                int currentThreshold = Levels[_level].XpThreshold;
+                int nextThreshold = next.XpThreshold;
+                int range = nextThreshold - currentThreshold;
+                if (range <= 0) return 1f;
+                return Mathf.Clamp01((float)(_xp - currentThreshold) / range);
+            }
+        }
+
+        public event Action<int> OnLevelChanged;
+        public event Action<int> OnXpGained;
+
+        public void Init(int level, int xp)
         {
             _level = Mathf.Clamp(level, 0, 10);
-            _reputationPoints = points;
+            _xp = xp;
         }
 
         /// <summary>Check if a breed with the given min reputation is unlocked.</summary>
@@ -52,29 +82,57 @@ namespace CatHotel.Hotel
             return Mathf.Max(0, minReputation - _level);
         }
 
-        /// <summary>Add reputation points (from adoptions, good pension service).</summary>
-        public void AddPoints(int points)
+        /// <summary>
+        /// Award XP for a completed pension. Checks for auto level-up.
+        /// </summary>
+        public void AwardPensionXp(float catHappiness, bool isSpecial,
+            int currentCatCount, float avgHappiness, Func<int, bool> spendCoins)
         {
-            _reputationPoints += points;
+            int xp = XpPension;
+            if (catHappiness > HappyBonusThreshold) xp = Mathf.RoundToInt(xp * XpHappyBonus);
+            if (isSpecial) xp = Mathf.RoundToInt(xp * XpSpecialMultiplier);
+
+            AddXp(xp, currentCatCount, avgHappiness, spendCoins);
         }
 
-        /// <summary>Try to upgrade to next level. Returns true if successful.</summary>
-        public bool TryUpgrade(int currentCatCount, float avgHappiness, System.Func<int, bool> spendCoins)
+        /// <summary>
+        /// Award XP for a completed adoption. Checks for auto level-up.
+        /// </summary>
+        public void AwardAdoptionXp(float catHappiness, bool isSpecial,
+            int currentCatCount, float avgHappiness, Func<int, bool> spendCoins)
         {
-            if (_level >= 10) return false;
+            int xp = XpAdoption;
+            if (catHappiness > HappyBonusThreshold) xp = Mathf.RoundToInt(xp * XpHappyBonus);
+            if (isSpecial) xp = Mathf.RoundToInt(xp * XpSpecialMultiplier);
 
-            var next = Levels[_level + 1];
-            if (currentCatCount < next.CatsRequired) return false;
-            if (avgHappiness < next.MinHappiness) return false;
-            if (!spendCoins(next.UpgradeCost)) return false;
+            AddXp(xp, currentCatCount, avgHappiness, spendCoins);
+        }
 
-            _level++;
-            OnLevelChanged?.Invoke(_level);
-            return true;
+        private void AddXp(int amount, int currentCatCount, float avgHappiness, Func<int, bool> spendCoins)
+        {
+            _xp += amount;
+            OnXpGained?.Invoke(amount);
+            TryAutoLevelUp(currentCatCount, avgHappiness, spendCoins);
+        }
+
+        /// <summary>Try to auto level-up if both XP and cat conditions are met.</summary>
+        private void TryAutoLevelUp(int currentCatCount, float avgHappiness, Func<int, bool> spendCoins)
+        {
+            while (_level < 10)
+            {
+                var next = Levels[_level + 1];
+                if (_xp < next.XpThreshold) break;
+                if (currentCatCount < next.CatsRequired) break;
+                if (avgHappiness < next.MinHappiness) break;
+                if (!spendCoins(next.UpgradeCost)) break;
+
+                _level++;
+                OnLevelChanged?.Invoke(_level);
+            }
         }
 
         public int SaveLevel() => _level;
-        public int SavePoints() => _reputationPoints;
+        public int SaveXp() => _xp;
     }
 
     public readonly struct ReputationLevel
@@ -85,8 +143,10 @@ namespace CatHotel.Hotel
         public readonly float MinHappiness;
         public readonly int UpgradeCost;
         public readonly int MaxCats;
+        public readonly int XpThreshold;
 
-        public ReputationLevel(int index, string name, int catsRequired, float minHappiness, int upgradeCost, int maxCats)
+        public ReputationLevel(int index, string name, int catsRequired, float minHappiness,
+            int upgradeCost, int maxCats, int xpThreshold)
         {
             Index = index;
             Name = name;
@@ -94,6 +154,7 @@ namespace CatHotel.Hotel
             MinHappiness = minHappiness;
             UpgradeCost = upgradeCost;
             MaxCats = maxCats;
+            XpThreshold = xpThreshold;
         }
     }
 }

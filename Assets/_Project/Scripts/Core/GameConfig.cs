@@ -23,13 +23,9 @@ namespace CatHotel.Core
         [Tooltip("Seconds below unhappy threshold before cat leaves")]
         public float leaveDelay = 8f;
 
-        [Header("Revenue - Tap To Collect")]
-        [Tooltip("Seconds between revenue ticks")]
-        public float revenueTickInterval = 10f;
-        [Tooltip("Coins per tick when happy (>70%)")]
-        public int revenueHappy = 5;
-        [Tooltip("Coins per tick when neutral (40-70%)")]
-        public int revenueNeutral = 2;
+        [Header("Revenue - Service Use")]
+        [Tooltip("Base coins earned when a cat finishes using a service object")]
+        public int coinsPerServiceUse = 5;
 
         [Header("Pension")]
         [Tooltip("Base payment per second of stay")]

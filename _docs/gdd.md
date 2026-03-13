@@ -127,9 +127,9 @@ Quand le joueur est connecté, les revenus ne s'accumulent **pas** automatiqueme
 
 | Aspect | Détail |
 |--------|--------|
-| **Apparition** | Une pièce spawn au-dessus du chat qui génère du revenu (bonheur > 40%) |
-| **Fréquence** | 1 pièce par tick de revenu (chaque seconde si bonheur > 70%, chaque 2.5s si 40-70%) |
-| **Valeur** | La pièce contient le montant du tick (0.5$ ou 0.2$ × multiplicateurs race/spécial/étage) |
+| **Apparition** | Une pièce spawn au-dessus du chat quand il finit d'utiliser un service (bonheur > 40%) |
+| **Fréquence** | 1 pièce par utilisation de service (gamelle, litière, jouet, panier…) |
+| **Valeur** | 5$ de base × multiplicateurs race/spécial/étage |
 | **Collection** | Tap sur la pièce → elle vole vers le compteur HUD avec animation et son |
 | **Accumulation** | Les pièces non collectées s'accumulent sans limite. Cap visuel : max ~20 pièces affichées par chat ; au-delà elles se superposent mais restent collectables |
 | **Ramasser tout** | Bouton HUD qui collecte toutes les pièces visibles en une fois. Cooldown de 60 secondes. Le cooldown peut être supprimé avec 1 gemme (achat ponctuel, durée 5 min) |
@@ -520,8 +520,7 @@ Le jeu utilise un systeme standard F2P a deux monnaies :
 | Source | Montant | Condition |
 |--------|---------|-----------|
 | **Revenus actifs (tap-to-collect)** | | |
-| Chat heureux | 0.5$/tick (1 pièce/sec) | Bonheur > 70%, tap requis en ligne |
-| Chat neutre | 0.2$/tick (1 pièce/2.5s) | Bonheur 40-70%, tap requis en ligne |
+| Utilisation de service | 5$/utilisation × mult. race | Bonheur > 40%, tap requis en ligne |
 | Chat spécial | ×2 à ×3.5 | Selon la race |
 | **Pension (dépôt)** | | |
 | Paiement fin de séjour | 50-200$ | Basé sur durée × bonheur |
@@ -556,7 +555,7 @@ Le jeu utilise un systeme standard F2P a deux monnaies :
 **Début de partie:**
 - Capital initial: 500$
 - Objectif: Créer 1 pièce + services de base
-- Revenu attendu: ~2-3$/sec avec 3 chats heureux
+- Revenu attendu: ~5$/service × 3 chats actifs
 
 **Mi-partie (niveau 5):**
 - Capital accumulé: ~2000-3000$
@@ -694,23 +693,60 @@ Les pubs sont **toujours optionnelles** et offrent des recompenses. 10 points d'
 
 ## 8. Progression et réputation
 
-### 7.1 Niveaux de réputation
+### 8.1 Niveaux de réputation
 
-| Niveau | Nom | Chats requis | Bonheur min | Coût upgrade | Chats max |
-|--------|-----|--------------|-------------|--------------|-----------|
-| 0 | Débutant | - | - | - | 5 |
-| 1 | Amateur | 3 | 60% | 100$ | 10 |
-| 2 | Compétent | 5 | 65% | 200$ | 15 |
-| 3 | Professionnel | 7 | 70% | 350$ | 20 |
-| 4 | Expert | 10 | 72% | 500$ | 25 |
-| 5 | Renommé | 12 | 75% | 750$ | 30 |
-| 6 | Célèbre | 14 | 77% | 1000$ | 35 |
-| 7 | Prestigieux | 16 | 80% | 1500$ | 40 |
-| 8 | Élite | 18 | 82% | 2000$ | 45 |
-| 9 | Légendaire | 20 | 85% | 3000$ | 50 |
-| 10 | Maître des Chats | 25 | 88% | 5000$ | 55 |
+Le passage au niveau supérieur requiert **trois conditions simultanées** :
+1. **XP cumulé** suffisant (gagné par les pensions et adoptions réussies)
+2. **Nombre de chats** atteignant le seuil de bonheur minimum
+3. **Paiement** du coût d'upgrade en pièces
 
-### 7.2 Déblocage de races
+| Niveau | Nom | XP requis | Chats requis | Bonheur min | Coût upgrade | Chats max |
+|--------|-----|-----------|--------------|-------------|--------------|-----------|
+| 0 | Débutant | 0 | - | - | - | 5 |
+| 1 | Amateur | 50 | 3 | 60% | 100$ | 10 |
+| 2 | Compétent | 150 | 5 | 65% | 200$ | 15 |
+| 3 | Professionnel | 350 | 7 | 70% | 350$ | 20 |
+| 4 | Expert | 700 | 10 | 72% | 500$ | 25 |
+| 5 | Renommé | 1 200 | 12 | 75% | 750$ | 30 |
+| 6 | Célèbre | 1 950 | 14 | 77% | 1 000$ | 35 |
+| 7 | Prestigieux | 3 000 | 16 | 80% | 1 500$ | 40 |
+| 8 | Élite | 4 500 | 18 | 82% | 2 000$ | 45 |
+| 9 | Légendaire | 6 500 | 20 | 85% | 3 000$ | 50 |
+| 10 | Maître des Chats | 10 000 | 25 | 88% | 5 000$ | 55 |
+
+### 8.2 Système d'expérience (XP)
+
+L'XP est cumulatif et ne se perd jamais. Il est gagné à chaque action réussie :
+
+| Action | XP de base | Bonus bonheur (> 80%) | Chat spécial |
+|--------|------------|----------------------|--------------|
+| Pension terminée | 10 | x1.5 (= 15) | x2 |
+| Adoption réalisée | 25 | x1.5 (= 37) | x2 |
+
+**Formule :**
+```
+xp_gagné = xp_base × bonus_bonheur × multiplicateur_spécial
+```
+
+- **Bonus bonheur** : x1.5 si le bonheur du chat au moment de l'action est > 80%
+- **Multiplicateur spécial** : x2 si le chat est une variante spéciale
+- Les bonus se cumulent : un chat spécial heureux rapporte `base × 1.5 × 2`
+
+**Exemples :**
+- Pension terminée, chat normal, bonheur 65% → 10 XP
+- Pension terminée, chat normal, bonheur 85% → 15 XP
+- Adoption réalisée, chat spécial, bonheur 90% → 25 × 1.5 × 2 = 75 XP
+
+Le level-up est **automatique** dès que les trois conditions sont réunies (XP + chats heureux + pièces disponibles).
+
+### 8.3 Interface de progression
+
+- **Niveau actuel** : "Niveau N" + nom (ex: "Niveau 2 - Compétent")
+- **Objectif** : "X/Y chats à +ZZ% de bonheur" (X = chats qualifiés, Y = requis, ZZ = seuil)
+- **Barre d'XP** : progression visuelle dans le palier actuel (XP accumulé entre le seuil du niveau actuel et le seuil du niveau suivant)
+- **Niveau suivant** : "Niveau N+1" + nom à atteindre
+
+### 8.4 Déblocage de races
 
 La réputation minimale débloque l'arrivée de nouvelles races :
 - **Niveau 0:** Européen
@@ -722,7 +758,7 @@ La réputation minimale débloque l'arrivée de nouvelles races :
 - **Niveau 8:** Chartreux (agressif)
 - **Niveau 9:** Norvégien (agressif)
 
-### 7.3 Pénalité de réputation
+### 8.5 Pénalité de réputation
 
 Si la réputation tombe sous le minimum requis d'une race :
 - Les chats de cette race ont des besoins qui décroissent +30% plus vite par niveau de déficit

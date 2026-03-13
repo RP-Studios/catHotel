@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Action = System.Action;
 using UnityEngine;
 using DG.Tweening;
 using CatHotel.Grid;
@@ -47,6 +48,7 @@ namespace CatHotel.Cats
         private bool _isFighting;
         private string _chosenRestState;
         private BedSpot _claimedBed;
+        private bool _isDeparting;
 
         // Object interaction
         private HotelObject _targetObject;
@@ -60,6 +62,9 @@ namespace CatHotel.Cats
         public bool IsUsingObject => _isUsingObject;
         public SpriteRenderer SpriteRenderer => _sr;
         public CatBreedData Breed => _breed;
+
+        /// <summary>Fired when the cat finishes using a service object.</summary>
+        public event Action OnServiceUsed;
 
         /// <summary>
         /// Sync _gridPos with actual world position.
@@ -307,6 +312,7 @@ namespace CatHotel.Cats
         /// </summary>
         private void EnterRest()
         {
+            if (_isDeparting) return;
             SyncGridPos();
             _isWalking = false;
             _chosenRestState = null;
@@ -375,6 +381,7 @@ namespace CatHotel.Cats
             {
                 ReleaseCurrentObject();
                 _chosenRestState = null;
+                OnServiceUsed?.Invoke();
                 EnterIdle();
             });
         }
@@ -405,6 +412,19 @@ namespace CatHotel.Cats
         public void WalkToTarget(Vector2Int target)
         {
             WalkToTarget(target, null);
+        }
+
+        /// <summary>Mark cat as departing — stops all AI behavior.</summary>
+        public void SetDeparting()
+        {
+            _isDeparting = true;
+            _pendingAction?.Kill();
+            if (_isUsingObject && _targetObject != null)
+            {
+                _targetObject.Release(GetInstanceID());
+                _targetObject = null;
+                _isUsingObject = false;
+            }
         }
 
         public void WalkToTarget(Vector2Int target, System.Action onArrival)

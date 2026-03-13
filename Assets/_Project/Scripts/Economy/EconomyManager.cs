@@ -75,14 +75,14 @@ namespace CatHotel.Economy
         }
 
         /// <summary>
-        /// Called by HotelManager each revenue tick for each cat.
+        /// Called when a cat finishes using a service object.
         /// Spawns a new coin or stacks on existing one (max 5 stacks).
         /// </summary>
         public void ProcessRevenueTick(CatHappiness happiness, CatBreedData breed, Transform catTransform, bool isSpecial)
         {
             if (happiness.IsUnhappy) return;
 
-            int baseRevenue = _config.revenueHappy;
+            int baseRevenue = _config.coinsPerServiceUse;
             float mult = breed.revenueMultiplier;
             if (isSpecial) mult *= breed.specialRevenueMult;
 

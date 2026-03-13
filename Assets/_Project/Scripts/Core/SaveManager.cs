@@ -24,6 +24,7 @@ namespace CatHotel.Core
                 coins = hotel.Economy.Coins,
                 gems = hotel.Economy.Gems,
                 reputationLevel = hotel.Reputation.Level,
+                reputationXp = hotel.Reputation.Xp,
                 lastSaveTime = DateTime.UtcNow.ToString("o"),
                 cats = new List<CatSaveData>()
             };
@@ -86,6 +87,7 @@ namespace CatHotel.Core
         public int coins;
         public int gems;
         public int reputationLevel;
+        public int reputationXp;
         public string lastSaveTime;
         public List<CatSaveData> cats;
     }

@@ -1142,6 +1142,11 @@ namespace CatHotel.Editor
             if (optionsPanel == null)
                 optionsPanel = mgrObj.AddComponent<OptionsPanel>();
 
+            // --- EndPensionPanel ---
+            var endPensionPanel = mgrObj.GetComponent<EndPensionPanel>();
+            if (endPensionPanel == null)
+                endPensionPanel = mgrObj.AddComponent<EndPensionPanel>();
+
             // --- FloatingCoinView ---
             var coinView = mgrObj.GetComponent<FloatingCoinView>();
             if (coinView == null)

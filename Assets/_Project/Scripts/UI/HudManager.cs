@@ -23,6 +23,18 @@ namespace CatHotel.UI
         private TMP_Text _timerText;
         private RectTransform _timerImage;
 
+        // Level / XP UI
+        private TMP_Text _nextLevelObjective;
+        private TMP_Text _currentLvlValue;
+        private TMP_Text _currentLvlDesc;
+        private TMP_Text _nextLvlValue;
+        private TMP_Text _nextLvlDesc;
+        private RectTransform _pexImage;
+
+        // PexImageValue right offset: 900 = empty, 97 = full
+        private const float PexRightEmpty = 900f;
+        private const float PexRightFull = 97f;
+
         // Animated coin counter
         private int _displayedCoins;
         private int _targetCoins;
@@ -38,6 +50,8 @@ namespace CatHotel.UI
         private int _prevCapacityPct = -1;
         private int _prevComfort = -1;
         private int _prevTimerSec = -1;
+        private int _prevLevel = -1;
+        private int _prevXp = -1;
 
         private void Start()
         {
@@ -47,6 +61,17 @@ namespace CatHotel.UI
             _comfortText = FindText("ComfortLevel");
             _floorText = FindText("CurrentFloorIndex");
             _timerText = FindText("NexCatTimerSec");
+
+            // Level / XP UI
+            _nextLevelObjective = FindText("NextLevelObjectiveCurrentValue");
+            _currentLvlValue = FindText("CurrentLvlValue");
+            _currentLvlDesc = FindText("CurrentLvlDesc");
+            _nextLvlValue = FindText("NextLvlValue");
+            _nextLvlDesc = FindText("NextLvlDesc");
+
+            var pexObj = GameObject.Find("PexImageValue");
+            if (pexObj != null)
+                _pexImage = pexObj.GetComponent<RectTransform>();
 
             var timerImgObj = GameObject.Find("NextCatTimerImage");
             if (timerImgObj != null)
@@ -77,6 +102,7 @@ namespace CatHotel.UI
             UpdateComfort();
             UpdateFloor();
             UpdateTimer();
+            UpdateLevel();
         }
 
         private void OnCoinsChanged(int newTotal)
@@ -190,6 +216,71 @@ namespace CatHotel.UI
                 var offset = _timerImage.offsetMax;
                 offset.x = -right;
                 _timerImage.offsetMax = offset;
+            }
+        }
+
+        private void UpdateLevel()
+        {
+            if (_reputation == null) return;
+
+            int level = _reputation.Level;
+            int xp = _reputation.Xp;
+
+            // Dirty check
+            if (level == _prevLevel && xp == _prevXp) return;
+            _prevLevel = level;
+            _prevXp = xp;
+
+            var current = _reputation.CurrentLevel;
+            var next = _reputation.NextLevel;
+
+            // Current level
+            if (_currentLvlValue != null)
+                _currentLvlValue.text = $"Niveau {level}";
+            if (_currentLvlDesc != null)
+                _currentLvlDesc.text = current.Name;
+
+            if (next.HasValue)
+            {
+                // Count cats meeting happiness threshold
+                int qualifiedCats = 0;
+                foreach (var cat in _hotel.Cats)
+                {
+                    if (cat.Happiness != null && cat.Happiness.Value >= next.Value.MinHappiness)
+                        qualifiedCats++;
+                }
+
+                if (_nextLvlValue != null)
+                    _nextLvlValue.text = $"Niveau {next.Value.Index}";
+                if (_nextLvlDesc != null)
+                    _nextLvlDesc.text = next.Value.Name;
+                if (_nextLevelObjective != null)
+                    _nextLevelObjective.text = $"{qualifiedCats}/{next.Value.CatsRequired} chats à +{next.Value.MinHappiness:0}% de bonheur";
+
+                // XP bar based on accumulated XP progress
+                if (_pexImage != null)
+                {
+                    float progress = _reputation.XpProgress;
+                    float right = Mathf.Lerp(PexRightEmpty, PexRightFull, progress);
+                    var offset = _pexImage.offsetMax;
+                    offset.x = -right;
+                    _pexImage.offsetMax = offset;
+                }
+            }
+            else
+            {
+                if (_nextLvlValue != null)
+                    _nextLvlValue.text = "MAX";
+                if (_nextLvlDesc != null)
+                    _nextLvlDesc.text = "";
+                if (_nextLevelObjective != null)
+                    _nextLevelObjective.text = "Niveau maximum atteint !";
+                if (_pexImage != null)
+                {
+                    var offset = _pexImage.offsetMax;
+                    offset.x = -PexRightFull;
+                    _pexImage.offsetMax = offset;
+                }
             }
         }
 

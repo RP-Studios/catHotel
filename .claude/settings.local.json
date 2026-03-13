@@ -41,7 +41,8 @@
       "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art\" -name \"*.png\" -type f -exec ls -lhS {} +)",
       "Bash(find \"d:/Unity/catHotel_github/Assets\" -name \"*.png\" -type f -exec du -ch {} +)",
       "Bash(find \"d:/Unity/catHotel_github/Assets\" -name \"*.png\" -type f -exec ls -lhS {} +)",
-      "Bash(du -sh \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\"/*)"
+      "Bash(du -sh \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\"/*)",
+      "Bash(grep -r Européen d:/Unity/catHotel_github --include=*.asset)"
     ]
   }
 }
