@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using DG.Tweening;
 using CatHotel.Hotel;
 using CatHotel.Economy;
 using CatHotel.Services;
@@ -52,6 +53,13 @@ namespace CatHotel.UI
         private Button _addBoostButton;
         private TMP_Text _cooldownTimeValue;
         private TMP_Text _remainingAds;
+        private RectTransform _starRt;
+        private GameObject _x2BoostActiveObj;
+        private TMP_Text _x2BoostActiveText;
+
+        // Shop
+        private Button _shopButton;
+        private GameObject _shopPanelObj;
 
         // Dirty-checking: cache previous values to avoid redundant UI updates
         private int _prevCapacityPct = -1;
@@ -84,16 +92,48 @@ namespace CatHotel.UI
             if (timerImgObj != null)
                 _timerImage = timerImgObj.GetComponent<RectTransform>();
 
-            // Ad boost
+            // Ad boost (auto-wire like CollectAllAction)
             var addBoostObj = GameObject.Find("AddBoost");
             if (addBoostObj != null)
             {
                 _addBoostButton = addBoostObj.GetComponent<Button>();
-                if (_addBoostButton != null)
-                    _addBoostButton.onClick.AddListener(OnAdBoostClicked);
+                if (_addBoostButton == null)
+                    _addBoostButton = addBoostObj.AddComponent<Button>();
+                _addBoostButton.onClick.AddListener(OnAdBoostClicked);
+
+                if (addBoostObj.GetComponent<ButtonJuice>() == null)
+                    addBoostObj.AddComponent<ButtonJuice>();
+
+                var starObj = addBoostObj.transform.Find("Star");
+                if (starObj != null)
+                    _starRt = starObj.GetComponent<RectTransform>();
             }
             _cooldownTimeValue = FindText("CooldownTimeValue");
             _remainingAds = FindText("RemainingAds");
+
+            // Find X2BoostActive even if inactive (GameObject.Find won't find inactive objects)
+            _x2BoostActiveObj = FindInactiveByName("X2BoostActive");
+            if (_x2BoostActiveObj != null)
+            {
+                _x2BoostActiveText = _x2BoostActiveObj.GetComponent<TMP_Text>();
+                _x2BoostActiveObj.SetActive(false);
+            }
+
+            // Shop action
+            var shopActionObj = GameObject.Find("ShopAction");
+            if (shopActionObj != null)
+            {
+                _shopButton = shopActionObj.GetComponent<Button>();
+                if (_shopButton == null)
+                    _shopButton = shopActionObj.AddComponent<Button>();
+                _shopButton.onClick.AddListener(OnShopClicked);
+
+                if (shopActionObj.GetComponent<ButtonJuice>() == null)
+                    shopActionObj.AddComponent<ButtonJuice>();
+            }
+            _shopPanelObj = FindInactiveByName("ShopPanel");
+            if (_shopPanelObj != null)
+                _shopPanelObj.SetActive(false);
 
             if (_economy != null)
             {
@@ -303,10 +343,27 @@ namespace CatHotel.UI
             }
         }
 
+        private void OnShopClicked()
+        {
+            if (_shopPanelObj != null)
+                _shopPanelObj.SetActive(!_shopPanelObj.activeSelf);
+        }
+
         private void OnAdBoostClicked()
         {
-            if (AdManager.Instance != null)
-                AdManager.Instance.ShowRewardedAd();
+            var ads = AdManager.Instance;
+            var boost = RevenueBoostManager.Instance;
+            if (ads == null || !ads.IsAdReady || ads.HasReachedDailyCap) return;
+            if (boost != null && boost.IsBoosted) return;
+
+            if (ads.ShowRewardedAd() && _starRt != null)
+            {
+                _starRt.DOKill();
+                _starRt.localScale = Vector3.one;
+                _starRt.DOPunchScale(Vector3.one * 0.3f, 0.35f, 6, 0.5f);
+                _starRt.DOLocalRotate(new Vector3(0, 0, 360f), 0.5f, RotateMode.FastBeyond360)
+                    .SetEase(Ease.OutQuad);
+            }
         }
 
         private void UpdateAdBoostUI()
@@ -320,7 +377,7 @@ namespace CatHotel.UI
                 if (boost != null && boost.IsBoosted)
                 {
                     int sec = Mathf.CeilToInt(boost.BoostTimeRemaining);
-                    _cooldownTimeValue.text = $"x2 {sec}s";
+                    _cooldownTimeValue.text = $"{sec}s";
                 }
                 else
                 {
@@ -335,9 +392,25 @@ namespace CatHotel.UI
                 _remainingAds.text = $"{remaining}";
             }
 
-            // Enable/disable button
+            // X2BoostActive display
+            if (_x2BoostActiveObj != null)
+            {
+                bool boosted = boost != null && boost.IsBoosted;
+                _x2BoostActiveObj.SetActive(boosted);
+                if (boosted && _x2BoostActiveText != null)
+                {
+                    int sec = Mathf.CeilToInt(boost.BoostTimeRemaining);
+                    _x2BoostActiveText.text = $"Boost x2 collecte de cat coins actif ! {sec}s";
+                }
+            }
+
+            // Enable/disable button (blocked during active boost)
             if (_addBoostButton != null)
-                _addBoostButton.interactable = ads != null && ads.IsAdReady && !ads.HasReachedDailyCap;
+            {
+                bool canWatch = ads != null && ads.IsAdReady && !ads.HasReachedDailyCap
+                    && (boost == null || !boost.IsBoosted);
+                _addBoostButton.interactable = canWatch;
+            }
         }
 
         private static TMP_Text FindText(string name)
@@ -359,6 +432,35 @@ namespace CatHotel.UI
             if (value >= 1_000_000) return $"{value / 1_000_000f:F1}M";
             if (value >= 1_000) return $"{value / 1_000f:F1}K";
             return value.ToString();
+        }
+
+        private static GameObject FindInactiveByName(string name)
+        {
+            var go = GameObject.Find(name);
+            if (go != null) return go;
+
+            for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            {
+                var scene = UnityEngine.SceneManagement.SceneManager.GetSceneAt(i);
+                if (!scene.isLoaded) continue;
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    var found = FindInChildren(root.transform, name);
+                    if (found != null) return found.gameObject;
+                }
+            }
+            return null;
+        }
+
+        private static Transform FindInChildren(Transform parent, string name)
+        {
+            foreach (Transform child in parent)
+            {
+                if (child.name == name) return child;
+                var found = FindInChildren(child, name);
+                if (found != null) return found;
+            }
+            return null;
         }
     }
 }

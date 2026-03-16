@@ -4,6 +4,8 @@ using Unity.Services.LevelPlay;
 
 namespace CatHotel.Services
 {
+    public enum AdRewardType { None, BoostX2, PensionX2 }
+
     public class AdManager : MonoBehaviour
     {
         public static AdManager Instance { get; private set; }
@@ -12,6 +14,7 @@ namespace CatHotel.Services
 
         private LevelPlayRewardedAd _rewardedAd;
         private bool _sdkReady;
+        private AdRewardType _pendingReward = AdRewardType.None;
 
         // Daily tracking
         private int _adsWatchedToday;
@@ -27,6 +30,8 @@ namespace CatHotel.Services
         public event Action OnAdCompleted;
         public event Action OnAdFailed;
         public event Action OnAdAvailabilityChanged;
+        public event Action OnPensionAdCompleted;
+        public event Action OnPensionAdFailed;
 
         private void Awake()
         {
@@ -92,16 +97,35 @@ namespace CatHotel.Services
 
             _rewardedAd.OnAdRewarded += (info, reward) =>
             {
-                Debug.Log($"[Ads] Reward granted: {reward.Name} x{reward.Amount}");
+                Debug.Log($"[Ads] Reward granted ({_pendingReward}): {reward.Name} x{reward.Amount}");
                 _adsWatchedToday++;
                 SaveDailyCount();
-                OnAdCompleted?.Invoke();
+
+                switch (_pendingReward)
+                {
+                    case AdRewardType.BoostX2:
+                        OnAdCompleted?.Invoke();
+                        break;
+                    case AdRewardType.PensionX2:
+                        OnPensionAdCompleted?.Invoke();
+                        break;
+                }
+                _pendingReward = AdRewardType.None;
             };
 
             _rewardedAd.OnAdDisplayFailed += (info, error) =>
             {
-                Debug.LogWarning($"[Ads] Rewarded ad display failed: {error.ErrorMessage}");
-                OnAdFailed?.Invoke();
+                Debug.LogWarning($"[Ads] Rewarded ad display failed ({_pendingReward}): {error.ErrorMessage}");
+                switch (_pendingReward)
+                {
+                    case AdRewardType.BoostX2:
+                        OnAdFailed?.Invoke();
+                        break;
+                    case AdRewardType.PensionX2:
+                        OnPensionAdFailed?.Invoke();
+                        break;
+                }
+                _pendingReward = AdRewardType.None;
             };
 
             _rewardedAd.OnAdClosed += info =>
@@ -130,7 +154,24 @@ namespace CatHotel.Services
                 return false;
             }
 
+            _pendingReward = AdRewardType.BoostX2;
+            Debug.Log("[Ads] Showing BOOST rewarded ad...");
             _rewardedAd.ShowAd("BoostX2");
+            return true;
+        }
+
+        public bool ShowPensionAd()
+        {
+            if (!IsAdReady)
+            {
+                Debug.LogWarning("[Ads] Cannot show pension ad — not ready");
+                OnPensionAdFailed?.Invoke();
+                return false;
+            }
+
+            _pendingReward = AdRewardType.PensionX2;
+            Debug.Log("[Ads] Showing PENSION rewarded ad...");
+            _rewardedAd.ShowAd("X2Pension");
             return true;
         }
 
@@ -158,6 +199,19 @@ namespace CatHotel.Services
             PlayerPrefs.Save();
             OnAdAvailabilityChanged?.Invoke();
         }
+
+        #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void Update()
+        {
+            if (UnityEngine.InputSystem.Keyboard.current != null &&
+                UnityEngine.InputSystem.Keyboard.current.rKey.wasPressedThisFrame)
+            {
+                _adsWatchedToday = 0;
+                SaveDailyCount();
+                Debug.Log("[Ads] Daily ad counter reset to 0");
+            }
+        }
+        #endif
 
         private void OnDestroy()
         {

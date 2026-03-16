@@ -129,9 +129,9 @@ Set reduit : on mutualise au maximum.
 
 | # | Son | Utilisation | Description |
 |---|-----|-------------|-------------|
-| 1 | **Tap positif** | Tous boutons primaires | Click lumineux |
-| 2 | **Tap neutre** | Boutons secondaires, onglets, fermeture | Click leger |
-| 3 | **Tap erreur** | Boutons danger + desactives + fonds insuffisants | Click sourd |
+| 1 | **Tap positif** | Boutons primaires — ex : placer un objet dans une piece, collecter une piece, confirmer une adoption, acheter dans le shop | Click lumineux |
+| 2 | **Tap neutre** | Boutons secondaires — ex : ouvrir un menu/panneau, selectionner un chat pour voir ses infos, parcourir les onglets du shop, fermer une popup | Click leger |
+| 3 | **Tap erreur** | Action refusee/impossible — ex : placer un objet sur une case occupee, acheter sans assez de pieces, taper un bouton grise (hors connexion, verrouille), caresser un chat en cooldown | Click sourd |
 | 4 | **Panneau ouvre** | Slide in boutique, info chat, info objet, popups | Whoosh montant |
 | 5 | **Panneau ferme** | Slide out, fermeture popup | Whoosh descendant |
 | 6 | **Toast notification** | Tous types de toast (pas de distinction vert/orange/rouge) | Chime neutre d'attention |

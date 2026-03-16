@@ -212,10 +212,10 @@ Sons lies aux animations d'action (ref [2d-animation.md](2d-animation.md)). Joue
 
 | # | Son | Contexte | Description |
 |---|-----|----------|-------------|
-| 1 | **Tap positif** | Boutons primaires (Accueillir, Acheter, Confirmer, Ameliorer) | Click lumineux et satisfaisant |
-| 2 | **Tap neutre** | Boutons secondaires (Annuler, Fermer, onglets, filtres) | Click neutre et leger |
+| 1 | **Tap positif** | Boutons primaires — ex : placer un objet dans une piece, collecter une piece, confirmer une adoption, acheter dans le shop | Click lumineux et satisfaisant |
+| 2 | **Tap neutre** | Boutons secondaires — ex : ouvrir un menu/panneau, selectionner un chat pour voir ses infos, parcourir les onglets du shop, fermer une popup | Click neutre et leger |
 | 3 | **Tap negatif** | Boutons danger (Vendre, Refuser, Supprimer) | Click mat et sourd |
-| 4 | **Tap desactive** | Bouton grise (hotel plein, fonds insuffisants, hors connexion) | Son etouffé / bloque. Bref et non agaçant |
+| 4 | **Tap desactive** | Action refusee/impossible — ex : placer un objet sur une case occupee, acheter sans assez de pieces, taper un bouton grise (hors connexion, verouille), caresser un chat en cooldown | Son etouffé / bloque. Bref et non agaçant |
 | 5 | **Toggle on** | Activation d'un parametre | Click positif avec resolution |
 | 6 | **Toggle off** | Desactivation d'un parametre | Click neutre sans resolution |
 

@@ -322,11 +322,11 @@ namespace CatHotel.Hotel
                     BaseCoins = baseCoins,
                     TipCoins = tipCoins,
                     TotalCoins = totalCoins
-                }, () =>
+                }, (finalCoins) =>
                 {
                     // Collect callback — unpause, add coins, award XP, finalize departure
                     Time.timeScale = 1f;
-                    _economy.AddCoins(totalCoins);
+                    _economy.AddCoins(finalCoins);
 
                     _reputation.AwardPensionXp(happiness, cat.IsSpecial,
                         _cats.Count, GetAverageHappiness(), _economy.TrySpend);

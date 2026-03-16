@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using CatHotel.Services;
 
 namespace CatHotel.UI
 {
@@ -47,7 +48,7 @@ namespace CatHotel.UI
         private Sprite _coinSprite;
         private Canvas _overlayCanvas;
 
-        private Action _onCollect;
+        private Action<int> _onCollect;
         private PensionEndData _data;
         private Coroutine _animCoroutine;
 
@@ -82,7 +83,7 @@ namespace CatHotel.UI
             _tipValue = FindTMP(_panelObj, "TipValue");
             _totalValue = FindTMP(_panelObj, "TotalValue");
             _collectRect = FindRect(_panelObj, "CollectAction");
-            _doubleRect = FindRect(_panelObj, "DoubleGainsAction");
+            _doubleRect = FindRect(_panelObj, "X2GainCollectRewardedAdAction");
 
             AddJuice(_collectRect);
             AddJuice(_doubleRect);
@@ -126,15 +127,15 @@ namespace CatHotel.UI
                 return;
             }
 
-            // Double gains — rewarded ad placeholder
+            // Double gains via rewarded ad
             if (_doubleRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_doubleRect, screenPos, null))
             {
-                // TODO: trigger rewarded ad, then collect double
+                TryDoubleGains();
             }
         }
 
-        public void Show(PensionEndData data, Action onCollect)
+        public void Show(PensionEndData data, Action<int> onCollect)
         {
             CacheReferences();
             if (_panel == null) return;
@@ -168,6 +169,10 @@ namespace CatHotel.UI
             if (_tipValue != null) _tipValue.text = "0";
             if (_totalValue != null) _totalValue.text = "0";
 
+            // Re-enable double button (may have been disabled in previous pension)
+            if (_doubleRect != null)
+                _doubleRect.gameObject.SetActive(true);
+
             // Slide in
             _isOpen = true;
             _slideTween?.Kill();
@@ -199,7 +204,7 @@ namespace CatHotel.UI
                     _panelObj.SetActive(false);
                     var cb = _onCollect;
                     _onCollect = null; // prevent double-invoke
-                    cb?.Invoke();
+                    cb?.Invoke(_data.TotalCoins);
                 });
         }
 
@@ -257,6 +262,60 @@ namespace CatHotel.UI
                 yield return null;
             }
             text.text = format(to);
+        }
+
+        private void TryDoubleGains()
+        {
+            if (!_isOpen) return;
+
+            var ads = AdManager.Instance;
+            if (ads == null || !ads.IsAdReady)
+            {
+                Debug.LogWarning("[Pension] Pension ad not ready");
+                return;
+            }
+
+            ads.OnPensionAdCompleted += OnPensionAdSuccess;
+            ads.OnPensionAdFailed += OnPensionAdFail;
+            ads.ShowPensionAd();
+        }
+
+        private void OnPensionAdSuccess()
+        {
+            UnsubPensionAd();
+            _data.TotalCoins *= 2;
+
+            if (_totalValue != null)
+            {
+                _totalValue.text = $"{_data.TotalCoins}";
+                var rt = _totalValue.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    rt.DOKill();
+                    rt.localScale = Vector3.one;
+                    rt.DOPunchScale(Vector3.one * 0.4f, 0.35f, 8, 0.5f).SetUpdate(true);
+                }
+            }
+
+            // Disable the double button after use
+            if (_doubleRect != null)
+                _doubleRect.gameObject.SetActive(false);
+
+            Debug.Log($"[Pension] Gains doubled to {_data.TotalCoins}");
+        }
+
+        private void OnPensionAdFail()
+        {
+            UnsubPensionAd();
+            Debug.LogWarning("[Pension] Ad failed — gains not doubled");
+        }
+
+        private void UnsubPensionAd()
+        {
+            var ads = AdManager.Instance;
+            if (ads == null) return;
+            ads.OnPensionAdCompleted -= OnPensionAdSuccess;
+            ads.OnPensionAdFailed -= OnPensionAdFail;
         }
 
         private void Collect()
