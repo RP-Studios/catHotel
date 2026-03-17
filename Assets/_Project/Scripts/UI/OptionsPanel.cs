@@ -12,6 +12,7 @@ namespace CatHotel.UI
     public class OptionsPanel : MonoBehaviour
     {
         private RectTransform _panel;
+        private GameObject _panelObj;
         private float _panelWidth;
         private Tween _slideTween;
         private bool _isOpen;
@@ -28,35 +29,36 @@ namespace CatHotel.UI
         private void Start()
         {
             // Find the OptionsPanel (may be inactive)
-            var panelObj = FindInactiveByName("OptionsPanel");
-            if (panelObj == null) return;
+            _panelObj = FindInactiveByName("OptionsPanel");
+            if (_panelObj == null) return;
 
-            panelObj.SetActive(true);
-            _panel = panelObj.GetComponent<RectTransform>();
+            _panel = _panelObj.GetComponent<RectTransform>();
 
-            // Ensure raycastable background
-            var panelImg = panelObj.GetComponent<Image>();
+            // Activate briefly to measure, then deactivate
+            _panelObj.SetActive(true);
+
+            var panelImg = _panelObj.GetComponent<Image>();
             if (panelImg == null)
             {
-                panelImg = panelObj.AddComponent<Image>();
+                panelImg = _panelObj.AddComponent<Image>();
                 panelImg.color = Color.clear;
             }
             panelImg.raycastTarget = true;
 
-            // Get panel width
             Canvas.ForceUpdateCanvases();
             _panelWidth = _panel.rect.width;
             if (_panelWidth <= 0f) _panelWidth = 800f;
 
-            // Start hidden off-screen right
+            // Position off-screen and deactivate
             var pos = _panel.anchoredPosition;
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
+            _panelObj.SetActive(false);
 
             // Find button rects + add tap juice
-            _backToGameRect = FindRect(panelObj, "BackToGameOption");
-            _paramsRect = FindRect(panelObj, "ParamsOption");
-            _mainMenuRect = FindRect(panelObj, "MainMenuOption");
+            _backToGameRect = FindRect(_panelObj, "BackToGameOption");
+            _paramsRect = FindRect(_panelObj, "ParamsOption");
+            _mainMenuRect = FindRect(_panelObj, "MainMenuOption");
             AddJuice(_backToGameRect);
             AddJuice(_paramsRect);
             AddJuice(_mainMenuRect);
@@ -120,6 +122,10 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = true;
+            _panelObj.SetActive(true);
+            var p = _panel.anchoredPosition;
+            p.x = _panelWidth;
+            _panel.anchoredPosition = p;
             Time.timeScale = 0f;
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
@@ -135,7 +141,11 @@ namespace CatHotel.UI
             _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
                 .SetEase(Ease.InCubic)
                 .SetUpdate(true)
-                .OnComplete(() => Time.timeScale = 1f);
+                .OnComplete(() =>
+                {
+                    _panelObj.SetActive(false);
+                    Time.timeScale = 1f;
+                });
         }
 
         private void OpenParameters()

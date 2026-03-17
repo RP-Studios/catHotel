@@ -271,7 +271,8 @@ namespace CatHotel.UI
             var ads = AdManager.Instance;
             if (ads == null || !ads.IsAdReady)
             {
-                Debug.LogWarning("[Pension] Pension ad not ready");
+                Debug.LogWarning("[Pension] Ad not ready — collecting normally");
+                Collect();
                 return;
             }
 
@@ -307,7 +308,8 @@ namespace CatHotel.UI
         private void OnPensionAdFail()
         {
             UnsubPensionAd();
-            Debug.LogWarning("[Pension] Ad failed — gains not doubled");
+            Debug.LogWarning("[Pension] Ad failed — collecting normally");
+            Collect();
         }
 
         private void UnsubPensionAd()

@@ -57,9 +57,7 @@ namespace CatHotel.UI
         private GameObject _x2BoostActiveObj;
         private TMP_Text _x2BoostActiveText;
 
-        // Shop
-        private Button _shopButton;
-        private GameObject _shopPanelObj;
+        // Shop — managed by ShopPanel component
 
         // Dirty-checking: cache previous values to avoid redundant UI updates
         private int _prevCapacityPct = -1;
@@ -70,6 +68,10 @@ namespace CatHotel.UI
 
         private void Start()
         {
+            // Disable BuildAction for now
+            var buildObj = GameObject.Find("BuildAction");
+            if (buildObj != null) buildObj.SetActive(false);
+
             _coinsText = FindText("CoinsCounter");
             _purrlsText = FindText("PurrlsCounter");
             _capacityText = FindText("CapacityPct");
@@ -119,21 +121,7 @@ namespace CatHotel.UI
                 _x2BoostActiveObj.SetActive(false);
             }
 
-            // Shop action
-            var shopActionObj = GameObject.Find("ShopAction");
-            if (shopActionObj != null)
-            {
-                _shopButton = shopActionObj.GetComponent<Button>();
-                if (_shopButton == null)
-                    _shopButton = shopActionObj.AddComponent<Button>();
-                _shopButton.onClick.AddListener(OnShopClicked);
-
-                if (shopActionObj.GetComponent<ButtonJuice>() == null)
-                    shopActionObj.AddComponent<ButtonJuice>();
-            }
-            _shopPanelObj = FindInactiveByName("ShopPanel");
-            if (_shopPanelObj != null)
-                _shopPanelObj.SetActive(false);
+            // ShopAction + ShopPanel are now managed by the ShopPanel component
 
             if (_economy != null)
             {
@@ -341,12 +329,6 @@ namespace CatHotel.UI
                     _pexImage.offsetMax = offset;
                 }
             }
-        }
-
-        private void OnShopClicked()
-        {
-            if (_shopPanelObj != null)
-                _shopPanelObj.SetActive(!_shopPanelObj.activeSelf);
         }
 
         private void OnAdBoostClicked()

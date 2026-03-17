@@ -371,6 +371,7 @@ namespace CatHotel.Cats
             float ratePerSec = _targetObject.SatisfactionRate;
             float elapsed = 0f;
 
+            Debug.Log($"[CatEntity] {gameObject.name} started using object for need={need}, duration={duration}s");
             _pendingAction = DOVirtual.Float(0f, duration, duration, t =>
             {
                 float dt = t - elapsed;
@@ -379,6 +380,7 @@ namespace CatHotel.Cats
                     _needs.Satisfy(need, ratePerSec * dt);
             }).OnComplete(() =>
             {
+                Debug.Log($"[CatEntity] {gameObject.name} finished using object, firing OnServiceUsed (listeners={OnServiceUsed?.GetInvocationList()?.Length ?? 0})");
                 ReleaseCurrentObject();
                 _chosenRestState = null;
                 OnServiceUsed?.Invoke();

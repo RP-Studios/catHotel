@@ -81,6 +81,7 @@ namespace CatHotel.Economy
         /// </summary>
         public void ProcessRevenueTick(CatHappiness happiness, CatBreedData breed, Transform catTransform, bool isSpecial)
         {
+            Debug.Log($"[Economy] ProcessRevenueTick: unhappy={happiness.IsUnhappy}, coinsPerUse={_config.coinsPerServiceUse}, catTransform={catTransform != null}");
             if (happiness.IsUnhappy) return;
 
             int baseRevenue = _config.coinsPerServiceUse;

@@ -17,6 +17,7 @@ namespace CatHotel.UI
         [SerializeField] private HotelManager _hotel;
 
         private RectTransform _panel;
+        private GameObject _panelObj;
         private RectTransform _closeRect;
         private bool _isOpen;
         private CatInstance _currentCat;
@@ -55,39 +56,38 @@ namespace CatHotel.UI
         private void Start()
         {
             // GameObject.Find doesn't find inactive objects — search all transforms
-            var panelObj = FindInactiveByName("CatInformationPanel");
-            if (panelObj == null)
+            _panelObj = FindInactiveByName("CatInformationPanel");
+            if (_panelObj == null)
             {
                 Debug.LogWarning("[CatInfoPanel] 'CatInformationPanel' not found in scene.");
                 return;
             }
 
-            // Ensure active so we can get rect dimensions and animate
-            panelObj.SetActive(true);
+            _panel = _panelObj.GetComponent<RectTransform>();
 
-            _panel = panelObj.GetComponent<RectTransform>();
+            // Activate briefly to measure, then deactivate
+            _panelObj.SetActive(true);
 
-            // Ensure panel has a raycastable background so IsPointerOverGameObject works
-            var panelImg = panelObj.GetComponent<Image>();
+            var panelImg = _panelObj.GetComponent<Image>();
             if (panelImg == null)
             {
-                panelImg = panelObj.AddComponent<Image>();
+                panelImg = _panelObj.AddComponent<Image>();
                 panelImg.color = Color.clear;
             }
             panelImg.raycastTarget = true;
 
-            // Force layout rebuild to get correct rect width
             Canvas.ForceUpdateCanvases();
             _panelWidth = _panel.rect.width;
-            if (_panelWidth <= 0f) _panelWidth = 800f; // fallback
+            if (_panelWidth <= 0f) _panelWidth = 800f;
 
-            // Start hidden (off-screen right)
+            // Position off-screen and deactivate
             var pos = _panel.anchoredPosition;
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
+            _panelObj.SetActive(false);
 
             // Store CloseImage RectTransform for hit-testing in Update
-            var closeTransform = FindInChildren(panelObj.transform, "CloseImage");
+            var closeTransform = FindInChildren(_panelObj.transform, "CloseImage");
             if (closeTransform != null)
             {
                 _closeRect = closeTransform.GetComponent<RectTransform>();
@@ -96,21 +96,21 @@ namespace CatHotel.UI
             }
 
             // Text fields
-            _catName = FindText(panelObj, "CatName");
-            _catSpecies = FindText(panelObj, "CatSpeciesValue");
-            _timeRemaining = FindText(panelObj, "TimeRemainingPensionValue");
+            _catName = FindText(_panelObj, "CatName");
+            _catSpecies = FindText(_panelObj, "CatSpeciesValue");
+            _timeRemaining = FindText(_panelObj, "TimeRemainingPensionValue");
 
             // Need bars + values
-            _happinessBar = FindBar(panelObj, "HapinessImageValue");
-            _happinessText = FindText(panelObj, "HapinessValue");
-            _angerBar = FindBar(panelObj, "AngerImageValue");
-            _angerText = FindText(panelObj, "AngerValue");
-            _sleepBar = FindBar(panelObj, "SleepImageValue");
-            _sleepText = FindText(panelObj, "SleepValue");
-            _playBar = FindBar(panelObj, "PlayImageValue");
-            _playText = FindText(panelObj, "PlayValue");
-            _cleanBar = FindBar(panelObj, "CleanImageValue");
-            _cleanText = FindText(panelObj, "CleanValue");
+            _happinessBar = FindBar(_panelObj, "HapinessImageValue");
+            _happinessText = FindText(_panelObj, "HapinessValue");
+            _angerBar = FindBar(_panelObj, "AngerImageValue");
+            _angerText = FindText(_panelObj, "AngerValue");
+            _sleepBar = FindBar(_panelObj, "SleepImageValue");
+            _sleepText = FindText(_panelObj, "SleepValue");
+            _playBar = FindBar(_panelObj, "PlayImageValue");
+            _playText = FindText(_panelObj, "PlayValue");
+            _cleanBar = FindBar(_panelObj, "CleanImageValue");
+            _cleanText = FindText(_panelObj, "CleanValue");
         }
 
         private void Update()
@@ -155,7 +155,12 @@ namespace CatHotel.UI
 
             RefreshValues();
 
-            // Slide in from right
+            // Activate + position offscreen before slide
+            _panelObj.SetActive(true);
+            var p = _panel.anchoredPosition;
+            p.x = _panelWidth;
+            _panel.anchoredPosition = p;
+
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(0f, 0.35f).SetEase(Ease.OutBack);
         }
@@ -168,7 +173,9 @@ namespace CatHotel.UI
             _currentCat = null;
 
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f).SetEase(Ease.InCubic);
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+                .SetEase(Ease.InCubic)
+                .OnComplete(() => _panelObj.SetActive(false));
         }
 
         public bool IsOpen => _isOpen;

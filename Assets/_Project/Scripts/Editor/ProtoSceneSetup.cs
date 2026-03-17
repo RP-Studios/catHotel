@@ -1191,6 +1191,56 @@ namespace CatHotel.Editor
             if (endPensionPanel == null)
                 endPensionPanel = mgrObj.AddComponent<EndPensionPanel>();
 
+            // --- ObjectPlacement ---
+            var objectPlacement = mgrObj.GetComponent<ObjectPlacement>();
+            if (objectPlacement == null)
+                objectPlacement = mgrObj.AddComponent<ObjectPlacement>();
+
+            // Load ready/cancel sprite frames
+            var readySprites = LoadAllSprites("Assets/_Project/Animations/UI/ready.png");
+            var cancelSprites = LoadAllSprites("Assets/_Project/Animations/UI/cancel.png");
+
+            var soPlacement = new SerializedObject(objectPlacement);
+            soPlacement.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+            soPlacement.FindProperty("_economy").objectReferenceValue = economyMgr;
+
+            var readyArray = soPlacement.FindProperty("_readyFrames");
+            readyArray.arraySize = readySprites.Length;
+            for (int i = 0; i < readySprites.Length; i++)
+                readyArray.GetArrayElementAtIndex(i).objectReferenceValue = readySprites[i];
+
+            var cancelArray = soPlacement.FindProperty("_cancelFrames");
+            cancelArray.arraySize = cancelSprites.Length;
+            for (int i = 0; i < cancelSprites.Length; i++)
+                cancelArray.GetArrayElementAtIndex(i).objectReferenceValue = cancelSprites[i];
+
+            soPlacement.ApplyModifiedProperties();
+
+            // --- ShopPanel ---
+            var shopPanel = mgrObj.GetComponent<ShopPanel>();
+            if (shopPanel == null)
+                shopPanel = mgrObj.AddComponent<ShopPanel>();
+            var shopItemPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_Project/Prefabs/UI/MainShopItem.prefab");
+            var soShop = new SerializedObject(shopPanel);
+            soShop.FindProperty("_itemPrefab").objectReferenceValue = shopItemPrefab;
+            soShop.FindProperty("_economy").objectReferenceValue = economyMgr;
+            soShop.FindProperty("_placement").objectReferenceValue = objectPlacement;
+
+            // Wire all shop object assets
+            const string ObjDir = "Assets/_Project/Data/Objects";
+            var shopObjGuids = AssetDatabase.FindAssets("t:HotelObjectData", new[] { ObjDir });
+            var shopObjArray = soShop.FindProperty("_allShopObjects");
+            shopObjArray.arraySize = shopObjGuids.Length;
+            for (int i = 0; i < shopObjGuids.Length; i++)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(shopObjGuids[i]);
+                var objData = AssetDatabase.LoadAssetAtPath<HotelObjectData>(path);
+                shopObjArray.GetArrayElementAtIndex(i).objectReferenceValue = objData;
+            }
+
+            soShop.ApplyModifiedProperties();
+
             // --- FloatingCoinView ---
             var coinView = mgrObj.GetComponent<FloatingCoinView>();
             if (coinView == null)
@@ -1300,42 +1350,66 @@ namespace CatHotel.Editor
             var root = new GameObject("HotelObjects");
             const string D = "Assets/_Project/Data/Objects";
 
-            // Central room: x=2-21, y=2-13 (floor area)
-            // Place objects spread around the room — 1 per need type + 1 extra food
+            // ==================== ALL SHOP OBJECTS ====================
+            // These ScriptableObjects are used both for scene placement AND shop display.
 
-            // Food bowls — satisfies Hunger (maxUsers=3 each to avoid starvation)
-            var foodData = CreateObjectAsset($"{D}/Obj_FoodBowl.asset", "Gamelle",
-                ObjectCategory.Food, 30, 1f, 5f, maxUsers: 3);
-            PlaceHotelObject(root, "FoodBowl_1", $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png",
-                new Vector2Int(5, 4), foodData);
-            PlaceHotelObject(root, "FoodBowl_2", $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png",
-                new Vector2Int(17, 10), foodData);
+            // --- Beds (Sleep) ---
+            CreateObjectAsset($"{D}/Obj_Bed.asset", "Lit",
+                ObjectCategory.Sleep, 80, 1.3f, 6f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Beds/BED.png", size: Vector2Int.one);
+            CreateObjectAsset($"{D}/Obj_LuxuryBed.asset", "Lit de luxe",
+                ObjectCategory.Sleep, 200, 1.8f, 6f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Beds/LUXOUS_BED.png", size: new Vector2Int(2, 2));
 
-            // Litter box — satisfies Clean
-            var litterData = CreateObjectAsset($"{D}/Obj_Litter.asset", "Litière",
-                ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 2);
-            PlaceHotelObject(root, "Litter_1", $"{ObjectsRoot}/Litter/LITTER_BOX_Clean.png",
-                new Vector2Int(19, 3), litterData);
+            // --- Pillows (Sleep) ---
+            CreateObjectAsset($"{D}/Obj_Coussin.asset", "Coussin",
+                ObjectCategory.Sleep, 40, 1f, 5f, maxUsers: 1,
+                spritePath: $"{ObjectsRoot}/Pillows/COUSSIN.png", size: Vector2Int.one);
 
-            // Wool ball — satisfies Play
-            var ballData = CreateObjectAsset($"{D}/Obj_WoolBall.asset", "Balle de laine",
-                ObjectCategory.Play, 20, 1f, 4f, maxUsers: 2);
-            PlaceHotelObject(root, "WoolBall_1", $"{ObjectsRoot}/Toys/WOOL_BALL.png",
-                new Vector2Int(10, 11), ballData);
+            // --- Croquettes / Food (Hunger) ---
+            CreateObjectAsset($"{D}/Obj_FoodBowl.asset", "Gamelle",
+                ObjectCategory.Food, 25, 1f, 5f, maxUsers: 3,
+                spritePath: $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png", size: Vector2Int.one);
 
-            // Bed — satisfies Sleep
-            var bedData = CreateObjectAsset($"{D}/Obj_Bed.asset", "Lit",
-                ObjectCategory.Sleep, 80, 1.3f, 6f, maxUsers: 2);
-            PlaceHotelObject(root, "Bed_1", $"{ObjectsRoot}/Beds/BED.png",
-                new Vector2Int(14, 7), bedData);
+            // --- Water (Hunger) ---
+            CreateObjectAsset($"{D}/Obj_WaterBowl.asset", "Bol d'eau",
+                ObjectCategory.Food, 25, 1f, 4f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Full.png", size: Vector2Int.one);
+            CreateObjectAsset($"{D}/Obj_WaterBowl04.asset", "Bol d'eau moderne",
+                ObjectCategory.Food, 35, 1.2f, 4f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_04_Full.png", size: Vector2Int.one);
+            CreateObjectAsset($"{D}/Obj_WaterBowlVar02.asset", "Bol d'eau var. 2",
+                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_02_Full.png", size: Vector2Int.one);
+            CreateObjectAsset($"{D}/Obj_WaterBowlVar03.asset", "Bol d'eau var. 3",
+                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_03_Full.png", size: Vector2Int.one);
+
+            // --- Toys (Play) ---
+            CreateObjectAsset($"{D}/Obj_WoolBall.asset", "Balle de laine",
+                ObjectCategory.Play, 20, 1f, 4f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Toys/WOOL_BALL.png", size: Vector2Int.one);
+
+            // --- Scratchers (Play) ---
+            CreateObjectAsset($"{D}/Obj_Scratcher.asset", "Griffoir",
+                ObjectCategory.Play, 50, 1.2f, 5f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Scratchers/SCRATCHER.png", size: Vector2Int.one);
+
+            // --- Litters (Clean) ---
+            CreateObjectAsset($"{D}/Obj_Litter.asset", "Litière",
+                ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 2,
+                spritePath: $"{ObjectsRoot}/Litters/LITTER_BOX_Clean.png", size: Vector2Int.one);
+
+            // No default objects placed — player buys everything from the shop
 
             EditorUtility.SetDirty(root);
             AssetDatabase.SaveAssets();
-            Debug.Log("[Setup] Placed hotel objects with HotelObject components.");
+            Debug.Log("[Setup] Created all shop object assets + placed default hotel objects.");
         }
 
         private static HotelObjectData CreateObjectAsset(string path, string displayName,
-            ObjectCategory category, int cost, float efficiency, float useDuration, int maxUsers = 1)
+            ObjectCategory category, int cost, float efficiency, float useDuration,
+            int maxUsers = 1, string spritePath = null, Vector2Int? size = null)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -1345,6 +1419,20 @@ namespace CatHotel.Editor
             so.FindProperty("efficiency").floatValue = efficiency;
             so.FindProperty("useDuration").floatValue = useDuration;
             so.FindProperty("maxUsers").intValue = maxUsers;
+
+            if (spritePath != null)
+            {
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
+                so.FindProperty("icon").objectReferenceValue = sprite;
+                so.FindProperty("worldSprite").objectReferenceValue = sprite;
+            }
+
+            if (size.HasValue)
+            {
+                var sizeProp = so.FindProperty("size");
+                sizeProp.vector2IntValue = size.Value;
+            }
+
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(data);
             return data;
@@ -1507,6 +1595,21 @@ namespace CatHotel.Editor
 
         // --- ScriptableObject asset creation ---
 
+        /// <summary>Load all sub-sprites from a multi-sprite texture asset.</summary>
+        private static Sprite[] LoadAllSprites(string path)
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath(path);
+            var sprites = new System.Collections.Generic.List<Sprite>();
+            foreach (var a in assets)
+            {
+                if (a is Sprite s)
+                    sprites.Add(s);
+            }
+            // Sort by name to keep frame order
+            sprites.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+            return sprites.ToArray();
+        }
+
         private static T CreateOrLoadAsset<T>(string path) where T : ScriptableObject
         {
             var existing = AssetDatabase.LoadAssetAtPath<T>(path);
@@ -1577,11 +1680,11 @@ namespace CatHotel.Editor
                 CatSpritesRoot, "CAT_EUR_FRONT.png", "CAT_EUR_RIGHT.png", "CAT_EUR_BACK.png",
                 eurCtrl);
 
-            var eur2 = CreateBreedAsset($"{D}/Breed_Europeen2.asset", "Européen 2",
+            var eur2 = CreateBreedAsset($"{D}/Breed_Europeen2.asset", "Européen",
                 Eur2SpritesRoot, "CAT_EUR_02_FRONT.png", "CAT_EUR_02_RIGHT.png", "CAT_EUR_02_BACK.png",
                 eur2Ctrl);
 
-            var eur3 = CreateBreedAsset($"{D}/Breed_Europeen3.asset", "Européen 3",
+            var eur3 = CreateBreedAsset($"{D}/Breed_Europeen3.asset", "Européen",
                 Eur3SpritesRoot, "CAT_EUR_03_FRONT.png", "CAT_EUR_03_RIGHT.png", "CAT_EUR_03_BACK.png",
                 eur3Ctrl);
 

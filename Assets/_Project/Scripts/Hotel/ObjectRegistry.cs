@@ -76,6 +76,18 @@ namespace CatHotel.Hotel
             return Mathf.Clamp(comfort, 0f, 100f);
         }
 
+        /// <summary>Check if a rectangular area is free of placed objects.</summary>
+        public static bool IsAreaFree(RectInt area)
+        {
+            foreach (var obj in All)
+            {
+                var objRect = new RectInt(obj.GridPos, obj.Data.size);
+                if (area.Overlaps(objRect))
+                    return false;
+            }
+            return true;
+        }
+
         public static void Clear() => All.Clear();
 
         private static ObjectCategory NeedToCategory(NeedType need)

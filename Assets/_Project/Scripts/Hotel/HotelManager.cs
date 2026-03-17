@@ -149,9 +149,11 @@ namespace CatHotel.Hotel
         /// <summary>Called when a cat finishes using a service object. Spawns a floating coin.</summary>
         private void OnCatServiceUsed(CatInstance cat)
         {
+            Debug.Log($"[Hotel] OnCatServiceUsed for {cat.CatName}, entity={cat.Entity != null}, happiness={cat.Happiness?.Value}, isUnhappy={cat.Happiness?.IsUnhappy}");
             if (cat.Entity == null || cat.Happiness == null) return;
             if (cat.Happiness.IsUnhappy) return;
 
+            Debug.Log($"[Hotel] Calling ProcessRevenueTick for {cat.CatName}");
             _economy.ProcessRevenueTick(
                 cat.Happiness, cat.Breed, cat.Entity.transform, cat.IsSpecial);
         }
@@ -192,7 +194,7 @@ namespace CatHotel.Hotel
                 animator.enabled = false;
             }
 
-            float scale = breed.size * UnityEngine.Random.Range(0.9f, 1.1f);
+            float scale = breed.size * UnityEngine.Random.Range(0.5f, 0.8f);
             go.transform.localScale = new Vector3(scale, scale, 1f);
 
             // Add CatNeeds & CatHappiness BEFORE CatEntity.Init() so _needs is found

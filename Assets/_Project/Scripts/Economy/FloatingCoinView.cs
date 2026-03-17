@@ -98,6 +98,7 @@ namespace CatHotel.Economy
 
         private void HandleCoinSpawned(FloatingCoin coin)
         {
+            Debug.Log($"[CoinView] HandleCoinSpawned: coinSprite={_coinSprite != null}, amount={coin.Amount}, pos={coin.WorldPosition}");
             if (_coinSprite == null) return;
 
             var go = new GameObject("CoinView");

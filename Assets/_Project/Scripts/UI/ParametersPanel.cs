@@ -12,6 +12,7 @@ namespace CatHotel.UI
     public class ParametersPanel : MonoBehaviour
     {
         private RectTransform _panel;
+        private GameObject _panelObj;
         private RectTransform _closeRect;
         private float _panelWidth;
         private Tween _slideTween;
@@ -23,33 +24,34 @@ namespace CatHotel.UI
 
         private void Start()
         {
-            var panelObj = FindInactiveByName("ParametersPanel");
-            if (panelObj == null) return;
+            _panelObj = FindInactiveByName("ParametersPanel");
+            if (_panelObj == null) return;
 
-            panelObj.SetActive(true);
-            _panel = panelObj.GetComponent<RectTransform>();
+            _panel = _panelObj.GetComponent<RectTransform>();
 
-            // Ensure raycastable background
-            var panelImg = panelObj.GetComponent<Image>();
+            // Activate briefly to measure, then deactivate
+            _panelObj.SetActive(true);
+
+            var panelImg = _panelObj.GetComponent<Image>();
             if (panelImg == null)
             {
-                panelImg = panelObj.AddComponent<Image>();
+                panelImg = _panelObj.AddComponent<Image>();
                 panelImg.color = Color.clear;
             }
             panelImg.raycastTarget = true;
 
-            // Get panel width
             Canvas.ForceUpdateCanvases();
             _panelWidth = _panel.rect.width;
             if (_panelWidth <= 0f) _panelWidth = 800f;
 
-            // Start hidden off-screen right
+            // Position off-screen and deactivate
             var pos = _panel.anchoredPosition;
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
+            _panelObj.SetActive(false);
 
             // CloseImage button
-            var closeTransform = FindInChildren(panelObj.transform, "CloseImage");
+            var closeTransform = FindInChildren(_panelObj.transform, "CloseImage");
             if (closeTransform != null)
             {
                 _closeRect = closeTransform.GetComponent<RectTransform>();
@@ -78,6 +80,10 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = true;
+            _panelObj.SetActive(true);
+            var p = _panel.anchoredPosition;
+            p.x = _panelWidth;
+            _panel.anchoredPosition = p;
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
                 .SetEase(Ease.OutBack)
@@ -91,7 +97,8 @@ namespace CatHotel.UI
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
                 .SetEase(Ease.InCubic)
-                .SetUpdate(true);
+                .SetUpdate(true)
+                .OnComplete(() => _panelObj.SetActive(false));
             OnClosed?.Invoke();
         }
 
