@@ -101,6 +101,15 @@ namespace CatHotel.UI
                 _addBoostButton = addBoostObj.GetComponent<Button>();
                 if (_addBoostButton == null)
                     _addBoostButton = addBoostObj.AddComponent<Button>();
+
+                // Ensure targetGraphic is set for touch input on Android
+                if (_addBoostButton.targetGraphic == null)
+                {
+                    var graphic = addBoostObj.GetComponent<Graphic>();
+                    if (graphic != null)
+                        _addBoostButton.targetGraphic = graphic;
+                }
+
                 _addBoostButton.onClick.AddListener(OnAdBoostClicked);
 
                 if (addBoostObj.GetComponent<ButtonJuice>() == null)
