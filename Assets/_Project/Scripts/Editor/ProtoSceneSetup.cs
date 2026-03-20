@@ -686,9 +686,13 @@ namespace CatHotel.Editor
                 $"{ObjectsRoot}/Beds/BED.png",
                 $"{ObjectsRoot}/Beds/COUSSIN.png",
                 $"{ObjectsRoot}/Beds/LUXOUS_BED.png",
+                $"{ObjectsRoot}/Deco/BIG_LAMP.png",
             };
             foreach (var s in objectSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
+
+            // Lamp light animation spritesheet (same size as BIG_LAMP)
+            ConfigureSprite($"{ObjectsRoot}/Deco/Anim_BigLamp_light.png", 200, FilterMode.Bilinear);
         }
 
         private static void ConfigureCatSpriteImports()
@@ -1258,6 +1262,9 @@ namespace CatHotel.Editor
             // --- Interactive Hotel Objects ---
             PlaceHotelObjects();
 
+            // --- Decorations (shelves, plants, lamps) ---
+            PlaceDecorations();
+
             // --- Canvas ---
             var canvasObj = FindOrCreate("Canvas");
             var canvas = canvasObj.GetComponent<Canvas>();
@@ -1326,10 +1333,6 @@ namespace CatHotel.Editor
             soUI.FindProperty("_zoneRight").objectReferenceValue  = zoneRight;
             soUI.FindProperty("_zoneCenter").objectReferenceValue = zoneCenter;
             soUI.ApplyModifiedProperties();
-
-            // --- Cleanup stale decorations ---
-            var oldDeco = GameObject.Find("Decorations");
-            if (oldDeco != null) Object.DestroyImmediate(oldDeco);
 
             // --- Mark dirty ---
             EditorUtility.SetDirty(camObj);
@@ -1496,7 +1499,77 @@ namespace CatHotel.Editor
             PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(3.5f, 13.5f, 0), 5);
             PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(20.5f, 13.5f, 0), 5);
 
+            // --- Big Lamp with animated light ---
+            PlaceLampWithLight(root, "BigLamp_1", new Vector3(12.5f, 2.5f, 0));
+
             EditorUtility.SetDirty(root);
+        }
+
+        private static void PlaceLampWithLight(GameObject parent, string name, Vector3 position)
+        {
+            const string lampSpritePath = "Assets/_Project/Art/Objects/Deco/BIG_LAMP.png";
+            const string lightSheetPath = "Assets/_Project/Art/Objects/Deco/Anim_BigLamp_light.png";
+
+            // --- Lamp body (off state) ---
+            var lampSprite = AssetDatabase.LoadAssetAtPath<Sprite>(lampSpritePath);
+            if (lampSprite == null)
+                lampSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Objects/Env/BIG_LAMP.png");
+            if (lampSprite == null)
+            {
+                Debug.LogWarning("BIG_LAMP sprite not found");
+                return;
+            }
+
+            var lampObj = new GameObject(name);
+            lampObj.transform.SetParent(parent.transform, false);
+            lampObj.transform.position = position;
+
+            var lampSR = lampObj.AddComponent<SpriteRenderer>();
+            lampSR.sprite = lampSprite;
+            lampSR.sortingOrder = 6;
+
+            // Scale lamp to fit ~1 tile wide, preserve aspect ratio
+            float spriteW = lampSprite.bounds.size.x;
+            float targetW = 1f;
+            float scale = targetW / spriteW;
+            lampObj.transform.localScale = new Vector3(scale, scale, 1f);
+
+            // --- Light animation (same position, same size, replaces lamp when lit) ---
+            var lightSprites = AssetDatabase.LoadAllAssetsAtPath(lightSheetPath)
+                .OfType<Sprite>()
+                .OrderBy(s =>
+                {
+                    string num = s.name.Replace("BigLamp_light_", "");
+                    return int.TryParse(num, out int n) ? n : 0;
+                })
+                .ToArray();
+
+            if (lightSprites.Length == 0)
+            {
+                Debug.LogWarning($"Anim_BigLamp_light sprites not found in {lightSheetPath}");
+                return;
+            }
+
+            // LightEffect sits at the exact same position (overlay on lamp)
+            var lightObj = new GameObject("LightEffect");
+            lightObj.transform.SetParent(lampObj.transform, false);
+            lightObj.transform.localPosition = Vector3.zero;
+
+            var lightSR = lightObj.AddComponent<SpriteRenderer>();
+            lightSR.sprite = lightSprites[0];
+            lightSR.sortingOrder = 7; // On top of lamp body
+
+            var lightEffect = lightObj.AddComponent<LampLightEffect>();
+            lightEffect.Init(lightSprites, 10f);
+
+            // Persist frames via SerializedObject
+            var so = new SerializedObject(lightEffect);
+            var framesProp = so.FindProperty("_frames");
+            framesProp.arraySize = lightSprites.Length;
+            for (int i = 0; i < lightSprites.Length; i++)
+                framesProp.GetArrayElementAtIndex(i).objectReferenceValue = lightSprites[i];
+            so.FindProperty("_fps").floatValue = 10f;
+            so.ApplyModifiedProperties();
         }
 
         private static void PlaceSprite(GameObject parent, string name, string spritePath,
