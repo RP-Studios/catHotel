@@ -80,7 +80,7 @@ namespace CatHotel.Hotel
             _previewSr.color = new Color(1f, 1f, 1f, 0.7f);
 
             // Scale to fit grid size
-            ScaleToFit(_previewObj, _previewSr, data.size);
+            ScaleToFit(_previewObj, _previewSr, data);
 
             // Place at the center of the camera view, on the nearest floor cell
             _currentGridPos = FindVisibleFloorCell();
@@ -250,7 +250,7 @@ namespace CatHotel.Hotel
             sr.sortingOrder = 5;
 
             // Scale to fit
-            ScaleToFit(go, sr, _currentData.size);
+            ScaleToFit(go, sr, _currentData);
 
             var hotelObj = go.AddComponent<HotelObject>();
             hotelObj.Init(_currentData, _currentGridPos);
@@ -332,16 +332,16 @@ namespace CatHotel.Hotel
                 _cancelSr.sprite = _cancelFrames[_animFrame % _cancelFrames.Length];
         }
 
-        private static void ScaleToFit(GameObject go, SpriteRenderer sr, Vector2Int gridSize)
+        private static void ScaleToFit(GameObject go, SpriteRenderer sr, HotelObjectData data)
         {
             if (sr.sprite == null) return;
             float spriteW = sr.sprite.bounds.size.x;
             float spriteH = sr.sprite.bounds.size.y;
             if (spriteW <= 0f || spriteH <= 0f) return;
 
-            float targetW = gridSize.x;
-            float targetH = gridSize.y;
-            float scale = Mathf.Min(targetW / spriteW, targetH / spriteH);
+            float targetW = data.size.x;
+            float targetH = data.size.y;
+            float scale = Mathf.Min(targetW / spriteW, targetH / spriteH) * data.visualScale;
             go.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
@@ -356,7 +356,7 @@ namespace CatHotel.Hotel
             int cy = Mathf.FloorToInt(camCenter.y);
 
             // Spiral search outward from camera center to find nearest walkable, non-door cell
-            for (int radius = 0; radius < 20; radius++)
+            for (int radius = 0; radius < 30; radius++)
             {
                 for (int dx = -radius; dx <= radius; dx++)
                 {

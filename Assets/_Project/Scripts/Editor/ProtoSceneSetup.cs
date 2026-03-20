@@ -686,13 +686,9 @@ namespace CatHotel.Editor
                 $"{ObjectsRoot}/Beds/BED.png",
                 $"{ObjectsRoot}/Beds/COUSSIN.png",
                 $"{ObjectsRoot}/Beds/LUXOUS_BED.png",
-                $"{ObjectsRoot}/Deco/BIG_LAMP.png",
             };
             foreach (var s in objectSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
-
-            // Lamp light animation spritesheet (same size as BIG_LAMP)
-            ConfigureSprite($"{ObjectsRoot}/Deco/Anim_BigLamp_light.png", 200, FilterMode.Bilinear);
         }
 
         private static void ConfigureCatSpriteImports()
@@ -976,7 +972,7 @@ namespace CatHotel.Editor
             var cam = camObj.GetComponent<Camera>();
             cam.orthographic = true;
             cam.backgroundColor = new Color(0.12f, 0.12f, 0.15f);
-            camObj.transform.position = new Vector3(12f, 8f, -10f);
+            camObj.transform.position = new Vector3(24f, 16f, -10f);
 
             var camCtrl = camObj.GetComponent<CameraController>();
             if (camCtrl == null)
@@ -986,7 +982,7 @@ namespace CatHotel.Editor
             var camSo = new SerializedObject(camCtrl);
             camSo.FindProperty("_minOrthoSize").floatValue = 1.5f;
             camSo.FindProperty("_maxOrthoSize").floatValue = 5f;
-            camSo.FindProperty("_gridMax").vector2Value = new Vector2(24f, 16f);
+            camSo.FindProperty("_gridMax").vector2Value = new Vector2(48f, 32f);
             camSo.ApplyModifiedProperties();
 
             // --- Grid parent ---
@@ -1372,26 +1368,32 @@ namespace CatHotel.Editor
             // --- Croquettes / Food (Hunger) ---
             CreateObjectAsset($"{D}/Obj_FoodBowl.asset", "Gamelle",
                 ObjectCategory.Food, 25, 1f, 5f, maxUsers: 3,
-                spritePath: $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png", size: Vector2Int.one,
+                visualScale: 0.5f);
 
             // --- Water (Hunger) ---
             CreateObjectAsset($"{D}/Obj_WaterBowl.asset", "Bol d'eau",
                 ObjectCategory.Food, 25, 1f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Full.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Full.png", size: Vector2Int.one,
+                visualScale: 0.5f);
             CreateObjectAsset($"{D}/Obj_WaterBowl04.asset", "Bol d'eau moderne",
                 ObjectCategory.Food, 35, 1.2f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_04_Full.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_04_Full.png", size: Vector2Int.one,
+                visualScale: 0.5f);
             CreateObjectAsset($"{D}/Obj_WaterBowlVar02.asset", "Bol d'eau var. 2",
                 ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_02_Full.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_02_Full.png", size: Vector2Int.one,
+                visualScale: 0.5f);
             CreateObjectAsset($"{D}/Obj_WaterBowlVar03.asset", "Bol d'eau var. 3",
                 ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_03_Full.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_03_Full.png", size: Vector2Int.one,
+                visualScale: 0.5f);
 
             // --- Toys (Play) ---
             CreateObjectAsset($"{D}/Obj_WoolBall.asset", "Balle de laine",
                 ObjectCategory.Play, 20, 1f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Toys/WOOL_BALL.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Toys/WOOL_BALL.png", size: Vector2Int.one,
+                visualScale: 0.25f);
 
             // --- Scratchers (Play) ---
             CreateObjectAsset($"{D}/Obj_Scratcher.asset", "Griffoir",
@@ -1401,7 +1403,8 @@ namespace CatHotel.Editor
             // --- Litters (Clean) ---
             CreateObjectAsset($"{D}/Obj_Litter.asset", "Litière",
                 ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Litters/LITTER_BOX_Clean.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Litters/LITTER_BOX_Clean.png", size: Vector2Int.one,
+                visualScale: 0.5f);
 
             // No default objects placed — player buys everything from the shop
 
@@ -1412,7 +1415,8 @@ namespace CatHotel.Editor
 
         private static HotelObjectData CreateObjectAsset(string path, string displayName,
             ObjectCategory category, int cost, float efficiency, float useDuration,
-            int maxUsers = 1, string spritePath = null, Vector2Int? size = null)
+            int maxUsers = 1, string spritePath = null, Vector2Int? size = null,
+            float visualScale = 1f)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -1422,6 +1426,7 @@ namespace CatHotel.Editor
             so.FindProperty("efficiency").floatValue = efficiency;
             so.FindProperty("useDuration").floatValue = useDuration;
             so.FindProperty("maxUsers").intValue = maxUsers;
+            so.FindProperty("visualScale").floatValue = visualScale;
 
             if (spritePath != null)
             {
@@ -1459,15 +1464,14 @@ namespace CatHotel.Editor
             sr.sprite = sprite;
             sr.sortingOrder = 5;
 
-            // Clamp so object fits within its grid size (max 1 tile per cell)
+            // Scale object to fit within its grid size, applying visualScale
             Vector2Int objSize = data != null ? data.size : Vector2Int.one;
+            float vScale = data != null ? data.visualScale : 1f;
             float spriteW = sprite.bounds.size.x;
             float spriteH = sprite.bounds.size.y;
-            float maxW = objSize.x; // 1 world unit per tile
-            float maxH = objSize.y;
-            if (spriteW > maxW || spriteH > maxH)
+            if (spriteW > 0f && spriteH > 0f)
             {
-                float scale = Mathf.Min(maxW / spriteW, maxH / spriteH);
+                float scale = Mathf.Min(objSize.x / spriteW, objSize.y / spriteH) * vScale;
                 go.transform.localScale = new Vector3(scale, scale, 1f);
             }
 
@@ -1489,87 +1493,17 @@ namespace CatHotel.Editor
 
             var root = new GameObject("Decorations");
 
-            // Central room: x=1-22, y=1-14. Top wall at y=14.
+            // Central room: x=2-45, y=2-29. Top wall at y=29 (center=29.5).
 
             // --- Shelves on top wall ---
-            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(7.5f, 14.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(16.5f, 14.25f, 0), 3);
+            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(15f, 29.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(33f, 29.25f, 0), 3);
 
             // --- Plants ---
-            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(3.5f, 13.5f, 0), 5);
-            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(20.5f, 13.5f, 0), 5);
-
-            // --- Big Lamp with animated light ---
-            PlaceLampWithLight(root, "BigLamp_1", new Vector3(12.5f, 2.5f, 0));
+            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(7f, 27f, 0), 5);
+            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(41f, 27f, 0), 5);
 
             EditorUtility.SetDirty(root);
-        }
-
-        private static void PlaceLampWithLight(GameObject parent, string name, Vector3 position)
-        {
-            const string lampSpritePath = "Assets/_Project/Art/Objects/Deco/BIG_LAMP.png";
-            const string lightSheetPath = "Assets/_Project/Art/Objects/Deco/Anim_BigLamp_light.png";
-
-            // --- Lamp body (off state) ---
-            var lampSprite = AssetDatabase.LoadAssetAtPath<Sprite>(lampSpritePath);
-            if (lampSprite == null)
-                lampSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Objects/Env/BIG_LAMP.png");
-            if (lampSprite == null)
-            {
-                Debug.LogWarning("BIG_LAMP sprite not found");
-                return;
-            }
-
-            var lampObj = new GameObject(name);
-            lampObj.transform.SetParent(parent.transform, false);
-            lampObj.transform.position = position;
-
-            var lampSR = lampObj.AddComponent<SpriteRenderer>();
-            lampSR.sprite = lampSprite;
-            lampSR.sortingOrder = 6;
-
-            // Scale lamp to fit ~1 tile wide, preserve aspect ratio
-            float spriteW = lampSprite.bounds.size.x;
-            float targetW = 1f;
-            float scale = targetW / spriteW;
-            lampObj.transform.localScale = new Vector3(scale, scale, 1f);
-
-            // --- Light animation (same position, same size, replaces lamp when lit) ---
-            var lightSprites = AssetDatabase.LoadAllAssetsAtPath(lightSheetPath)
-                .OfType<Sprite>()
-                .OrderBy(s =>
-                {
-                    string num = s.name.Replace("BigLamp_light_", "");
-                    return int.TryParse(num, out int n) ? n : 0;
-                })
-                .ToArray();
-
-            if (lightSprites.Length == 0)
-            {
-                Debug.LogWarning($"Anim_BigLamp_light sprites not found in {lightSheetPath}");
-                return;
-            }
-
-            // LightEffect sits at the exact same position (overlay on lamp)
-            var lightObj = new GameObject("LightEffect");
-            lightObj.transform.SetParent(lampObj.transform, false);
-            lightObj.transform.localPosition = Vector3.zero;
-
-            var lightSR = lightObj.AddComponent<SpriteRenderer>();
-            lightSR.sprite = lightSprites[0];
-            lightSR.sortingOrder = 7; // On top of lamp body
-
-            var lightEffect = lightObj.AddComponent<LampLightEffect>();
-            lightEffect.Init(lightSprites, 10f);
-
-            // Persist frames via SerializedObject
-            var so = new SerializedObject(lightEffect);
-            var framesProp = so.FindProperty("_frames");
-            framesProp.arraySize = lightSprites.Length;
-            for (int i = 0; i < lightSprites.Length; i++)
-                framesProp.GetArrayElementAtIndex(i).objectReferenceValue = lightSprites[i];
-            so.FindProperty("_fps").floatValue = 10f;
-            so.ApplyModifiedProperties();
         }
 
         private static void PlaceSprite(GameObject parent, string name, string spritePath,

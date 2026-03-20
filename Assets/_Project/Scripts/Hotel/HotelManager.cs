@@ -194,7 +194,7 @@ namespace CatHotel.Hotel
                 animator.enabled = false;
             }
 
-            float scale = breed.size * UnityEngine.Random.Range(0.5f, 0.8f);
+            float scale = breed.size * UnityEngine.Random.Range(0.6f, 0.8f);
             go.transform.localScale = new Vector3(scale, scale, 1f);
 
             // Add CatNeeds & CatHappiness BEFORE CatEntity.Init() so _needs is found

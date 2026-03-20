@@ -16,7 +16,7 @@ namespace CatHotel.Input
 
         [Header("Bounds")]
         [SerializeField] private Vector2 _gridMin = Vector2.zero;
-        [SerializeField] private Vector2 _gridMax = new(24f, 16f);
+        [SerializeField] private Vector2 _gridMax = new(48f, 32f);
         [SerializeField] private float   _padding = 0.5f;
 
         private Camera _cam;

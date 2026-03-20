@@ -27,6 +27,9 @@ namespace CatHotel.Core
 
         [Header("Placement")]
         public Vector2Int size = Vector2Int.one;
+        [Tooltip("Visual scale multiplier (0.5 = half size within grid cell)")]
+        [Range(0.1f, 2f)]
+        public float visualScale = 1f;
         [Tooltip("Can be placed on walls (shelves, paintings)")]
         public bool wallMount;
 

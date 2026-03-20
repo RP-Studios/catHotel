@@ -85,7 +85,7 @@ namespace CatHotel.Grid
 
         private void BuildInitialLayout()
         {
-            var centralRect = new RectInt(1, 1, 22, 14);
+            var centralRect = new RectInt(2, 2, 44, 28);
             FillRoom(centralRect);
             _roomRegistry.RegisterRoom(centralRect);
 
@@ -93,20 +93,23 @@ namespace CatHotel.Grid
                 for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
                     CentralRoomFloorCells.Add(new Vector2Int(x, y));
 
-            // Create entrances on the left side
-            int entranceX = centralRect.xMin - 1;         // x=0 (outside room)
-            int wallX = centralRect.xMin;                  // x=1 (left wall — punch through)
-            int entrance1Y = centralRect.yMin + 4;        // y=5
-            int entrance2Y = centralRect.yMax - 5;        // y=10
+            // Create entrances on the left side (2 cells wide for the doubled grid)
+            int entranceX0 = centralRect.xMin - 2;        // x=0 (outside)
+            int entranceX1 = centralRect.xMin - 1;        // x=1 (between outside and wall)
+            int wallX = centralRect.xMin;                  // x=2 (left wall — punch through)
+            int entrance1Y = centralRect.yMin + 8;        // y=10
+            int entrance2Y = centralRect.yMax - 10;       // y=20
 
-            // Punch Door cells through outside + wall so cats can walk in
-            _gridData.SetCell(entranceX, entrance1Y, CellType.Door);
-            _gridData.SetCell(entranceX, entrance2Y, CellType.Door);
+            // Punch Door cells through outside + intermediate + wall so cats can walk in
+            _gridData.SetCell(entranceX0, entrance1Y, CellType.Door);
+            _gridData.SetCell(entranceX0, entrance2Y, CellType.Door);
+            _gridData.SetCell(entranceX1, entrance1Y, CellType.Door);
+            _gridData.SetCell(entranceX1, entrance2Y, CellType.Door);
             _gridData.SetCell(wallX, entrance1Y, CellType.Door);
             _gridData.SetCell(wallX, entrance2Y, CellType.Door);
 
-            Entrances.Add(new Vector2Int(entranceX, entrance1Y));
-            Entrances.Add(new Vector2Int(entranceX, entrance2Y));
+            Entrances.Add(new Vector2Int(entranceX0, entrance1Y));
+            Entrances.Add(new Vector2Int(entranceX0, entrance2Y));
 
         }
 

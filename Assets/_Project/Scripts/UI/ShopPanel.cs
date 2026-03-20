@@ -318,6 +318,9 @@ namespace CatHotel.UI
             // Swap views
             if (_categoriesObj != null) _categoriesObj.SetActive(false);
             _categoryObj.SetActive(true);
+
+            // Reset scroll to top
+            ResetScroll(_categoryObj);
         }
 
         private void PopulateItems(ShopCategory category)
@@ -393,7 +396,11 @@ namespace CatHotel.UI
         {
             _isCategoryOpen = false;
             if (_categoryObj != null) _categoryObj.SetActive(false);
-            if (_categoriesObj != null) _categoriesObj.SetActive(true);
+            if (_categoriesObj != null)
+            {
+                _categoriesObj.SetActive(true);
+                ResetScroll(_categoriesObj);
+            }
         }
 
         private void CloseCategoryImmediate()
@@ -408,6 +415,13 @@ namespace CatHotel.UI
             if (_itemsListParent == null) return;
             for (int i = _itemsListParent.childCount - 1; i >= 0; i--)
                 Destroy(_itemsListParent.GetChild(i).gameObject);
+        }
+
+        private static void ResetScroll(GameObject container)
+        {
+            var sr = container.GetComponentInChildren<ScrollRect>(true);
+            if (sr != null)
+                sr.normalizedPosition = new Vector2(0f, 1f); // top-left
         }
 
         // --- Helpers ---
