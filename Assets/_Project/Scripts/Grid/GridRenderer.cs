@@ -52,6 +52,7 @@ namespace CatHotel.Grid
         public RoomRegistry Rooms => _roomRegistry;
 
         public List<Vector2Int> Entrances { get; private set; } = new();
+        public List<Vector2Int> Exits { get; private set; } = new();
         public List<Vector2Int> CentralRoomFloorCells { get; private set; } = new();
 
         // Rotation matrices for T-shape corners
@@ -85,7 +86,7 @@ namespace CatHotel.Grid
 
         private void BuildInitialLayout()
         {
-            var centralRect = new RectInt(2, 2, 44, 28);
+            var centralRect = new RectInt(2, 2, 22, 28);
             FillRoom(centralRect);
             _roomRegistry.RegisterRoom(centralRect);
 
@@ -93,24 +94,39 @@ namespace CatHotel.Grid
                 for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
                     CentralRoomFloorCells.Add(new Vector2Int(x, y));
 
-            // Create entrances on the left side (2 cells wide for the doubled grid)
+            // --- Left entrances (cats arrive here) ---
             int entranceX0 = centralRect.xMin - 2;        // x=0 (outside)
             int entranceX1 = centralRect.xMin - 1;        // x=1 (between outside and wall)
-            int wallX = centralRect.xMin;                  // x=2 (left wall — punch through)
-            int entrance1Y = centralRect.yMin + 8;        // y=10
-            int entrance2Y = centralRect.yMax - 10;       // y=20
+            int wallXL = centralRect.xMin;                 // x=2 (left wall — punch through)
+            int entrance1Y = centralRect.yMin + 8;         // y=10
+            int entrance2Y = centralRect.yMax - 10;        // y=20
 
-            // Punch Door cells through outside + intermediate + wall so cats can walk in
             _gridData.SetCell(entranceX0, entrance1Y, CellType.Door);
             _gridData.SetCell(entranceX0, entrance2Y, CellType.Door);
             _gridData.SetCell(entranceX1, entrance1Y, CellType.Door);
             _gridData.SetCell(entranceX1, entrance2Y, CellType.Door);
-            _gridData.SetCell(wallX, entrance1Y, CellType.Door);
-            _gridData.SetCell(wallX, entrance2Y, CellType.Door);
+            _gridData.SetCell(wallXL, entrance1Y, CellType.Door);
+            _gridData.SetCell(wallXL, entrance2Y, CellType.Door);
 
             Entrances.Add(new Vector2Int(entranceX0, entrance1Y));
             Entrances.Add(new Vector2Int(entranceX0, entrance2Y));
 
+            // --- Right exits (unhappy cats leave here) ---
+            int wallXR = centralRect.xMax - 1;             // right wall
+            int exitX1 = centralRect.xMax;                 // just outside wall
+            int exitX0 = centralRect.xMax + 1;             // outside
+            int exit1Y = entrance1Y;
+            int exit2Y = entrance2Y;
+
+            _gridData.SetCell(wallXR, exit1Y, CellType.Door);
+            _gridData.SetCell(wallXR, exit2Y, CellType.Door);
+            _gridData.SetCell(exitX1, exit1Y, CellType.Door);
+            _gridData.SetCell(exitX1, exit2Y, CellType.Door);
+            _gridData.SetCell(exitX0, exit1Y, CellType.Door);
+            _gridData.SetCell(exitX0, exit2Y, CellType.Door);
+
+            Exits.Add(new Vector2Int(exitX0, exit1Y));
+            Exits.Add(new Vector2Int(exitX0, exit2Y));
         }
 
         private void FillRoom(RectInt rect)

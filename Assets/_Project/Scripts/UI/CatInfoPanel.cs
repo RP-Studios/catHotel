@@ -22,6 +22,9 @@ namespace CatHotel.UI
         private bool _isOpen;
         private CatInstance _currentCat;
 
+        // Portrait
+        private Image _catPortrait;
+
         // Text fields
         private TMP_Text _catName;
         private TMP_Text _catSpecies;
@@ -95,6 +98,11 @@ namespace CatHotel.UI
                     closeTransform.gameObject.AddComponent<ButtonJuice>();
             }
 
+            // Portrait
+            var portraitT = FindInChildren(_panelObj.transform, "CatPortrait");
+            if (portraitT != null)
+                _catPortrait = portraitT.GetComponent<Image>();
+
             // Text fields
             _catName = FindText(_panelObj, "CatName");
             _catSpecies = FindText(_panelObj, "CatSpeciesValue");
@@ -152,6 +160,8 @@ namespace CatHotel.UI
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
             if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
+            if (_catPortrait != null && cat.Breed.frontSprite != null)
+                _catPortrait.sprite = cat.Breed.frontSprite;
 
             RefreshValues();
 

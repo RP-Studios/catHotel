@@ -130,7 +130,7 @@ namespace CatHotel.Hotel
                 if (cat.Happiness != null && cat.Happiness.ShouldLeave
                     && cat.State != CatState.Leaving && cat.State != CatState.Pickup)
                 {
-                    StartCatDeparture(cat, CatState.Leaving);
+                    StartUnhappyDeparture(cat);
                     continue;
                 }
 
@@ -195,6 +195,7 @@ namespace CatHotel.Hotel
             }
 
             float scale = breed.size * UnityEngine.Random.Range(0.6f, 0.8f);
+
             go.transform.localScale = new Vector3(scale, scale, 1f);
 
             // Add CatNeeds & CatHappiness BEFORE CatEntity.Init() so _needs is found
@@ -364,6 +365,29 @@ namespace CatHotel.Hotel
             StartCatDeparture(cat, CatState.Adopted);
         }
 
+        /// <summary>Unhappy cat leaves via right exit with sad walk, no coins generated.</summary>
+        private void StartUnhappyDeparture(CatInstance cat)
+        {
+            cat.State = CatState.Leaving;
+            cat.Entity.SetDeparting();
+            cat.Entity.SetSadWalk();
+
+            // Remove any floating coin without collecting it
+            if (_economy != null && cat.Entity != null)
+                _economy.RemoveCoinForCat(cat.Entity.transform);
+
+            var exits = _gridRenderer.Exits;
+            if (exits != null && exits.Count > 0)
+            {
+                var exit = exits[UnityEngine.Random.Range(0, exits.Count)];
+                cat.Entity.WalkToTarget(exit, () => FinalizeDeparture(cat));
+            }
+            else
+            {
+                FinalizeDeparture(cat);
+            }
+        }
+
         private void StartCatDeparture(CatInstance cat, CatState reason)
         {
             cat.State = reason;
@@ -389,9 +413,9 @@ namespace CatHotel.Hotel
             CatNames.ReleaseName(cat.CatName);
             OnCatDeparted?.Invoke(cat);
 
-            // Remove floating coin for this cat
+            // Auto-collect floating coin for departing cat
             if (_economy != null && cat.Entity != null)
-                _economy.RemoveCoinForCat(cat.Entity.transform);
+                _economy.CollectCoinForCat(cat.Entity.transform);
 
             if (cat.Entity != null)
                 Destroy(cat.Entity.gameObject);

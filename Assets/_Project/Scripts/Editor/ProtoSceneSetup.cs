@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Tilemaps;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.U2D.Sprites;
 using CatHotel.Grid;
 using CatHotel.Input;
 using CatHotel.Cats;
@@ -37,11 +38,11 @@ namespace CatHotel.Editor
         private const string SiamoisControllerPath = SiamoisAnimRoot + "/CatSiamois.controller";
 
         private const string CleoSpritesRoot = "Assets/_Project/Art/SpecialCats/Cleo";
-        private const string CleoAnimRoot = CleoSpritesRoot;
+        private const string CleoAnimRoot = CleoSpritesRoot + "/Animations";
         private const string CleoControllerPath = CleoSpritesRoot + "/CatCleo.controller";
 
         private const string AristoteSpritesRoot = "Assets/_Project/Art/SpecialCats/Aristote";
-        private const string AristoteAnimRoot = AristoteSpritesRoot;
+        private const string AristoteAnimRoot = AristoteSpritesRoot + "/Animations";
         private const string AristoteControllerPath = AristoteSpritesRoot + "/CatAristote.controller";
 
         private const string CloudRoot = "Assets/_Project/Art/Effects/Combat";
@@ -50,6 +51,17 @@ namespace CatHotel.Editor
         private static readonly (string file, string prefix, string state, int frames, float fps)[] CloudAnimConfigs =
         {
             ("fighting_cloud.png", "fighting_cloud", "FightCloud", 6, 6f),
+        };
+
+        private const string CoinSpinRoot = "Assets/_Project/Animations/UI";
+        private const string CoinSpinControllerPath = CoinSpinRoot + "/CoinSpin.controller";
+
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] CoinSpinAnimConfigs =
+        {
+            ("Coin_Spin_Idle.png", "coin_spin", "CoinSpin", 12, 12f),
+            ("Coin_Spawn.png", "coin_spawn", "CoinSpawn", 24, 24f),
+            ("Coin_Collect.png", "coin_collect", "CoinCollect", 24, 24f),
+            ("Coin_Collect_all.png", "coin_collect_all", "CoinCollectAll", 24, 24f),
         };
 
         private const string PettingRoot = "Assets/_Project/Animations/Petting";
@@ -612,6 +624,7 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(AristoteAnimRoot, AristoteAnimConfigs);
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
             ProcessAnimConfigs(PettingRoot, HandPetAnimConfigs);
+            ProcessAnimConfigs(CoinSpinRoot, CoinSpinAnimConfigs);
             AssetDatabase.Refresh();
 
             var tiles = CreateTileAssets();
@@ -623,9 +636,10 @@ namespace CatHotel.Editor
             var aristoteController = CreateAnimController(AristoteControllerPath, AristoteAnimRoot, AristoteAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, aristoteController, cloudController, handPetController);
+            var coinSpinController = CreateAnimController(CoinSpinControllerPath, CoinSpinRoot, CoinSpinAnimConfigs);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length;
+                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -684,7 +698,7 @@ namespace CatHotel.Editor
                 $"{ObjectsRoot}/Env/PLANTE.png",
                 $"{ObjectsRoot}/Env/PLANT_BIG.png",
                 $"{ObjectsRoot}/Beds/BED.png",
-                $"{ObjectsRoot}/Beds/COUSSIN.png",
+                $"{ObjectsRoot}/Pillows/COUSSIN.png",
                 $"{ObjectsRoot}/Beds/LUXOUS_BED.png",
             };
             foreach (var s in objectSprites)
@@ -711,6 +725,10 @@ namespace CatHotel.Editor
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_FRONT.png",
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_RIGHT.png",
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_BACK.png",
+                // Aristote (Special)
+                $"{AristoteSpritesRoot}/CAT_EUR_Aristote_FRONT.png",
+                $"{AristoteSpritesRoot}/CAT_EUR_Aristote_RIGHT.png",
+                $"{AristoteSpritesRoot}/CAT_EUR_Aristote_BACK.png",
                 // Cleo (Special)
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png",
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png",
@@ -746,18 +764,27 @@ namespace CatHotel.Editor
 
             int frameW = texW / frameCount;
 
-            var metas = new SpriteMetaData[frameCount];
+            // Use ISpriteEditorDataProvider (Unity 6 replacement for deprecated spritesheet)
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            var provider = factory.GetSpriteEditorDataProviderFromObject(importer);
+            provider.InitSpriteEditorDataProvider();
+
+            var rects = new SpriteRect[frameCount];
             for (int i = 0; i < frameCount; i++)
             {
-                metas[i] = new SpriteMetaData
+                rects[i] = new SpriteRect
                 {
                     name = $"{namePrefix}_{i}",
+                    spriteID = GUID.Generate(),
                     rect = new Rect(i * frameW, 0, frameW, texH),
-                    alignment = (int)SpriteAlignment.Center,
+                    alignment = SpriteAlignment.Center,
                     pivot = new Vector2(0.5f, 0.5f)
                 };
             }
-            importer.spritesheet = metas;
+            provider.SetSpriteRects(rects);
+            provider.Apply();
+
             importer.SaveAndReimport();
         }
 
@@ -959,7 +986,8 @@ namespace CatHotel.Editor
             RuntimeAnimatorController cleoController,
             RuntimeAnimatorController aristoteController,
             RuntimeAnimatorController cloudController,
-            RuntimeAnimatorController handPetController)
+            RuntimeAnimatorController handPetController,
+            RuntimeAnimatorController coinSpinController)
         {
             // --- Camera ---
             var camObj = Camera.main != null ? Camera.main.gameObject : null;
@@ -972,7 +1000,7 @@ namespace CatHotel.Editor
             var cam = camObj.GetComponent<Camera>();
             cam.orthographic = true;
             cam.backgroundColor = new Color(0.12f, 0.12f, 0.15f);
-            camObj.transform.position = new Vector3(24f, 16f, -10f);
+            camObj.transform.position = new Vector3(13f, 16f, -10f);
 
             var camCtrl = camObj.GetComponent<CameraController>();
             if (camCtrl == null)
@@ -982,7 +1010,7 @@ namespace CatHotel.Editor
             var camSo = new SerializedObject(camCtrl);
             camSo.FindProperty("_minOrthoSize").floatValue = 1.5f;
             camSo.FindProperty("_maxOrthoSize").floatValue = 5f;
-            camSo.FindProperty("_gridMax").vector2Value = new Vector2(48f, 32f);
+            camSo.FindProperty("_gridMax").vector2Value = new Vector2(26f, 32f);
             camSo.ApplyModifiedProperties();
 
             // --- Grid parent ---
@@ -1251,6 +1279,7 @@ namespace CatHotel.Editor
             var soCoinView = new SerializedObject(coinView);
             soCoinView.FindProperty("_economy").objectReferenceValue = economyMgr;
             soCoinView.FindProperty("_coinSprite").objectReferenceValue = coinSprite;
+            soCoinView.FindProperty("_coinAnimController").objectReferenceValue = coinSpinController;
             soCoinView.FindProperty("_catSpawner").objectReferenceValue = spawner;
             soCoinView.FindProperty("_catInfoPanel").objectReferenceValue = catInfoPanel;
             soCoinView.ApplyModifiedProperties();
@@ -1354,10 +1383,10 @@ namespace CatHotel.Editor
 
             // --- Beds (Sleep) ---
             CreateObjectAsset($"{D}/Obj_Bed.asset", "Lit",
-                ObjectCategory.Sleep, 80, 1.3f, 6f, maxUsers: 2,
+                ObjectCategory.Sleep, 80, 1.3f, 6f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Beds/BED.png", size: Vector2Int.one);
             CreateObjectAsset($"{D}/Obj_LuxuryBed.asset", "Lit de luxe",
-                ObjectCategory.Sleep, 200, 1.8f, 6f, maxUsers: 2,
+                ObjectCategory.Sleep, 200, 1.8f, 6f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Beds/LUXOUS_BED.png", size: new Vector2Int(2, 2));
 
             // --- Pillows (Sleep) ---
@@ -1367,44 +1396,43 @@ namespace CatHotel.Editor
 
             // --- Croquettes / Food (Hunger) ---
             CreateObjectAsset($"{D}/Obj_FoodBowl.asset", "Gamelle",
-                ObjectCategory.Food, 25, 1f, 5f, maxUsers: 3,
+                ObjectCategory.Food, 25, 1f, 5f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Food/FOOD_BOWL_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f);
 
             // --- Water (Hunger) ---
             CreateObjectAsset($"{D}/Obj_WaterBowl.asset", "Bol d'eau",
-                ObjectCategory.Food, 25, 1f, 4f, maxUsers: 2,
+                ObjectCategory.Food, 25, 1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f);
             CreateObjectAsset($"{D}/Obj_WaterBowl04.asset", "Bol d'eau moderne",
-                ObjectCategory.Food, 35, 1.2f, 4f, maxUsers: 2,
+                ObjectCategory.Food, 35, 1.2f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_04_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f);
             CreateObjectAsset($"{D}/Obj_WaterBowlVar02.asset", "Bol d'eau var. 2",
-                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 2,
+                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_02_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f);
             CreateObjectAsset($"{D}/Obj_WaterBowlVar03.asset", "Bol d'eau var. 3",
-                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 2,
+                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_03_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f);
 
             // --- Toys (Play) ---
             CreateObjectAsset($"{D}/Obj_WoolBall.asset", "Balle de laine",
-                ObjectCategory.Play, 20, 1f, 4f, maxUsers: 2,
+                ObjectCategory.Play, 20, 1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Toys/WOOL_BALL.png", size: Vector2Int.one,
                 visualScale: 0.25f);
 
             // --- Scratchers (Play) ---
             CreateObjectAsset($"{D}/Obj_Scratcher.asset", "Griffoir",
-                ObjectCategory.Play, 50, 1.2f, 5f, maxUsers: 2,
+                ObjectCategory.Play, 50, 1.2f, 5f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Scratchers/SCRATCHER.png", size: Vector2Int.one);
 
             // --- Litters (Clean) ---
             CreateObjectAsset($"{D}/Obj_Litter.asset", "Litière",
-                ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 2,
-                spritePath: $"{ObjectsRoot}/Litters/LITTER_BOX_Clean.png", size: Vector2Int.one,
-                visualScale: 0.5f);
+                ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 1,
+                spritePath: $"{ObjectsRoot}/Litters/LITTER_BOX_Clean.png", size: Vector2Int.one);
 
             // No default objects placed — player buys everything from the shop
 
@@ -1493,15 +1521,15 @@ namespace CatHotel.Editor
 
             var root = new GameObject("Decorations");
 
-            // Central room: x=2-45, y=2-29. Top wall at y=29 (center=29.5).
+            // Central room: x=2-23, y=2-29. Top wall at y=29 (center=29.5).
 
             // --- Shelves on top wall ---
-            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(15f, 29.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(33f, 29.25f, 0), 3);
+            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(8f, 29.65f, 0), 3);
+            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(18f, 29.25f, 0), 3);
 
             // --- Plants ---
-            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(7f, 27f, 0), 5);
-            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(41f, 27f, 0), 5);
+            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(5f, 27f, 0), 5);
+            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(21f, 27f, 0), 5);
 
             EditorUtility.SetDirty(root);
         }

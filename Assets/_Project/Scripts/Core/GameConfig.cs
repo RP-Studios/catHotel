@@ -21,7 +21,7 @@ namespace CatHotel.Core
         public float neutralThreshold = 40f;
         public float unhappyLeaveThreshold = 20f;
         [Tooltip("Seconds below unhappy threshold before cat leaves")]
-        public float leaveDelay = 8f;
+        public float leaveDelay = 30f;
 
         [Header("Revenue - Service Use")]
         [Tooltip("Base coins earned when a cat finishes using a service object")]

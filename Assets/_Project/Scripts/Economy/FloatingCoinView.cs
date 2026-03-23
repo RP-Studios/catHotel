@@ -17,6 +17,7 @@ namespace CatHotel.Economy
     {
         [SerializeField] private EconomyManager _economy;
         [SerializeField] private Sprite _coinSprite;
+        [SerializeField] private RuntimeAnimatorController _coinAnimController;
         [SerializeField] private CatSpawner _catSpawner;
         [SerializeField] private CatInfoPanel _catInfoPanel;
 
@@ -24,7 +25,6 @@ namespace CatHotel.Economy
         [SerializeField] private float _floatHeight = 1.0f;
         [SerializeField] private float _bobAmplitude = 0.15f;
         [SerializeField] private float _bobSpeed = 2f;
-        [SerializeField] private float _spinSpeed = 180f;
         [SerializeField] private float _catTapRadius = 1.0f;
 
         [Header("Collect Animation")]
@@ -98,7 +98,6 @@ namespace CatHotel.Economy
 
         private void HandleCoinSpawned(FloatingCoin coin)
         {
-            Debug.Log($"[CoinView] HandleCoinSpawned: coinSprite={_coinSprite != null}, amount={coin.Amount}, pos={coin.WorldPosition}");
             if (_coinSprite == null) return;
 
             var go = new GameObject("CoinView");
@@ -108,7 +107,22 @@ namespace CatHotel.Economy
             sr.sprite = _coinSprite;
             sr.sortingOrder = 20;
 
+            if (_coinAnimController != null)
+            {
+                var anim = go.AddComponent<Animator>();
+                anim.runtimeAnimatorController = _coinAnimController;
+                anim.Play("CoinSpawn");
+                // Transition to idle spin after spawn anim (24 frames @ 24fps = 1s)
+                StartCoroutine(TransitionToSpin(anim, 1f));
+            }
+
             _coinViews[coin] = go;
+        }
+
+        private System.Collections.IEnumerator TransitionToSpin(Animator anim, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (anim != null) anim.Play("CoinSpin");
         }
 
         private void HandleCoinStacked(FloatingCoin coin)
@@ -162,15 +176,9 @@ namespace CatHotel.Economy
                 float bob = (bobT * 2f - 1f) * _bobAmplitude;
                 go.transform.position = basePos + Vector3.up * bob;
 
-                // Spin: triangle wave instead of Cos
-                float scaleX = Mathf.PingPong((Time.time - coin.SpawnTime) * _spinSpeed / 180f, 1f);
-
                 // Scale based on stacks: 1.0 at 1 stack → 1.5 at 5 stacks
-                float stackScale = 1f + (coin.Stacks - 1) * 0.125f; // 1.0, 1.125, 1.25, 1.375, 1.5
-                go.transform.localScale = new Vector3(
-                    Mathf.Max(0.1f, scaleX) * stackScale,
-                    stackScale,
-                    1f);
+                float stackScale = 1f + (coin.Stacks - 1) * 0.125f;
+                go.transform.localScale = Vector3.one * stackScale;
             }
             for (int i = 0; i < _toRemove.Count; i++)
                 _coinViews.Remove(_toRemove[i]);
@@ -301,12 +309,12 @@ namespace CatHotel.Economy
             foreach (var coin in pendingCoins)
             {
                 float d = delay;
-                DOVirtual.DelayedCall(d, () => AnimateCollect(coin));
+                DOVirtual.DelayedCall(d, () => AnimateCollect(coin, true));
                 delay += 0.08f;
             }
         }
 
-        private void AnimateCollect(FloatingCoin coin)
+        private void AnimateCollect(FloatingCoin coin, bool isCollectAll = false)
         {
             if (!_coinViews.TryGetValue(coin, out var worldGo))
             {
@@ -324,6 +332,11 @@ namespace CatHotel.Economy
                 _economy.DepositCoins(coin.Amount);
                 return;
             }
+
+            // Play collect animation on world coin, then fly
+            var anim = worldGo != null ? worldGo.GetComponent<Animator>() : null;
+            if (anim != null)
+                anim.Play(isCollectAll ? "CoinCollectAll" : "CoinCollect");
 
             // Get screen pos of the world coin
             Vector3 startScreen = _cam.WorldToScreenPoint(worldGo.transform.position);

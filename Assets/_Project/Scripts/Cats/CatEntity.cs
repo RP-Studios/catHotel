@@ -46,6 +46,7 @@ namespace CatHotel.Cats
         private bool _isWalking;
         private bool _useSadWalk;
         private bool _isFighting;
+        private float _fightCooldown;
         private string _chosenRestState;
         private BedSpot _claimedBed;
         private bool _isDeparting;
@@ -100,6 +101,16 @@ namespace CatHotel.Cats
 
             _currentDir = CatDirection.Front;
             EnterRest();
+        }
+
+        private void LateUpdate()
+        {
+            // Sort by Y: lower Y = closer to camera = higher sortingOrder
+            if (_sr != null)
+                _sr.sortingOrder = Mathf.RoundToInt(-transform.position.y * 10f) + 1000;
+
+            if (_fightCooldown > 0f)
+                _fightCooldown -= Time.deltaTime;
         }
 
         /// <summary>Set breed data for speed multiplier.</summary>
@@ -173,10 +184,19 @@ namespace CatHotel.Cats
         {
             if (_targetObject != null)
             {
+                // Show toy objects again after cat is done playing
+                if (_targetObject.Data.category == CatHotel.Core.ObjectCategory.Play)
+                    SetObjectVisible(_targetObject, true);
                 _targetObject.Release(GetInstanceID());
                 _targetObject = null;
             }
             _isUsingObject = false;
+        }
+
+        private static void SetObjectVisible(HotelObject obj, bool visible)
+        {
+            var sr = obj.GetComponent<SpriteRenderer>();
+            if (sr != null) sr.enabled = visible;
         }
 
         private void PlayEmote(string prefix, float duration)
@@ -204,6 +224,7 @@ namespace CatHotel.Cats
         private bool CanFight()
         {
             if (_animator == null || _isFighting) return false;
+            if (_fightCooldown > 0f) return false;
             return _animator.HasState(0, Animator.StringToHash("Fight_In_Left"));
         }
 
@@ -299,6 +320,8 @@ namespace CatHotel.Cats
             {
                 left._isFighting = false;
                 right._isFighting = false;
+                left._fightCooldown = 30f;
+                right._fightCooldown = 30f;
                 left.EnterRest();
                 right.EnterRest();
             });
@@ -354,6 +377,10 @@ namespace CatHotel.Cats
             }
 
             _isUsingObject = true;
+
+            // Hide toy objects while cat is playing with them
+            if (_targetObject.Data.category == CatHotel.Core.ObjectCategory.Play)
+                SetObjectVisible(_targetObject, false);
 
             string animPrefix = need switch
             {
@@ -415,6 +442,9 @@ namespace CatHotel.Cats
         {
             WalkToTarget(target, null);
         }
+
+        /// <summary>Force sad walk animation (used for unhappy departures).</summary>
+        public void SetSadWalk() => _useSadWalk = true;
 
         /// <summary>Mark cat as departing — stops all AI behavior.</summary>
         public void SetDeparting()
@@ -496,7 +526,6 @@ namespace CatHotel.Cats
             }
 
             _isWalking = true;
-            _useSadWalk = Random.value < 0.3f;
             _chosenRestState = null;
             _moveSequence = DOTween.Sequence();
 

@@ -47,7 +47,14 @@
       "Bash(find d:UnitycatHotel_githubPackages -name *.md -o -name *.txt)",
       "Bash(find d:UnitycatHotel_githubLibraryPackageCachecom.unity.services.levelplay@eee782b8b69d -name *.md -o -name README*)",
       "Bash(find d:UnitycatHotel_githubLibraryPackageCachecom.unity.services.levelplay@eee782b8b69dSamples~ -name *.cs)",
-      "Bash(grep -i \"\\\\.cs$\")"
+      "Bash(grep -i \"\\\\.cs$\")",
+      "Bash(for cat:*)",
+      "Read(//d/Unity/catHotel_github/Assets/_Project/Art/SpecialCats/**)",
+      "Bash(for breed:*)",
+      "Read(//d/Unity/catHotel_github/Assets/_Project/Art/Cats/**)",
+      "Bash(tree -L 3 d:/Unity/catHotel_github/Assets/_Project/Art/Cats/ -I *.meta)",
+      "Bash(cd \"d:/Unity/catHotel_github\" echo \"=== Aristote Animations/ ===\" ls -d \"Assets/_Project/Art/SpecialCats/Aristote/Animations/\"*/ echo \"\" echo \"=== Cleo Animations/ ===\" ls -d \"Assets/_Project/Art/SpecialCats/Cleo/Animations/\"*/ echo \"\" echo \"=== Aristote total sprites ===\" find \"Assets/_Project/Art/SpecialCats/Aristote/Animations\" -name \"*.png\")",
+      "Read(//d/Unity/catHotel_github/**)"
     ]
   }
 }

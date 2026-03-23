@@ -155,10 +155,21 @@ namespace CatHotel.Economy
             OnCoinsChanged?.Invoke(_coins);
         }
 
-        /// <summary>Remove coin for a cat that left the hotel.</summary>
+        /// <summary>Auto-collect coin for a departing cat (deposits amount immediately).</summary>
+        public void CollectCoinForCat(Transform catTransform)
+        {
+            if (!_floatingCoins.TryGetValue(catTransform, out var coin)) return;
+            _floatingCoins.Remove(catTransform);
+            OnCoinCollected?.Invoke(coin);
+            DepositCoins(coin.Amount);
+        }
+
+        /// <summary>Remove coin for a cat without collecting (unhappy departure).</summary>
         public void RemoveCoinForCat(Transform catTransform)
         {
+            if (!_floatingCoins.TryGetValue(catTransform, out var coin)) return;
             _floatingCoins.Remove(catTransform);
+            OnCoinCollected?.Invoke(coin); // triggers view cleanup
         }
     }
 

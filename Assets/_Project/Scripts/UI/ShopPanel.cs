@@ -134,6 +134,10 @@ namespace CatHotel.UI
                     _itemsListParent = listTransform;
             }
 
+            // Disable horizontal scroll on all ScrollRects inside the shop
+            foreach (var sr in _panelObj.GetComponentsInChildren<ScrollRect>(true))
+                sr.horizontal = false;
+
             // Wire ShopAction button
             var shopActionObj = GameObject.Find("ShopAction");
             if (shopActionObj != null)
@@ -417,11 +421,17 @@ namespace CatHotel.UI
                 Destroy(_itemsListParent.GetChild(i).gameObject);
         }
 
-        private static void ResetScroll(GameObject container)
+        private void ResetScroll(GameObject container)
         {
             var sr = container.GetComponentInChildren<ScrollRect>(true);
             if (sr != null)
-                sr.normalizedPosition = new Vector2(0f, 1f); // top-left
+                StartCoroutine(ResetScrollDelayed(sr));
+        }
+
+        private static System.Collections.IEnumerator ResetScrollDelayed(ScrollRect sr)
+        {
+            yield return null; // wait one frame for layout rebuild
+            sr.normalizedPosition = new Vector2(0f, 1f);
         }
 
         // --- Helpers ---
