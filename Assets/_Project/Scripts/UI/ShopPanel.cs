@@ -22,7 +22,12 @@ namespace CatHotel.UI
         Water,       // art/objects/water        → Food (Hunger)
         Balls,       // art/objects/toys          → Play
         Scratchers,  // art/objects/scratchers    → Play
-        Litters      // art/objects/litters       → Clean
+        Litters,     // art/objects/litters       → Clean
+        Frames,      // art/objects/deco/FRAME_  → Decoration (wall)
+        Lamps,       // art/objects/deco/LAMP_   → Decoration
+        Tables,      // art/objects/deco/TABLE_  → Decoration
+        Plants,      // art/objects/deco/PLANT_  → Decoration
+        Shelves      // art/objects/deco/SHELF_  → Decoration (wall)
     }
 
     /// <summary>
@@ -48,6 +53,11 @@ namespace CatHotel.UI
         private RectTransform _ballsRect;
         private RectTransform _scratchersRect;
         private RectTransform _littersRect;
+        private RectTransform _framesRect;
+        private RectTransform _lampsRect;
+        private RectTransform _tablesRect;
+        private RectTransform _plantsRect;
+        private RectTransform _shelvesRect;
 
         // Categories list (inside ShopPanel)
         private GameObject _categoriesObj;
@@ -101,6 +111,11 @@ namespace CatHotel.UI
             _ballsRect = FindRect(_panelObj, "BallsAction");
             _scratchersRect = FindRect(_panelObj, "ScratchersAction");
             _littersRect = FindRect(_panelObj, "LittersAction");
+            _framesRect = FindRect(_panelObj, "FramesAction");
+            _lampsRect = FindRect(_panelObj, "LampsAction");
+            _tablesRect = FindRect(_panelObj, "TablesAction");
+            _plantsRect = FindRect(_panelObj, "PlantsAction");
+            _shelvesRect = FindRect(_panelObj, "ShelvesAction");
 
             AddJuice(_closeRect);
             AddJuice(_bedsRect);
@@ -110,6 +125,11 @@ namespace CatHotel.UI
             AddJuice(_ballsRect);
             AddJuice(_scratchersRect);
             AddJuice(_littersRect);
+            AddJuice(_framesRect);
+            AddJuice(_lampsRect);
+            AddJuice(_tablesRect);
+            AddJuice(_plantsRect);
+            AddJuice(_shelvesRect);
 
             // --- Categories list + Category detail (children of ShopPanel) ---
             var categoriesT = FindInChildren(_panelObj.transform, "Categories");
@@ -134,9 +154,10 @@ namespace CatHotel.UI
                     _itemsListParent = listTransform;
             }
 
-            // Disable horizontal scroll on all ScrollRects inside the shop
-            foreach (var sr in _panelObj.GetComponentsInChildren<ScrollRect>(true))
-                sr.horizontal = false;
+            // Cache the single ScrollRect and disable horizontal scroll
+            _scrollRect = _panelObj.GetComponentInChildren<ScrollRect>(true);
+            if (_scrollRect != null)
+                _scrollRect.horizontal = false;
 
             // Wire ShopAction button
             var shopActionObj = GameObject.Find("ShopAction");
@@ -193,6 +214,11 @@ namespace CatHotel.UI
             if (name.Contains("woolball") || name.Contains("ball")) return ShopCategory.Balls;
             if (name.Contains("scratcher") || name.Contains("griffoir")) return ShopCategory.Scratchers;
             if (name.Contains("litter") || name.Contains("litiere")) return ShopCategory.Litters;
+            if (name.Contains("frame")) return ShopCategory.Frames;
+            if (name.Contains("lamp")) return ShopCategory.Lamps;
+            if (name.Contains("table") || name.Contains("drawer")) return ShopCategory.Tables;
+            if (name.Contains("plant")) return ShopCategory.Plants;
+            if (name.Contains("shelf") || name.Contains("shelve")) return ShopCategory.Shelves;
 
             // Fallback by ObjectCategory
             return obj.category switch
@@ -201,6 +227,7 @@ namespace CatHotel.UI
                 ObjectCategory.Food => ShopCategory.Croquettes,
                 ObjectCategory.Play => ShopCategory.Balls,
                 ObjectCategory.Clean => ShopCategory.Litters,
+                ObjectCategory.Decoration => ShopCategory.Lamps,
                 _ => null
             };
         }
@@ -242,6 +269,11 @@ namespace CatHotel.UI
             if (CheckCategoryTap(_ballsRect, ShopCategory.Balls, screenPos)) return;
             if (CheckCategoryTap(_scratchersRect, ShopCategory.Scratchers, screenPos)) return;
             if (CheckCategoryTap(_littersRect, ShopCategory.Litters, screenPos)) return;
+            if (CheckCategoryTap(_framesRect, ShopCategory.Frames, screenPos)) return;
+            if (CheckCategoryTap(_lampsRect, ShopCategory.Lamps, screenPos)) return;
+            if (CheckCategoryTap(_tablesRect, ShopCategory.Tables, screenPos)) return;
+            if (CheckCategoryTap(_plantsRect, ShopCategory.Plants, screenPos)) return;
+            if (CheckCategoryTap(_shelvesRect, ShopCategory.Shelves, screenPos)) return;
         }
 
         private bool CheckCategoryTap(RectTransform rect, ShopCategory category, Vector2 screenPos)
@@ -302,6 +334,11 @@ namespace CatHotel.UI
             { ShopCategory.Balls, "Balles" },
             { ShopCategory.Scratchers, "Griffoirs" },
             { ShopCategory.Litters, "Litières" },
+            { ShopCategory.Frames, "Cadres" },
+            { ShopCategory.Lamps, "Lampes" },
+            { ShopCategory.Tables, "Tables" },
+            { ShopCategory.Plants, "Plantes" },
+            { ShopCategory.Shelves, "Étagères" },
         };
 
         private void OpenCategory(ShopCategory category)
@@ -324,7 +361,7 @@ namespace CatHotel.UI
             _categoryObj.SetActive(true);
 
             // Reset scroll to top
-            ResetScroll(_categoryObj);
+            ResetScroll();
         }
 
         private void PopulateItems(ShopCategory category)
@@ -403,7 +440,7 @@ namespace CatHotel.UI
             if (_categoriesObj != null)
             {
                 _categoriesObj.SetActive(true);
-                ResetScroll(_categoriesObj);
+                ResetScroll();
             }
         }
 
@@ -421,17 +458,21 @@ namespace CatHotel.UI
                 Destroy(_itemsListParent.GetChild(i).gameObject);
         }
 
-        private void ResetScroll(GameObject container)
+        private ScrollRect _scrollRect;
+
+        private void ResetScroll()
         {
-            var sr = container.GetComponentInChildren<ScrollRect>(true);
-            if (sr != null)
-                StartCoroutine(ResetScrollDelayed(sr));
+            if (_scrollRect == null) return;
+            StartCoroutine(ResetScrollDelayed());
         }
 
-        private static System.Collections.IEnumerator ResetScrollDelayed(ScrollRect sr)
+        private System.Collections.IEnumerator ResetScrollDelayed()
         {
-            yield return null; // wait one frame for layout rebuild
-            sr.normalizedPosition = new Vector2(0f, 1f);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_scrollRect.content);
+            yield return null;
+            var contentPos = _scrollRect.content.anchoredPosition;
+            contentPos.y = 0f;
+            _scrollRect.content.anchoredPosition = contentPos;
         }
 
         // --- Helpers ---

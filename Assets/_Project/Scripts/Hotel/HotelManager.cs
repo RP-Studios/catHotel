@@ -167,8 +167,8 @@ namespace CatHotel.Hotel
             var breed = PickRandomBreed();
             if (breed == null) return;
 
-            // All cats are pension for now
-            var mode = CatMode.Pension;
+            // 80% pension, 20% refuge
+            var mode = UnityEngine.Random.value < 0.8f ? CatMode.Pension : CatMode.Refuge;
 
             // Pick entrance
             var entrance = entrances[UnityEngine.Random.Range(0, entrances.Count)];
@@ -201,6 +201,8 @@ namespace CatHotel.Hotel
             // Add CatNeeds & CatHappiness BEFORE CatEntity.Init() so _needs is found
             var needs = go.AddComponent<CatNeeds>();
             needs.Init(breed, _config, isSpecial);
+            needs.SetSizeMultiplier(scale);
+            if (mode == CatMode.Refuge) needs.SetRefugeStartValues();
 
             int repDeficit = _reputation.GetDeficit(breed.minReputation);
             needs.SetReputationDeficit(repDeficit);
@@ -220,8 +222,9 @@ namespace CatHotel.Hotel
             // Pick a name
             string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
 
-            // Pension duration: 1-5 minutes
-            float pensionDuration = UnityEngine.Random.Range(60f, 300f);
+            // Pension duration: 1-5 minutes (only for pension cats)
+            float pensionDuration = mode == CatMode.Pension
+                ? UnityEngine.Random.Range(60f, 300f) : 0f;
 
             var instance = new CatInstance
             {

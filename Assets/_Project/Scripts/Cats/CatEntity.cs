@@ -107,7 +107,7 @@ namespace CatHotel.Cats
         {
             // Sort by Y: lower Y = closer to camera = higher sortingOrder
             if (_sr != null)
-                _sr.sortingOrder = Mathf.RoundToInt(-transform.position.y * 10f) + 1000;
+                _sr.sortingOrder = Mathf.RoundToInt(-transform.position.y * 100f) + 10000 + (GetInstanceID() & 0xFF);
 
             if (_fightCooldown > 0f)
                 _fightCooldown -= Time.deltaTime;

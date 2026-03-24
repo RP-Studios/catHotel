@@ -700,6 +700,18 @@ namespace CatHotel.Editor
                 $"{ObjectsRoot}/Beds/BED.png",
                 $"{ObjectsRoot}/Pillows/COUSSIN.png",
                 $"{ObjectsRoot}/Beds/LUXOUS_BED.png",
+                // Deco
+                $"{ObjectsRoot}/Deco/FRAME_01.png",
+                $"{ObjectsRoot}/Deco/FRAME_02.png",
+                $"{ObjectsRoot}/Deco/FRAME_03.png",
+                $"{ObjectsRoot}/Deco/FRAME_PAINTING.png",
+                $"{ObjectsRoot}/Deco/LAMP_BIG.png",
+                $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png",
+                $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png",
+                $"{ObjectsRoot}/Deco/PLANT_BIG.png",
+                $"{ObjectsRoot}/Deco/PLANT_SMALL.png",
+                $"{ObjectsRoot}/Deco/SHELF_0.png",
+                $"{ObjectsRoot}/Deco/SHELF_Var_01.png",
             };
             foreach (var s in objectSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
@@ -875,6 +887,7 @@ namespace CatHotel.Editor
             }
 
             importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = ppu;
             importer.filterMode = filter;
             importer.textureCompression = TextureImporterCompression.Uncompressed;
@@ -1434,6 +1447,49 @@ namespace CatHotel.Editor
                 ObjectCategory.Clean, 35, 1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Litters/LITTER_BOX_Clean.png", size: Vector2Int.one);
 
+            // --- Decorations: Frames (wall-mount) ---
+            CreateObjectAsset($"{D}/Obj_Frame01.asset", "Cadre 1",
+                ObjectCategory.Decoration, 60, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/FRAME_01.png", size: Vector2Int.one, wallMount: true);
+            CreateObjectAsset($"{D}/Obj_Frame02.asset", "Cadre 2",
+                ObjectCategory.Decoration, 60, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/FRAME_02.png", size: Vector2Int.one, wallMount: true);
+            CreateObjectAsset($"{D}/Obj_Frame03.asset", "Cadre 3",
+                ObjectCategory.Decoration, 60, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/FRAME_03.png", size: Vector2Int.one, wallMount: true);
+            CreateObjectAsset($"{D}/Obj_FramePainting.asset", "Peinture",
+                ObjectCategory.Decoration, 120, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/FRAME_PAINTING.png", size: Vector2Int.one, wallMount: true);
+
+            // --- Decorations: Lamps ---
+            CreateObjectAsset($"{D}/Obj_LampBig.asset", "Grande lampe",
+                ObjectCategory.Decoration, 100, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/LAMP_BIG.png", size: Vector2Int.one);
+
+            // --- Decorations: Tables ---
+            CreateObjectAsset($"{D}/Obj_TableCoffee.asset", "Table basse",
+                ObjectCategory.Decoration, 80, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png", size: Vector2Int.one);
+            CreateObjectAsset($"{D}/Obj_TableDrawer.asset", "Commode",
+                ObjectCategory.Decoration, 90, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one);
+
+            // --- Decorations: Plants ---
+            CreateObjectAsset($"{D}/Obj_PlantBig.asset", "Grande plante",
+                ObjectCategory.Decoration, 50, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/PLANT_BIG.png", size: Vector2Int.one);
+            CreateObjectAsset($"{D}/Obj_PlantSmall.asset", "Petite plante",
+                ObjectCategory.Decoration, 30, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/PLANT_SMALL.png", size: Vector2Int.one);
+
+            // --- Decorations: Shelves (wall-mount) ---
+            CreateObjectAsset($"{D}/Obj_Shelf0.asset", "Étagère",
+                ObjectCategory.Decoration, 70, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/SHELF_0.png", size: new Vector2Int(2, 1), wallMount: true);
+            CreateObjectAsset($"{D}/Obj_ShelfVar01.asset", "Étagère var.",
+                ObjectCategory.Decoration, 70, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01.png", size: new Vector2Int(2, 1), wallMount: true);
+
             // No default objects placed — player buys everything from the shop
 
             EditorUtility.SetDirty(root);
@@ -1444,7 +1500,7 @@ namespace CatHotel.Editor
         private static HotelObjectData CreateObjectAsset(string path, string displayName,
             ObjectCategory category, int cost, float efficiency, float useDuration,
             int maxUsers = 1, string spritePath = null, Vector2Int? size = null,
-            float visualScale = 1f)
+            float visualScale = 1f, bool wallMount = false)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -1455,6 +1511,7 @@ namespace CatHotel.Editor
             so.FindProperty("useDuration").floatValue = useDuration;
             so.FindProperty("maxUsers").intValue = maxUsers;
             so.FindProperty("visualScale").floatValue = visualScale;
+            so.FindProperty("wallMount").boolValue = wallMount;
 
             if (spritePath != null)
             {

@@ -18,6 +18,7 @@ namespace CatHotel.Cats
         private GameConfig _config;
         private bool _isSpecial;
         private int _reputationDeficit; // how many levels below min reputation
+        private float _sizeMultiplier = 1f; // small cats have higher needs
 
         // Tick-based update: needs don't need per-frame precision
         private const float TickInterval = 0.2f;
@@ -45,6 +46,24 @@ namespace CatHotel.Cats
         public void SetReputationDeficit(int deficit)
         {
             _reputationDeficit = Mathf.Max(0, deficit);
+        }
+
+        /// <summary>
+        /// Small cats (&lt;0.7 scale) have higher needs.
+        /// scale 0.6 → multiplier 1.4, scale 0.7+ → 1.0
+        /// </summary>
+        public void SetSizeMultiplier(float scale)
+        {
+            _sizeMultiplier = scale < 0.7f ? Mathf.Lerp(1.5f, 1f, (scale - 0.6f) / 0.1f) : 1f;
+        }
+
+        /// <summary>Set initial need values for refuge cats (low gauges).</summary>
+        public void SetRefugeStartValues()
+        {
+            _hunger = Random.Range(10f, 40f);
+            _sleep = Random.Range(10f, 40f);
+            _play = Random.Range(5f, 30f);
+            _clean = Random.Range(10f, 35f);
         }
 
         private void Update()
@@ -75,7 +94,7 @@ namespace CatHotel.Cats
             float special = _isSpecial ? _breed.specialDemandMult : 1f;
             float repPenalty = 1f + 0.3f * _reputationDeficit;
 
-            return baseRate * trait * demand * special * repPenalty;
+            return baseRate * trait * demand * special * repPenalty * _sizeMultiplier;
         }
 
         public float GetNeed(NeedType need)

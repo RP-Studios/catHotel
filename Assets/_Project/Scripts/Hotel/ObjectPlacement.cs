@@ -82,8 +82,11 @@ namespace CatHotel.Hotel
             // Scale to fit grid size
             ScaleToFit(_previewObj, _previewSr, data);
 
-            // Place at the center of the camera view, on the nearest floor cell
-            _currentGridPos = FindVisibleFloorCell();
+            // Place at the center of the camera view
+            if (data.wallMount)
+                _currentGridPos = FindVisibleWallCell();
+            else
+                _currentGridPos = FindVisibleFloorCell();
 
             UpdatePreviewPosition();
             CreateButtons();
@@ -121,7 +124,7 @@ namespace CatHotel.Hotel
                 Vector2 screenPos = pointer.position.ReadValue();
                 Vector3 worldPos = _cam.ScreenToWorldPoint(screenPos);
                 int gx = Mathf.FloorToInt(worldPos.x);
-                int gy = Mathf.FloorToInt(worldPos.y);
+                int gy = _currentData.wallMount ? GetTopWallY() : Mathf.FloorToInt(worldPos.y);
                 var newPos = new Vector2Int(gx, gy);
 
                 if (newPos != _currentGridPos)
@@ -166,7 +169,7 @@ namespace CatHotel.Hotel
 
             // Tap on grid = reposition
             int gx = Mathf.FloorToInt(worldPos.x);
-            int gy = Mathf.FloorToInt(worldPos.y);
+            int gy = _currentData.wallMount ? GetTopWallY() : Mathf.FloorToInt(worldPos.y);
             var gridData = _gridRenderer.Data;
             if (gridData != null && gridData.InBounds(gx, gy))
             {
@@ -180,7 +183,11 @@ namespace CatHotel.Hotel
         {
             if (_previewObj == null) return;
             float cx = _currentGridPos.x + _currentData.size.x * 0.5f;
-            float cy = _currentGridPos.y + _currentData.size.y * 0.5f;
+            float cy;
+            if (_currentData.wallMount)
+                cy = _currentGridPos.y + 0.65f; // centered on wall tile
+            else
+                cy = _currentGridPos.y + _currentData.size.y * 0.5f;
             _previewObj.transform.position = new Vector3(cx, cy, 0f);
             UpdateButtonPositions();
         }
@@ -192,28 +199,45 @@ namespace CatHotel.Hotel
 
             var rect = new RectInt(_currentGridPos, _currentData.size);
 
-            // Check all cells are walkable floor
-            bool allFloor = true;
-            for (int y = rect.yMin; y < rect.yMax; y++)
+            bool cellsOk;
+            if (_currentData.wallMount)
+            {
+                // Wall objects: check that all cells in the rect are Wall cells
+                cellsOk = true;
                 for (int x = rect.xMin; x < rect.xMax; x++)
                 {
-                    if (!gridData.InBounds(x, y) || !gridData.IsWalkable(x, y))
+                    int y = _currentGridPos.y;
+                    if (!gridData.InBounds(x, y) || gridData.GetCell(x, y) != CellType.Wall)
                     {
-                        allFloor = false;
-                        break;
-                    }
-                    // Don't place on Door cells
-                    if (gridData.GetCell(x, y) == CellType.Door)
-                    {
-                        allFloor = false;
+                        cellsOk = false;
                         break;
                     }
                 }
+            }
+            else
+            {
+                // Floor objects: check all cells are walkable floor
+                cellsOk = true;
+                for (int y = rect.yMin; y < rect.yMax; y++)
+                    for (int x = rect.xMin; x < rect.xMax; x++)
+                    {
+                        if (!gridData.InBounds(x, y) || !gridData.IsWalkable(x, y))
+                        {
+                            cellsOk = false;
+                            break;
+                        }
+                        if (gridData.GetCell(x, y) == CellType.Door)
+                        {
+                            cellsOk = false;
+                            break;
+                        }
+                    }
+            }
 
             // Check no other object occupies the area
             bool areaFree = ObjectRegistry.IsAreaFree(rect);
 
-            _isValid = allFloor && areaFree;
+            _isValid = cellsOk && areaFree;
 
             // Update preview tilemap
             _gridRenderer.ShowPreview(rect, _isValid);
@@ -241,13 +265,15 @@ namespace CatHotel.Hotel
 
             // Create the real HotelObject
             var go = new GameObject($"Obj_{_currentData.displayName}");
+            float posY = _currentData.wallMount
+                ? _currentGridPos.y + 0.65f
+                : _currentGridPos.y + _currentData.size.y * 0.5f;
             go.transform.position = new Vector3(
-                _currentGridPos.x + _currentData.size.x * 0.5f,
-                _currentGridPos.y + _currentData.size.y * 0.5f, 0f);
+                _currentGridPos.x + _currentData.size.x * 0.5f, posY, 0f);
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _currentData.worldSprite != null ? _currentData.worldSprite : _currentData.icon;
-            sr.sortingOrder = 5;
+            sr.sortingOrder = _currentData.wallMount ? 7 : 5;
 
             // Scale to fit
             ScaleToFit(go, sr, _currentData);
@@ -376,6 +402,49 @@ namespace CatHotel.Hotel
             // Fallback
             var floorCells = _gridRenderer.CentralRoomFloorCells;
             return floorCells.Count > 0 ? floorCells[floorCells.Count / 2] : new Vector2Int(10, 7);
+        }
+
+        private int GetTopWallY()
+        {
+            var gridData = _gridRenderer.Data;
+            if (gridData == null) return 29;
+            // Top wall row = first wall row from top of the central room
+            for (int y = GridData.Height - 1; y >= 0; y--)
+            {
+                for (int x = 0; x < GridData.Width; x++)
+                {
+                    if (gridData.GetCell(x, y) == CellType.Wall)
+                    {
+                        // Check if there's floor below → this is the top wall
+                        if (y > 0 && gridData.IsWalkable(x, y - 1))
+                            return y;
+                    }
+                }
+            }
+            return 29;
+        }
+
+        private Vector2Int FindVisibleWallCell()
+        {
+            int wallY = GetTopWallY();
+            var gridData = _gridRenderer.Data;
+            Vector3 camCenter = _cam.transform.position;
+            int cx = Mathf.FloorToInt(camCenter.x);
+
+            // Find nearest wall cell at wallY from camera center X
+            for (int radius = 0; radius < 30; radius++)
+            {
+                for (int dx = -radius; dx <= radius; dx++)
+                {
+                    int x = cx + dx;
+                    if (gridData.InBounds(x, wallY) && gridData.GetCell(x, wallY) == CellType.Wall)
+                    {
+                        if (ObjectRegistry.IsAreaFree(new RectInt(x, wallY, _currentData.size.x, 1)))
+                            return new Vector2Int(x, wallY);
+                    }
+                }
+            }
+            return new Vector2Int(cx, wallY);
         }
 
         private static void SetSpriteWorldSize(GameObject go, SpriteRenderer sr, float worldSize)
