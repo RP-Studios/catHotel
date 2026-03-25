@@ -234,8 +234,19 @@ namespace CatHotel.Hotel
                     }
             }
 
-            // Check no other object occupies the area
-            bool areaFree = ObjectRegistry.IsAreaFree(rect);
+            // Check placement constraints
+            bool areaFree;
+            if (_currentData.requiresTable)
+            {
+                // Table must be on the row below
+                var belowRect = new RectInt(_currentGridPos.x, _currentGridPos.y - 1,
+                    _currentData.size.x, 1);
+                areaFree = ObjectRegistry.HasTableAt(belowRect) && ObjectRegistry.IsAreaFree(rect);
+            }
+            else
+            {
+                areaFree = ObjectRegistry.IsAreaFree(rect);
+            }
 
             _isValid = cellsOk && areaFree;
 
@@ -265,18 +276,29 @@ namespace CatHotel.Hotel
 
             // Create the real HotelObject
             var go = new GameObject($"Obj_{_currentData.displayName}");
-            float posY = _currentData.wallMount
-                ? _currentGridPos.y + 0.65f
-                : _currentGridPos.y + _currentData.size.y * 0.5f;
+            float posY;
+            if (_currentData.wallMount)
+                posY = _currentGridPos.y + 0.65f;
+            else
+                posY = _currentGridPos.y + _currentData.size.y * 0.5f;
             go.transform.position = new Vector3(
                 _currentGridPos.x + _currentData.size.x * 0.5f, posY, 0f);
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _currentData.worldSprite != null ? _currentData.worldSprite : _currentData.icon;
-            sr.sortingOrder = _currentData.wallMount ? 7 : 5;
+            int sortOrder = _currentData.wallMount ? 7 : 5;
+            if (_currentData.requiresTable) sortOrder += 2;
+            sr.sortingOrder = sortOrder;
 
             // Scale to fit
             ScaleToFit(go, sr, _currentData);
+
+            // Animated objects (aquarium, etc.)
+            if (_currentData.worldAnimController != null)
+            {
+                var anim = go.AddComponent<Animator>();
+                anim.runtimeAnimatorController = _currentData.worldAnimController;
+            }
 
             var hotelObj = go.AddComponent<HotelObject>();
             hotelObj.Init(_currentData, _currentGridPos);

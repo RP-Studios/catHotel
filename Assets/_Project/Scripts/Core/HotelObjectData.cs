@@ -25,6 +25,10 @@ namespace CatHotel.Core
         [Tooltip("Comfort bonus (decorations only)")]
         public int comfortBonus;
 
+        [Header("Animation")]
+        [Tooltip("Animator controller for animated objects (aquarium, lamp light, etc.)")]
+        public RuntimeAnimatorController worldAnimController;
+
         [Header("Placement")]
         public Vector2Int size = Vector2Int.one;
         [Tooltip("Visual scale multiplier (0.5 = half size within grid cell)")]
@@ -32,6 +36,8 @@ namespace CatHotel.Core
         public float visualScale = 1f;
         [Tooltip("Can be placed on walls (shelves, paintings)")]
         public bool wallMount;
+        [Tooltip("Must be placed on a table")]
+        public bool requiresTable;
 
         [Header("Carpet bonus (carpet only)")]
         [Tooltip("Which need gets the zone bonus")]

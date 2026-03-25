@@ -15,6 +15,8 @@ namespace CatHotel.UI
     public class CatInfoPanel : MonoBehaviour
     {
         [SerializeField] private HotelManager _hotel;
+        [SerializeField] private Sprite _pensionIcon;
+        [SerializeField] private Sprite _shelterIcon;
 
         private RectTransform _panel;
         private GameObject _panelObj;
@@ -24,6 +26,13 @@ namespace CatHotel.UI
 
         // Portrait
         private Image _catPortrait;
+
+        // Stay type
+        private Image _stayTypeImage;
+        private TMP_Text _stayTypeLabel;
+
+        // Pension time container (hidden for refuge)
+        private GameObject _remainingTimePensionObj;
 
         // Text fields
         private TMP_Text _catName;
@@ -103,10 +112,18 @@ namespace CatHotel.UI
             if (portraitT != null)
                 _catPortrait = portraitT.GetComponent<Image>();
 
+            // Stay type
+            var stayImgT = FindInChildren(_panelObj.transform, "StayTypeImage");
+            if (stayImgT != null)
+                _stayTypeImage = stayImgT.GetComponent<Image>();
+            _stayTypeLabel = FindText(_panelObj, "StayTypeLabel");
+
             // Text fields
             _catName = FindText(_panelObj, "CatName");
             _catSpecies = FindText(_panelObj, "CatSpeciesValue");
             _timeRemaining = FindText(_panelObj, "TimeRemainingPensionValue");
+            var remainingT = FindInChildren(_panelObj.transform, "RemaingTimePension");
+            if (remainingT != null) _remainingTimePensionObj = remainingT.gameObject;
 
             // Need bars + values
             _happinessBar = FindBar(_panelObj, "HapinessImageValue");
@@ -162,6 +179,18 @@ namespace CatHotel.UI
             if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
             if (_catPortrait != null && cat.Breed.frontSprite != null)
                 _catPortrait.sprite = cat.Breed.frontSprite;
+
+            // Stay type + pension time visibility
+            bool isPension = cat.Mode == Core.CatMode.Pension;
+            if (_remainingTimePensionObj != null)
+                _remainingTimePensionObj.SetActive(isPension);
+            if (_stayTypeImage != null)
+            {
+                var icon = isPension ? _pensionIcon : _shelterIcon;
+                if (icon != null) _stayTypeImage.sprite = icon;
+            }
+            if (_stayTypeLabel != null)
+                _stayTypeLabel.text = isPension ? "En pension" : "Arrivé au refuge";
 
             RefreshValues();
 

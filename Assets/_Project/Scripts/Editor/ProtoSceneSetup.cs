@@ -64,6 +64,22 @@ namespace CatHotel.Editor
             ("Coin_Collect_all.png", "coin_collect_all", "CoinCollectAll", 24, 24f),
         };
 
+        private const string AquariumAnimRoot = "Assets/_Project/Art/Objects/Deco";
+        private const string AquariumControllerPath = AquariumAnimRoot + "/Aquarium.controller";
+
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] AquariumAnimConfigs =
+        {
+            ("Anim_Aquarium.png", "aquarium", "Idle", 40, 12f),
+        };
+
+        private const string CarpetCosmicAnimRoot = "Assets/_Project/Art/Objects/Carpets";
+        private const string CarpetCosmicControllerPath = CarpetCosmicAnimRoot + "/CarpetCosmic.controller";
+
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] CarpetCosmicAnimConfigs =
+        {
+            ("Anim_Carpet_Cosmic.png", "carpet_cosmic", "Idle", 4, 6f),
+        };
+
         private const string PettingRoot = "Assets/_Project/Animations/Petting";
         private const string HandPetControllerPath = PettingRoot + "/HandPet.controller";
 
@@ -625,6 +641,8 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
             ProcessAnimConfigs(PettingRoot, HandPetAnimConfigs);
             ProcessAnimConfigs(CoinSpinRoot, CoinSpinAnimConfigs);
+            ProcessAnimConfigs(AquariumAnimRoot, AquariumAnimConfigs);
+            ProcessAnimConfigs(CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
             AssetDatabase.Refresh();
 
             var tiles = CreateTileAssets();
@@ -637,9 +655,11 @@ namespace CatHotel.Editor
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
             var coinSpinController = CreateAnimController(CoinSpinControllerPath, CoinSpinRoot, CoinSpinAnimConfigs);
+            CreateAnimController(AquariumControllerPath, AquariumAnimRoot, AquariumAnimConfigs);
+            CreateAnimController(CarpetCosmicControllerPath, CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
             BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length;
+                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -712,6 +732,10 @@ namespace CatHotel.Editor
                 $"{ObjectsRoot}/Deco/PLANT_SMALL.png",
                 $"{ObjectsRoot}/Deco/SHELF_0.png",
                 $"{ObjectsRoot}/Deco/SHELF_Var_01.png",
+                $"{ObjectsRoot}/Deco/Aquarium.png",
+                $"{ObjectsRoot}/Carpets/CARPET_CONFORT.png",
+                $"{ObjectsRoot}/Carpets/CARPET_COSMIC.png",
+                $"{ObjectsRoot}/Carpets/CARPET_PLAY.png",
             };
             foreach (var s in objectSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
@@ -768,7 +792,6 @@ namespace CatHotel.Editor
 
             importer.GetSourceTextureWidthAndHeight(out int texW, out int texH);
 
-            // Auto-set maxTextureSize to next power of 2 >= texture width (min 2048)
             int maxSize = 2048;
             while (maxSize < texW)
                 maxSize *= 2;
@@ -776,19 +799,49 @@ namespace CatHotel.Editor
 
             int frameW = texW / frameCount;
 
-            // Use ISpriteEditorDataProvider (Unity 6 replacement for deprecated spritesheet)
             var factory = new SpriteDataProviderFactories();
             factory.Init();
             var provider = factory.GetSpriteEditorDataProviderFromObject(importer);
             provider.InitSpriteEditorDataProvider();
 
+            // Read existing rects to preserve spriteIDs (avoids .meta churn)
+            var existingRects = provider.GetSpriteRects();
+            var existingById = new System.Collections.Generic.Dictionary<string, GUID>();
+            if (existingRects != null)
+            {
+                foreach (var r in existingRects)
+                    existingById[r.name] = r.spriteID;
+            }
+
+            // Check if slicing already matches
+            bool alreadyCorrect = existingRects != null && existingRects.Length == frameCount;
+            if (alreadyCorrect)
+            {
+                for (int i = 0; i < frameCount; i++)
+                {
+                    string expectedName = $"{namePrefix}_{i}";
+                    var expectedRect = new Rect(i * frameW, 0, frameW, texH);
+                    if (i >= existingRects.Length ||
+                        existingRects[i].name != expectedName ||
+                        existingRects[i].rect != expectedRect)
+                    {
+                        alreadyCorrect = false;
+                        break;
+                    }
+                }
+            }
+
+            if (alreadyCorrect) return; // Nothing to change
+
             var rects = new SpriteRect[frameCount];
             for (int i = 0; i < frameCount; i++)
             {
+                string spriteName = $"{namePrefix}_{i}";
                 rects[i] = new SpriteRect
                 {
-                    name = $"{namePrefix}_{i}",
-                    spriteID = GUID.Generate(),
+                    name = spriteName,
+                    spriteID = existingById.TryGetValue(spriteName, out var existingId)
+                        ? existingId : GUID.Generate(),
                     rect = new Rect(i * frameW, 0, frameW, texH),
                     alignment = SpriteAlignment.Center,
                     pivot = new Vector2(0.5f, 0.5f)
@@ -840,7 +893,14 @@ namespace CatHotel.Editor
         {
             var sprites = AssetDatabase.LoadAllAssetsAtPath(sheetPath)
                 .OfType<Sprite>()
-                .OrderBy(s => s.name)
+                .OrderBy(s =>
+                {
+                    // Numeric sort: extract trailing number from sprite name
+                    var name = s.name;
+                    int i = name.Length - 1;
+                    while (i >= 0 && char.IsDigit(name[i])) i--;
+                    return int.TryParse(name.Substring(i + 1), out int num) ? num : 0;
+                })
                 .ToList();
 
             if (sprites.Count < frameCount)
@@ -1220,6 +1280,10 @@ namespace CatHotel.Editor
 
             var soCatInfo = new SerializedObject(catInfoPanel);
             soCatInfo.FindProperty("_hotel").objectReferenceValue = hotelMgr;
+            var pensionIcon = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Icons/Minimalist/pension.png");
+            var shelterIcon = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Icons/Minimalist/shelter.png");
+            soCatInfo.FindProperty("_pensionIcon").objectReferenceValue = pensionIcon;
+            soCatInfo.FindProperty("_shelterIcon").objectReferenceValue = shelterIcon;
             soCatInfo.ApplyModifiedProperties();
 
             // --- OptionsPanel ---
@@ -1469,10 +1533,10 @@ namespace CatHotel.Editor
             // --- Decorations: Tables ---
             CreateObjectAsset($"{D}/Obj_TableCoffee.asset", "Table basse",
                 ObjectCategory.Decoration, 80, 0f, 0f, maxUsers: 0,
-                spritePath: $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png", size: Vector2Int.one, visualScale: 2f);
             CreateObjectAsset($"{D}/Obj_TableDrawer.asset", "Commode",
                 ObjectCategory.Decoration, 90, 0f, 0f, maxUsers: 0,
-                spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one, visualScale: 2f);
 
             // --- Decorations: Plants ---
             CreateObjectAsset($"{D}/Obj_PlantBig.asset", "Grande plante",
@@ -1490,6 +1554,26 @@ namespace CatHotel.Editor
                 ObjectCategory.Decoration, 70, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01.png", size: new Vector2Int(2, 1), wallMount: true);
 
+            // --- Decorations: Aquarium (animated) ---
+            var aqController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AquariumControllerPath);
+            CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
+                ObjectCategory.Decoration, 200, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Deco/Aquarium.png", size: Vector2Int.one,
+                visualScale: 2f, requiresTable: true, animController: aqController);
+
+            // --- Carpets ---
+            CreateObjectAsset($"{D}/Obj_CarpetConfort.asset", "Tapis Confort",
+                ObjectCategory.Decoration, 120, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Carpets/CARPET_CONFORT.png", size: new Vector2Int(2, 2));
+            CreateObjectAsset($"{D}/Obj_CarpetPlay.asset", "Tapis Jeu",
+                ObjectCategory.Decoration, 120, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Carpets/CARPET_PLAY.png", size: new Vector2Int(2, 2));
+            var carpetCosmicCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(CarpetCosmicControllerPath);
+            CreateObjectAsset($"{D}/Obj_CarpetCosmic.asset", "Tapis Cosmique",
+                ObjectCategory.Decoration, 250, 0f, 0f, maxUsers: 0,
+                spritePath: $"{ObjectsRoot}/Carpets/CARPET_COSMIC.png", size: new Vector2Int(2, 2),
+                animController: carpetCosmicCtrl);
+
             // No default objects placed — player buys everything from the shop
 
             EditorUtility.SetDirty(root);
@@ -1500,7 +1584,8 @@ namespace CatHotel.Editor
         private static HotelObjectData CreateObjectAsset(string path, string displayName,
             ObjectCategory category, int cost, float efficiency, float useDuration,
             int maxUsers = 1, string spritePath = null, Vector2Int? size = null,
-            float visualScale = 1f, bool wallMount = false)
+            float visualScale = 1f, bool wallMount = false, bool requiresTable = false,
+            RuntimeAnimatorController animController = null, Sprite iconOverride = null)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -1512,12 +1597,18 @@ namespace CatHotel.Editor
             so.FindProperty("maxUsers").intValue = maxUsers;
             so.FindProperty("visualScale").floatValue = visualScale;
             so.FindProperty("wallMount").boolValue = wallMount;
+            so.FindProperty("requiresTable").boolValue = requiresTable;
+            so.FindProperty("worldAnimController").objectReferenceValue = animController;
 
             if (spritePath != null)
             {
                 var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(spritePath);
-                so.FindProperty("icon").objectReferenceValue = sprite;
+                so.FindProperty("icon").objectReferenceValue = iconOverride != null ? iconOverride : sprite;
                 so.FindProperty("worldSprite").objectReferenceValue = sprite;
+            }
+            else if (iconOverride != null)
+            {
+                so.FindProperty("icon").objectReferenceValue = iconOverride;
             }
 
             if (size.HasValue)

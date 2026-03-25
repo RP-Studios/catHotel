@@ -88,6 +88,20 @@ namespace CatHotel.Hotel
             return true;
         }
 
+        /// <summary>Check if a table-category object covers the given area.</summary>
+        public static bool HasTableAt(RectInt area)
+        {
+            foreach (var obj in All)
+            {
+                if (obj.Data.displayName == null) continue;
+                string n = obj.Data.displayName.ToLowerInvariant();
+                if (!n.Contains("table") && !n.Contains("commode")) continue;
+                var objRect = new RectInt(obj.GridPos, obj.Data.size);
+                if (area.Overlaps(objRect)) return true;
+            }
+            return false;
+        }
+
         public static void Clear() => All.Clear();
 
         private static ObjectCategory NeedToCategory(NeedType need)

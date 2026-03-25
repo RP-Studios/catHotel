@@ -49,21 +49,32 @@ namespace CatHotel.Cats
         }
 
         /// <summary>
-        /// Small cats (&lt;0.7 scale) have higher needs.
-        /// scale 0.6 → multiplier 1.4, scale 0.7+ → 1.0
+        /// Small cats (&lt;0.7 scale) have slightly higher needs.
+        /// scale 0.6 → multiplier 1.2, scale 0.7+ → 1.0
         /// </summary>
         public void SetSizeMultiplier(float scale)
         {
-            _sizeMultiplier = scale < 0.7f ? Mathf.Lerp(1.5f, 1f, (scale - 0.6f) / 0.1f) : 1f;
+            _sizeMultiplier = scale < 0.7f ? Mathf.Lerp(1.2f, 1f, (scale - 0.6f) / 0.1f) : 1f;
         }
 
-        /// <summary>Set initial need values for refuge cats (low gauges).</summary>
+        /// <summary>Set initial need values for refuge cats: 1-2 random gauges are low.</summary>
         public void SetRefugeStartValues()
         {
-            _hunger = Random.Range(10f, 40f);
-            _sleep = Random.Range(10f, 40f);
-            _play = Random.Range(5f, 30f);
-            _clean = Random.Range(10f, 35f);
+            int lowCount = Random.Range(1, 3); // 1 or 2 low gauges
+            float[] vals = { _hunger, _sleep, _play, _clean };
+            var indices = new System.Collections.Generic.List<int> { 0, 1, 2, 3 };
+
+            for (int i = 0; i < lowCount && indices.Count > 0; i++)
+            {
+                int pick = Random.Range(0, indices.Count);
+                vals[indices[pick]] = Random.Range(10f, 30f);
+                indices.RemoveAt(pick);
+            }
+
+            _hunger = vals[0];
+            _sleep = vals[1];
+            _play = vals[2];
+            _clean = vals[3];
         }
 
         private void Update()

@@ -27,7 +27,9 @@ namespace CatHotel.UI
         Lamps,       // art/objects/deco/LAMP_   → Decoration
         Tables,      // art/objects/deco/TABLE_  → Decoration
         Plants,      // art/objects/deco/PLANT_  → Decoration
-        Shelves      // art/objects/deco/SHELF_  → Decoration (wall)
+        Shelves,     // art/objects/deco/SHELF_  → Decoration (wall)
+        Aquariums,   // art/objects/deco/Aquarium → Decoration (on table)
+        Carpets      // art/objects/carpets/CARPET_ → Decoration (floor)
     }
 
     /// <summary>
@@ -58,6 +60,8 @@ namespace CatHotel.UI
         private RectTransform _tablesRect;
         private RectTransform _plantsRect;
         private RectTransform _shelvesRect;
+        private RectTransform _aquariumsRect;
+        private RectTransform _carpetsRect;
 
         // Categories list (inside ShopPanel)
         private GameObject _categoriesObj;
@@ -116,6 +120,8 @@ namespace CatHotel.UI
             _tablesRect = FindRect(_panelObj, "TablesAction");
             _plantsRect = FindRect(_panelObj, "PlantsAction");
             _shelvesRect = FindRect(_panelObj, "ShelvesAction");
+            _aquariumsRect = FindRect(_panelObj, "AquariumAction");
+            _carpetsRect = FindRect(_panelObj, "CarpetsAction");
 
             AddJuice(_closeRect);
             AddJuice(_bedsRect);
@@ -130,6 +136,8 @@ namespace CatHotel.UI
             AddJuice(_tablesRect);
             AddJuice(_plantsRect);
             AddJuice(_shelvesRect);
+            AddJuice(_aquariumsRect);
+            AddJuice(_carpetsRect);
 
             // --- Categories list + Category detail (children of ShopPanel) ---
             var categoriesT = FindInChildren(_panelObj.transform, "Categories");
@@ -219,6 +227,8 @@ namespace CatHotel.UI
             if (name.Contains("table") || name.Contains("drawer")) return ShopCategory.Tables;
             if (name.Contains("plant")) return ShopCategory.Plants;
             if (name.Contains("shelf") || name.Contains("shelve")) return ShopCategory.Shelves;
+            if (name.Contains("aquarium")) return ShopCategory.Aquariums;
+            if (name.Contains("carpet")) return ShopCategory.Carpets;
 
             // Fallback by ObjectCategory
             return obj.category switch
@@ -274,6 +284,8 @@ namespace CatHotel.UI
             if (CheckCategoryTap(_tablesRect, ShopCategory.Tables, screenPos)) return;
             if (CheckCategoryTap(_plantsRect, ShopCategory.Plants, screenPos)) return;
             if (CheckCategoryTap(_shelvesRect, ShopCategory.Shelves, screenPos)) return;
+            if (CheckCategoryTap(_aquariumsRect, ShopCategory.Aquariums, screenPos)) return;
+            if (CheckCategoryTap(_carpetsRect, ShopCategory.Carpets, screenPos)) return;
         }
 
         private bool CheckCategoryTap(RectTransform rect, ShopCategory category, Vector2 screenPos)
@@ -339,6 +351,8 @@ namespace CatHotel.UI
             { ShopCategory.Tables, "Tables" },
             { ShopCategory.Plants, "Plantes" },
             { ShopCategory.Shelves, "Étagères" },
+            { ShopCategory.Aquariums, "Aquariums" },
+            { ShopCategory.Carpets, "Tapis" },
         };
 
         private void OpenCategory(ShopCategory category)

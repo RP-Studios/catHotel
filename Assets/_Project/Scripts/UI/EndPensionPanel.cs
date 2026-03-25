@@ -153,12 +153,9 @@ namespace CatHotel.UI
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
 
-            // Set cat image
+            // Set cat image (keep stretch layout, don't call SetNativeSize)
             if (_catImage != null && data.CatSprite != null)
-            {
                 _catImage.sprite = data.CatSprite;
-                _catImage.SetNativeSize();
-            }
 
             if (_catName != null)
                 _catName.text = data.CatName;
