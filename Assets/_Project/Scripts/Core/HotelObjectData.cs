@@ -32,6 +32,10 @@ namespace CatHotel.Core
         public Sprite[] animFrames;
         public float animFps = 12f;
 
+        [Header("Selection")]
+        [Tooltip("Sprite shown when the object is selected (tap highlight)")]
+        public Sprite selectedSprite;
+
         [Header("Placement")]
         public Vector2Int size = Vector2Int.one;
         [Tooltip("Visual scale multiplier (0.5 = half size within grid cell)")]

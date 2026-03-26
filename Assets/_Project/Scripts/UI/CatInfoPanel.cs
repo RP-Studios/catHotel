@@ -39,6 +39,9 @@ namespace CatHotel.UI
         private TMP_Text _catSpecies;
         private TMP_Text _timeRemaining;
 
+        // Age
+        private TMP_Text _catAge;
+
         // Need bars (image Right offset: 150 = 0%, 0 = 100%)
         private RectTransform _happinessBar;
         private TMP_Text _happinessText;
@@ -125,6 +128,9 @@ namespace CatHotel.UI
             var remainingT = FindInChildren(_panelObj.transform, "RemaingTimePension");
             if (remainingT != null) _remainingTimePensionObj = remainingT.gameObject;
 
+            // Age
+            _catAge = FindText(_panelObj, "CatAgeValue");
+
             // Need bars + values
             _happinessBar = FindBar(_panelObj, "HapinessImageValue");
             _happinessText = FindText(_panelObj, "HapinessValue");
@@ -177,6 +183,7 @@ namespace CatHotel.UI
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
             if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
+            if (_catAge != null) _catAge.text = cat.Breed.size < 1f ? "Chaton" : "Chat adulte";
             if (_catPortrait != null && cat.Breed.frontSprite != null)
                 _catPortrait.sprite = cat.Breed.frontSprite;
 
