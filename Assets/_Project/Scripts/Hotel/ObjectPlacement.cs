@@ -93,16 +93,30 @@ namespace CatHotel.Hotel
             UpdateValidity();
         }
 
+        private bool IsTapOnButton(Vector3 worldPos)
+        {
+            if (_readyBtnObj != null &&
+                Vector2.Distance(worldPos, _readyBtnObj.transform.position) < ReadySize * 0.6f)
+                return true;
+            if (_cancelBtnObj != null &&
+                Vector2.Distance(worldPos, _cancelBtnObj.transform.position) < CancelSize * 0.6f)
+                return true;
+            return false;
+        }
+
         private void HandleDrag()
         {
             var pointer = Pointer.current;
             if (pointer == null) return;
 
-            // Start drag on press
+            // Start drag on press — but NOT if tapping a button
             if (pointer.press.wasPressedThisFrame)
             {
                 Vector2 screenPos = pointer.position.ReadValue();
                 Vector3 worldPos = _cam.ScreenToWorldPoint(screenPos);
+
+                if (IsTapOnButton(worldPos))
+                    return; // let HandleTap process this
 
                 // Check if tapping on the preview object
                 float dist = Vector2.Distance(worldPos, _previewObj.transform.position);
@@ -286,9 +300,18 @@ namespace CatHotel.Hotel
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _currentData.worldSprite != null ? _currentData.worldSprite : _currentData.icon;
-            int sortOrder = _currentData.wallMount ? 7 : 5;
-            if (_currentData.requiresTable) sortOrder += 2;
-            sr.sortingOrder = sortOrder;
+
+            if (_currentData.wallMount || _currentData.requiresTable)
+            {
+                // Wall/table objects: fixed sorting
+                int sortOrder = _currentData.wallMount ? 7 : 9;
+                sr.sortingOrder = sortOrder;
+            }
+            else
+            {
+                // Floor objects: dynamic Y-sorting (same formula as cats)
+                go.AddComponent<Core.SortByY>();
+            }
 
             // Scale to fit
             ScaleToFit(go, sr, _currentData);

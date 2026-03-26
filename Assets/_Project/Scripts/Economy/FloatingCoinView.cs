@@ -31,10 +31,15 @@ namespace CatHotel.Economy
         [SerializeField] private float _flyDuration = 0.5f;
         [SerializeField] private float _collectAllCoinCost = 5;
 
+        [Header("SFX")]
+        [SerializeField] private AudioClip[] _coinCollectClips;   // Coin-001..005
+        [SerializeField] private AudioClip _fullPickUpClip;       // FullPickUp
+
         private readonly Dictionary<FloatingCoin, GameObject> _coinViews = new();
         private readonly HashSet<FloatingCoin> _collecting = new();
         private readonly List<FloatingCoin> _toRemove = new(); // reusable list
         private Camera _cam;
+        private AudioSource _sfxSource;
         private Canvas _overlayCanvas;
         private RectTransform _coinTarget; // CatCoinsImage
         private Button _collectAllBtn;
@@ -45,6 +50,15 @@ namespace CatHotel.Economy
         private void Start()
         {
             _cam = Camera.main;
+
+            // SFX source
+            _sfxSource = GetComponent<AudioSource>();
+            if (_sfxSource == null)
+            {
+                _sfxSource = gameObject.AddComponent<AudioSource>();
+                _sfxSource.playOnAwake = false;
+                _sfxSource.spatialBlend = 0f; // 2D
+            }
 
             // Find overlay canvas
             foreach (var c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
@@ -231,6 +245,7 @@ namespace CatHotel.Economy
             {
                 _economy.StartCollect(catCoin);
                 AnimateCollect(catCoin);
+                PlayCoinCollectSfx();
             }
             else if (_catInfoPanel != null)
             {
@@ -303,6 +318,9 @@ namespace CatHotel.Economy
                     .SetEase(Ease.OutQuad)
                     .OnComplete(() => _pigIcon.rectTransform.rotation = Quaternion.identity);
             }
+
+            // Play full pickup SFX
+            PlayFullPickUpSfx();
 
             // Stagger coin fly animations
             float delay = 0f;
@@ -403,5 +421,18 @@ namespace CatHotel.Economy
         }
 
         public int PendingCoinCount => _coinViews.Count;
+
+        private void PlayCoinCollectSfx()
+        {
+            if (_sfxSource == null || _coinCollectClips == null || _coinCollectClips.Length == 0) return;
+            var clip = _coinCollectClips[UnityEngine.Random.Range(0, _coinCollectClips.Length)];
+            _sfxSource.PlayOneShot(clip, ParametersPanel.EffectsVolume);
+        }
+
+        private void PlayFullPickUpSfx()
+        {
+            if (_sfxSource == null || _fullPickUpClip == null) return;
+            _sfxSource.PlayOneShot(_fullPickUpClip, ParametersPanel.EffectsVolume);
+        }
     }
 }

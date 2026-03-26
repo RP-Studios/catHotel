@@ -37,6 +37,10 @@ namespace CatHotel.Editor
         private const string SiamoisAnimRoot = SiamoisSpritesRoot + "/Animations";
         private const string SiamoisControllerPath = SiamoisAnimRoot + "/CatSiamois.controller";
 
+        private const string RagdollSpritesRoot = "Assets/_Project/Art/Cats/Ragdoll";
+        private const string RagdollAnimRoot = RagdollSpritesRoot + "/Animations";
+        private const string RagdollControllerPath = RagdollAnimRoot + "/CatRagdoll.controller";
+
         private const string CleoSpritesRoot = "Assets/_Project/Art/SpecialCats/Cleo";
         private const string CleoAnimRoot = CleoSpritesRoot + "/Animations";
         private const string CleoControllerPath = CleoSpritesRoot + "/CatCleo.controller";
@@ -458,6 +462,82 @@ namespace CatHotel.Editor
             ("SadWalk/siamois_base_walk_sad_right.png", "siam_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
+        // ==================== RAGDOLL ====================
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] RagdollAnimConfigs =
+        {
+            // Walk (8f, 12 FPS)
+            ("Walk/ragdoll_base_walk_face.png",  "rd_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/ragdoll_base_walk_back.png",  "rd_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/ragdoll_base_walk_left.png",  "rd_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/ragdoll_base_walk_right.png", "rd_walk_right", "Walk_Right", 8, 12f),
+
+            // Idle1 (6f, 6 FPS)
+            ("Idle 1/ragdoll_base_idle1_face.png",  "rd_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/ragdoll_base_idle1_back.png",  "rd_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/ragdoll_base_idle1_left.png",  "rd_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/ragdoll_base_idle1_right.png", "rd_idle1_right", "Idle1_Right", 6, 6f),
+
+            // Idle2 (6f, 6 FPS)
+            ("Idle 2/ragdoll_base_idle2_face.png",  "rd_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/ragdoll_base_idle2_left.png",  "rd_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/ragdoll_base_idle2_right.png", "rd_idle2_right", "Idle2_Right", 6, 6f),
+
+            // Idle3 (8f, 8 FPS)
+            ("Idle 3/ragdoll_base_idle3_face.png",  "rd_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/ragdoll_base_idle3_back.png",  "rd_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/ragdoll_base_idle3_left.png",  "rd_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/ragdoll_base_idle3_right.png", "rd_idle3_right", "Idle3_Right", 8, 8f),
+
+            // Sleep (9f, 4.5 FPS)
+            ("Sleep/ragdoll_base_sleeping_face.png",  "rd_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/ragdoll_base_sleeping_left.png",  "rd_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/ragdoll_base_sleeping_right.png", "rd_sleeping_right", "Sleep_Right", 9, 4.5f),
+
+            // Eat (face 12f, 6 FPS | left/right 12f, 6 FPS — typo in filenames: ragodoll)
+            ("Eating/ragdoll_base_eating_face.png",   "rd_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/ragodoll_base_eating_left.png",  "rd_eating_left",  "Eat_Left",  12, 6f),
+            ("Eating/ragodoll_base_eating_right.png", "rd_eating_right", "Eat_Right", 12, 6f),
+
+            // Drink (8f, 4 FPS — typo in filenames: ragodoll)
+            ("Drinking/ragdoll_base_drinking_face.png",   "rd_drinking_face",  "Drink_Front", 8, 4f),
+            ("Drinking/ragodoll_base_drinking_left.png",  "rd_drinking_left",  "Drink_Left",  8, 4f),
+            ("Drinking/ragodoll_base_drinking_right.png", "rd_drinking_right", "Drink_Right", 8, 4f),
+
+            // Cleaning (11f, 5.5 FPS)
+            ("Cleaning/ragdoll_base_cleaning_face.png",  "rd_cleaning_face",  "Clean_Front", 11, 5.5f),
+            ("Cleaning/ragdoll_base_cleaning_left.png",  "rd_cleaning_left",  "Clean_Left",  11, 5.5f),
+            ("Cleaning/ragdoll_base_cleaning_right.png", "rd_cleaning_right", "Clean_Right", 11, 5.5f),
+
+            // Playing main (23f, 11.5 FPS)
+            ("Playing/ragdoll_base_playing_face.png",  "rd_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/ragdoll_base_playing_left.png",  "rd_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/ragdoll_base_playing_right.png", "rd_playing_right", "Play_Right", 23, 11.5f),
+
+            // Happy (20f, 10 FPS)
+            ("Happy/ragdoll_base_happy_face.png",  "rd_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/ragdoll_base_happy_left.png",  "rd_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/ragdoll_base_happy_right.png", "rd_happy_right", "Happy_Right", 20, 10f),
+
+            // Unhappy (6f, 6 FPS)
+            ("Unhappy/ragdoll_base_unhappy_face.png",  "rd_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/ragdoll_base_unhappy_left.png",  "rd_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/ragdoll_base_unhappy_right.png", "rd_unhappy_right", "Unhappy_Right", 6, 6f),
+
+            // Petting (9f, 6.5 FPS)
+            ("Petting/ragdoll_base_petting_face.png", "rd_petting_face", "Pet_Front", 9, 6.5f),
+
+            // Fighting In (15f, 7.5 FPS)
+            ("Fighting/ragdoll_base_fighting_in_left.png",  "rd_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/ragdoll_base_fighting_in_right.png", "rd_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+
+            // Fighting Out (8f, 8 FPS)
+            ("Fighting/ragdoll_base_fighting_out_left.png",  "rd_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/ragdoll_base_fighting_out_right.png", "rd_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f, 12 FPS)
+            ("Walk Sad/ragdoll_base_walk_sad_right.png", "rd_sadwalk_right", "SadWalk_Right", 8, 12f),
+        };
+
         // ==================== CLEO (Special Cat) ====================
         private static readonly (string file, string prefix, string state, int frames, float fps)[] CleoAnimConfigs =
         {
@@ -636,6 +716,7 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(Eur2AnimRoot, Eur2AnimConfigs);
             ProcessAnimConfigs(Eur3AnimRoot, Eur3AnimConfigs);
             ProcessAnimConfigs(SiamoisAnimRoot, SiamoisAnimConfigs);
+            ProcessAnimConfigs(RagdollAnimRoot, RagdollAnimConfigs);
             ProcessAnimConfigs(CleoAnimRoot, CleoAnimConfigs);
             ProcessAnimConfigs(AristoteAnimRoot, AristoteAnimConfigs);
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
@@ -650,6 +731,7 @@ namespace CatHotel.Editor
             var eur2Controller = CreateAnimController(Eur2ControllerPath, Eur2AnimRoot, Eur2AnimConfigs);
             var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
             var siamoisController = CreateAnimController(SiamoisControllerPath, SiamoisAnimRoot, SiamoisAnimConfigs);
+            var ragdollController = CreateAnimController(RagdollControllerPath, RagdollAnimRoot, RagdollAnimConfigs);
             var cleoController = CreateAnimController(CleoControllerPath, CleoAnimRoot, CleoAnimConfigs);
             var aristoteController = CreateAnimController(AristoteControllerPath, AristoteAnimRoot, AristoteAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
@@ -657,9 +739,9 @@ namespace CatHotel.Editor
             var coinSpinController = CreateAnimController(CoinSpinControllerPath, CoinSpinRoot, CoinSpinAnimConfigs);
             CreateAnimController(AquariumControllerPath, AquariumAnimRoot, AquariumAnimConfigs);
             CreateAnimController(CarpetCosmicControllerPath, CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, ragdollController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
+                      + SiamoisAnimConfigs.Length + RagdollAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -761,6 +843,10 @@ namespace CatHotel.Editor
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_FRONT.png",
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_RIGHT.png",
                 $"{SiamoisSpritesRoot}/CAT_SIAMESE_BACK.png",
+                // Ragdoll
+                $"{RagdollSpritesRoot}/CAT_RD_FRONT.png",
+                $"{RagdollSpritesRoot}/CAT_RD_RIGHT.png",
+                $"{RagdollSpritesRoot}/CAT_RD_BACK.png",
                 // Aristote (Special)
                 $"{AristoteSpritesRoot}/CAT_EUR_Aristote_FRONT.png",
                 $"{AristoteSpritesRoot}/CAT_EUR_Aristote_RIGHT.png",
@@ -1056,6 +1142,7 @@ namespace CatHotel.Editor
             RuntimeAnimatorController eur2Controller,
             RuntimeAnimatorController eur3Controller,
             RuntimeAnimatorController siamoisController,
+            RuntimeAnimatorController ragdollController,
             RuntimeAnimatorController cleoController,
             RuntimeAnimatorController aristoteController,
             RuntimeAnimatorController cloudController,
@@ -1178,7 +1265,8 @@ namespace CatHotel.Editor
             // --- Create CatBreedData SO assets ---
             var breedAssets = CreateBreedAssets(
                 eurController, eur2Controller, eur3Controller,
-                siamoisController, cleoController, aristoteController);
+                siamoisController, ragdollController,
+                cleoController, aristoteController);
 
             // --- Create GameConfig SO asset ---
             var gameConfig = CreateOrLoadAsset<GameConfig>("Assets/_Project/Data/GameConfig.asset");
@@ -1296,6 +1384,12 @@ namespace CatHotel.Editor
             if (endPensionPanel == null)
                 endPensionPanel = mgrObj.AddComponent<EndPensionPanel>();
 
+            var soEndPanel = new SerializedObject(endPensionPanel);
+            var fullPickUpClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/UI/UI_PlayerAction_FullPickUp.ogg");
+            soEndPanel.FindProperty("_collectSfx").objectReferenceValue = fullPickUpClip;
+            soEndPanel.ApplyModifiedProperties();
+
             // --- ObjectPlacement ---
             var objectPlacement = mgrObj.GetComponent<ObjectPlacement>();
             if (objectPlacement == null)
@@ -1359,6 +1453,20 @@ namespace CatHotel.Editor
             soCoinView.FindProperty("_coinAnimController").objectReferenceValue = coinSpinController;
             soCoinView.FindProperty("_catSpawner").objectReferenceValue = spawner;
             soCoinView.FindProperty("_catInfoPanel").objectReferenceValue = catInfoPanel;
+
+            // Wire coin SFX clips
+            var coinClipsProp = soCoinView.FindProperty("_coinCollectClips");
+            coinClipsProp.arraySize = 5;
+            for (int i = 0; i < 5; i++)
+            {
+                var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/UI/UI_PlayerAction_Coin-{(i + 1):D3}.ogg");
+                coinClipsProp.GetArrayElementAtIndex(i).objectReferenceValue = clip;
+            }
+            var fullPickUp = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/UI/UI_PlayerAction_FullPickUp.ogg");
+            soCoinView.FindProperty("_fullPickUpClip").objectReferenceValue = fullPickUp;
+
             soCoinView.ApplyModifiedProperties();
 
             // --- Interactive Hotel Objects ---
@@ -1536,7 +1644,7 @@ namespace CatHotel.Editor
                 spritePath: $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png", size: Vector2Int.one, visualScale: 2f);
             CreateObjectAsset($"{D}/Obj_TableDrawer.asset", "Commode",
                 ObjectCategory.Decoration, 90, 0f, 0f, maxUsers: 0,
-                spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one, visualScale: 2f);
+                spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one, visualScale: 1f);
 
             // --- Decorations: Plants ---
             CreateObjectAsset($"{D}/Obj_PlantBig.asset", "Grande plante",
@@ -1667,18 +1775,8 @@ namespace CatHotel.Editor
             var old = GameObject.Find("Decorations");
             if (old != null) Object.DestroyImmediate(old);
 
+            // Empty room at start — player places decorations via shop
             var root = new GameObject("Decorations");
-
-            // Central room: x=2-23, y=2-29. Top wall at y=29 (center=29.5).
-
-            // --- Shelves on top wall ---
-            PlaceSprite(root, "Shelf_High_1",    $"{ObjectsRoot}/Env/SHELF.png",        new Vector3(8f, 29.65f, 0), 3);
-            PlaceSprite(root, "ShelfVar_Low_1",  $"{ObjectsRoot}/Env/SHELF_Var_01.png", new Vector3(18f, 29.25f, 0), 3);
-
-            // --- Plants ---
-            PlaceSprite(root, "Plante_1",   $"{ObjectsRoot}/Env/PLANTE.png",    new Vector3(5f, 27f, 0), 5);
-            PlaceSprite(root, "PlantBig_1", $"{ObjectsRoot}/Env/PLANT_BIG.png", new Vector3(21f, 27f, 0), 5);
-
             EditorUtility.SetDirty(root);
         }
 
@@ -1854,6 +1952,7 @@ namespace CatHotel.Editor
         private static CatBreedData[] CreateBreedAssets(
             RuntimeAnimatorController eurCtrl, RuntimeAnimatorController eur2Ctrl,
             RuntimeAnimatorController eur3Ctrl, RuntimeAnimatorController siamoisCtrl,
+            RuntimeAnimatorController ragdollCtrl,
             RuntimeAnimatorController cleoCtrl, RuntimeAnimatorController aristoteCtrl)
         {
             const string D = "Assets/_Project/Data/Breeds";
@@ -1871,11 +1970,17 @@ namespace CatHotel.Editor
                 Eur3SpritesRoot, "CAT_EUR_03_FRONT.png", "CAT_EUR_03_RIGHT.png", "CAT_EUR_03_BACK.png",
                 eur3Ctrl);
 
-            // Siamois (minRep 2, plays more, GDD: Play +50%, demand 1.2, speed 1.2, size 0.9)
+            // Siamois (minRep 0 for now, plays more, GDD: Play +50%, demand 1.2, speed 1.2, size 0.9)
             var siam = CreateBreedAsset($"{D}/Breed_Siamois.asset", "Siamois",
                 SiamoisSpritesRoot, "CAT_SIAMESE_FRONT.png", "CAT_SIAMESE_RIGHT.png", "CAT_SIAMESE_BACK.png",
                 siamoisCtrl,
-                demand: 1.2f, pTrait: 1.5f, size: 0.9f, speed: 1.2f, minRep: 2);
+                demand: 1.2f, pTrait: 1.5f, size: 0.9f, speed: 1.2f, minRep: 0);
+
+            // Ragdoll (minRep 0 for now, calm & sleepy, GDD: Sleep +40%, demand 0.9, speed 0.8, size 1.1)
+            var ragdoll = CreateBreedAsset($"{D}/Breed_Ragdoll.asset", "Ragdoll",
+                RagdollSpritesRoot, "CAT_RD_FRONT.png", "CAT_RD_RIGHT.png", "CAT_RD_BACK.png",
+                ragdollCtrl,
+                demand: 0.9f, sTrait: 1.4f, size: 1.1f, speed: 0.8f, minRep: 0);
 
             // Wire special cat data on Europeen breed (Aristote)
             var soEur = new SerializedObject(eur1);
@@ -1912,7 +2017,7 @@ namespace CatHotel.Editor
             AssetDatabase.SaveAssets();
             Debug.Log("[Setup] Created breed SO assets.");
 
-            return new[] { eur1, eur2, eur3, siam };
+            return new[] { eur1, eur2, eur3, siam, ragdoll };
         }
     }
 }

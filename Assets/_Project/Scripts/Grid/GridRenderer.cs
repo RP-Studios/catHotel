@@ -94,39 +94,57 @@ namespace CatHotel.Grid
                 for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
                     CentralRoomFloorCells.Add(new Vector2Int(x, y));
 
-            // --- Left entrances (cats arrive here) ---
-            int entranceX0 = centralRect.xMin - 2;        // x=0 (outside)
-            int entranceX1 = centralRect.xMin - 1;        // x=1 (between outside and wall)
-            int wallXL = centralRect.xMin;                 // x=2 (left wall — punch through)
+            // --- Left entrances (2-wide corridors, cats arrive here) ---
+            int wallXL = centralRect.xMin;                 // x=2 (left wall)
             int entrance1Y = centralRect.yMin + 8;         // y=10
             int entrance2Y = centralRect.yMax - 10;        // y=20
 
-            _gridData.SetCell(entranceX0, entrance1Y, CellType.Door);
-            _gridData.SetCell(entranceX0, entrance2Y, CellType.Door);
-            _gridData.SetCell(entranceX1, entrance1Y, CellType.Door);
-            _gridData.SetCell(entranceX1, entrance2Y, CellType.Door);
-            _gridData.SetCell(wallXL, entrance1Y, CellType.Door);
-            _gridData.SetCell(wallXL, entrance2Y, CellType.Door);
+            PunchCorridor(wallXL, entrance1Y, -1); // corridor going left
+            PunchCorridor(wallXL, entrance2Y, -1);
 
-            Entrances.Add(new Vector2Int(entranceX0, entrance1Y));
-            Entrances.Add(new Vector2Int(entranceX0, entrance2Y));
+            Entrances.Add(new Vector2Int(wallXL - 2, entrance1Y));
+            Entrances.Add(new Vector2Int(wallXL - 2, entrance2Y));
 
-            // --- Right exits (unhappy cats leave here) ---
+            // --- Right exits (2-wide corridors, unhappy cats leave here) ---
             int wallXR = centralRect.xMax - 1;             // right wall
-            int exitX1 = centralRect.xMax;                 // just outside wall
-            int exitX0 = centralRect.xMax + 1;             // outside
             int exit1Y = entrance1Y;
             int exit2Y = entrance2Y;
 
-            _gridData.SetCell(wallXR, exit1Y, CellType.Door);
-            _gridData.SetCell(wallXR, exit2Y, CellType.Door);
-            _gridData.SetCell(exitX1, exit1Y, CellType.Door);
-            _gridData.SetCell(exitX1, exit2Y, CellType.Door);
-            _gridData.SetCell(exitX0, exit1Y, CellType.Door);
-            _gridData.SetCell(exitX0, exit2Y, CellType.Door);
+            PunchCorridor(wallXR, exit1Y, +1); // corridor going right
+            PunchCorridor(wallXR, exit2Y, +1);
 
-            Exits.Add(new Vector2Int(exitX0, exit1Y));
-            Exits.Add(new Vector2Int(exitX0, exit2Y));
+            Exits.Add(new Vector2Int(wallXR + 2, exit1Y));
+            Exits.Add(new Vector2Int(wallXR + 2, exit2Y));
+        }
+
+        /// <summary>
+        /// Punch a 2-high corridor through a wall.
+        /// wallX = the wall cell X, baseY = bottom Y of the 2-high opening.
+        /// dir = -1 for left, +1 for right.
+        /// Creates: 2 Door cells through the wall, 2 Door cells in the gap, 2 Door cells outside.
+        /// Also sets Wall cells above and below the corridor for proper framing.
+        /// </summary>
+        private void PunchCorridor(int wallX, int baseY, int dir)
+        {
+            int y0 = baseY;
+            int y1 = baseY + 1;
+            int wallAbove = baseY + 2;
+            int wallBelow = baseY - 1;
+
+            // 3 columns: wall, gap, outside
+            for (int step = 0; step <= 2; step++)
+            {
+                int x = wallX + dir * step;
+                if (!_gridData.InBounds(x, y0)) continue;
+                _gridData.SetCell(x, y0, CellType.Door);
+                _gridData.SetCell(x, y1, CellType.Door);
+
+                // Frame the corridor with walls above and below
+                if (_gridData.InBounds(x, wallAbove) && !_gridData.IsWalkable(x, wallAbove))
+                    _gridData.SetCell(x, wallAbove, CellType.Wall);
+                if (_gridData.InBounds(x, wallBelow) && !_gridData.IsWalkable(x, wallBelow))
+                    _gridData.SetCell(x, wallBelow, CellType.Wall);
+            }
         }
 
         private void FillRoom(RectInt rect)

@@ -52,9 +52,20 @@ namespace CatHotel.UI
         private PensionEndData _data;
         private Coroutine _animCoroutine;
 
+        // SFX
+        [SerializeField] private AudioClip _collectSfx;
+        private AudioSource _sfxSource;
+
         private void Start()
         {
             CacheReferences();
+            _sfxSource = GetComponent<AudioSource>();
+            if (_sfxSource == null)
+            {
+                _sfxSource = gameObject.AddComponent<AudioSource>();
+                _sfxSource.playOnAwake = false;
+                _sfxSource.spatialBlend = 0f;
+            }
         }
 
         private void CacheReferences()
@@ -275,12 +286,16 @@ namespace CatHotel.UI
 
             ads.OnPensionAdCompleted += OnPensionAdSuccess;
             ads.OnPensionAdFailed += OnPensionAdFail;
+
+            // Ads don't work while timeScale=0 — unpause for the ad
+            Time.timeScale = 1f;
             ads.ShowPensionAd();
         }
 
         private void OnPensionAdSuccess()
         {
             UnsubPensionAd();
+            Time.timeScale = 0f; // re-pause after ad
             _data.TotalCoins *= 2;
 
             if (_totalValue != null)
@@ -305,6 +320,7 @@ namespace CatHotel.UI
         private void OnPensionAdFail()
         {
             UnsubPensionAd();
+            Time.timeScale = 0f; // re-pause after ad
             Debug.LogWarning("[Pension] Ad failed — collecting normally");
             Collect();
         }
@@ -321,6 +337,9 @@ namespace CatHotel.UI
         {
             if (!_isOpen) return;
             _isOpen = false; // prevent double-tap
+
+            if (_sfxSource != null && _collectSfx != null)
+                _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
 
             int coinCount = Mathf.Clamp(_data.TotalCoins / 10, 3, 8);
             StartCoroutine(CoinFlySequence(coinCount, Close));
