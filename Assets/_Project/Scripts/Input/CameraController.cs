@@ -33,19 +33,17 @@ namespace CatHotel.Input
         public float CurrentOrthoSize => _cam != null ? _cam.orthographicSize : _maxOrthoSize;
 
         /// <summary>
-        /// Max zoom-out capped so the camera never shows more than 95% of the grid,
-        /// ensuring there is always room to pan in both landscape and portrait.
+        /// Max zoom-out: the full grid width fits on screen.
+        /// Height may exceed if the grid is taller than the viewport — that's fine, user can pan vertically.
         /// </summary>
         public float EffectiveMaxOrthoSize
         {
             get
             {
                 if (_cam == null) return _maxOrthoSize;
-                float gridW = _gridMax.x - _gridMin.x;
-                float gridH = _gridMax.y - _gridMin.y;
-                float maxByHeight = gridH * 0.95f / 2f;
-                float maxByWidth  = gridW * 0.95f / (2f * _cam.aspect);
-                return Mathf.Min(_maxOrthoSize, Mathf.Min(maxByHeight, maxByWidth));
+                float gridW = _gridMax.x - _gridMin.x + _padding * 2f;
+                float maxByWidth = gridW / (2f * _cam.aspect);
+                return Mathf.Max(maxByWidth, _minOrthoSize);
             }
         }
 
