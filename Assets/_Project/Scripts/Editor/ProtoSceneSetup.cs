@@ -49,6 +49,14 @@ namespace CatHotel.Editor
         private const string AristoteAnimRoot = AristoteSpritesRoot + "/Animations";
         private const string AristoteControllerPath = AristoteSpritesRoot + "/CatAristote.controller";
 
+        private const string SibBlackSpritesRoot = "Assets/_Project/Art/Cats/Siberien/Black";
+        private const string SibBlackAnimRoot = SibBlackSpritesRoot;
+        private const string SibBlackControllerPath = SibBlackSpritesRoot + "/CatSiberienBlack.controller";
+
+        private const string SibWhiteSpritesRoot = "Assets/_Project/Art/Cats/Siberien/White";
+        private const string SibWhiteAnimRoot = SibWhiteSpritesRoot;
+        private const string SibWhiteControllerPath = SibWhiteSpritesRoot + "/CatSiberienWhite.controller";
+
         private const string CloudRoot = "Assets/_Project/Art/Effects/Combat";
         private const string CloudControllerPath = CloudRoot + "/FightCloud.controller";
 
@@ -72,9 +80,7 @@ namespace CatHotel.Editor
         private const string AquariumControllerPath = AquariumAnimRoot + "/Aquarium.controller";
 
         private static readonly (string file, string prefix, string state, int frames, float fps)[] AquariumAnimConfigs =
-        {
-            ("Anim_Aquarium.png", "aquarium", "Idle", 40, 12f),
-        };
+            System.Array.Empty<(string, string, string, int, float)>();
 
         private const string CarpetCosmicAnimRoot = "Assets/_Project/Art/Objects/Carpets";
         private const string CarpetCosmicControllerPath = CarpetCosmicAnimRoot + "/CarpetCosmic.controller";
@@ -538,6 +544,186 @@ namespace CatHotel.Editor
             ("Walk Sad/ragdoll_base_walk_sad_right.png", "rd_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
+        // ==================== SIBERIAN BLACK ====================
+        // Note: Siberian has richer animations (more frames) than other breeds
+        // Also has Scratch animation (unique to this breed)
+        // Walk filenames have typos: "sibeiren" (right), "siberienl" (left) — must match actual files
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] SibBlackAnimConfigs =
+        {
+            // Walk (8f, 12 FPS) — note filename typos in originals
+            ("Walk/siberien_black_walk_face.png",   "sibb_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/siberien_black_walk_back.png",   "sibb_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/siberienl_black_walk_left.png",  "sibb_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/sibeiren_black_walk_right.png",  "sibb_walk_right", "Walk_Right", 8, 12f),
+
+            // Idle1 (6f, 6 FPS)
+            ("Idle 1/siberien_black_idle1_face.png",  "sibb_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/siberien_black_idle1_back.png",  "sibb_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/siberien_black_idle1_left.png",  "sibb_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/siberien_black_idle1_right.png", "sibb_idle1_right", "Idle1_Right", 6, 6f),
+
+            // Idle2 (6f, 6 FPS) — no back
+            ("Idle 2/siberien_black_idle2_face.png",  "sibb_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/siberien_black_idle2_left.png",  "sibb_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/siberien_black_idle2_right.png", "sibb_idle2_right", "Idle2_Right", 6, 6f),
+
+            // Idle3 (8f, 8 FPS)
+            ("Idle 3/siberien_black_idle3_face.png",  "sibb_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/siberien_black_idle3_back.png",  "sibb_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/siberien_black_idle3_left.png",  "sibb_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/siberien_black_idle3_right.png", "sibb_idle3_right", "Idle3_Right", 8, 8f),
+
+            // Sleep (9f @256, 4.5 FPS)
+            ("Sleep/siberien_black_sleeping_face.png",  "sibb_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/siberien_black_sleeping_left.png",  "sibb_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/siberien_black_sleeping_right.png", "sibb_sleeping_right", "Sleep_Right", 9, 4.5f),
+
+            // Eat (12f, 6 FPS)
+            ("Eating/siberien_black_eating_face.png",  "sibb_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/siberien_black_eating_left.png",  "sibb_eating_left",  "Eat_Left",  12, 6f),
+            ("Eating/siberien_black_eating_right.png", "sibb_eating_right", "Eat_Right", 12, 6f),
+
+            // Drink (8f, 4 FPS)
+            ("Drinking/siberien_black_drunking_face.png",  "sibb_drunking_face",  "Drink_Front", 8, 4f),
+            ("Drinking/siberien_black_drunking_left.png",  "sibb_drunking_left",  "Drink_Left",  8, 4f),
+            ("Drinking/siberien_black_drunking_right.png", "sibb_drunking_right", "Drink_Right", 8, 4f),
+
+            // Cleaning (face 13f @256 6.5 FPS, left/right 12f @256 6 FPS)
+            ("Cleaning/siberien_black_cleaning_face.png",  "sibb_cleaning_face",  "Clean_Front", 13, 6.5f),
+            ("Cleaning/siberien_black_cleaning_left.png",  "sibb_cleaning_left",  "Clean_Left",  12, 6f),
+            ("Cleaning/siberien_black_cleaning_right.png", "sibb_cleaning_right", "Clean_Right", 12, 6f),
+
+            // Playing main (23f @512, 11.5 FPS)
+            ("Playing/siberien_black_playing_face.png",  "sibb_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/siberien_black_playing_left.png",  "sibb_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/siberien_black_playing_right.png", "sibb_playing_right", "Play_Right", 23, 11.5f),
+
+            // Happy (20f @512, 10 FPS)
+            ("Happy/siberien_black_happy_face.png",  "sibb_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/siberien_black_happy_left.png",  "sibb_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/siberien_black_happy_right.png", "sibb_happy_right", "Happy_Right", 20, 10f),
+
+            // Unhappy (6f @512, 6 FPS)
+            ("Unhappy/siberien_black_unhappy_face.png",  "sibb_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/siberien_black_unhappy_left.png",  "sibb_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/siberien_black_unhappy_right.png", "sibb_unhappy_right", "Unhappy_Right", 6, 6f),
+
+            // Petting (12f @256, 6 FPS)
+            ("Petting/siberien_black_petting_face.png", "sibb_petting_face", "Pet_Front", 12, 6f),
+
+            // Fighting In (15f @512, 7.5 FPS)
+            ("Fighting/siberien_black_fighting_in_left.png",  "sibb_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/siberien_black_fighting_in_right.png", "sibb_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+
+            // Fighting Out (8f @512, 8 FPS)
+            ("Fighting/siberien_black_fighting_out_left.png",  "sibb_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/siberien_black_fighting_out_right.png", "sibb_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f, 12 FPS)
+            ("Walk Sad/siberien_black_walk_sad_right.png", "sibb_sadwalk_right", "SadWalk_Right", 8, 12f),
+
+            // Scratch In (7f, 14 FPS → 0.5s)
+            ("Scratch/In/siberien_black_Scratch_In_left.png",  "sibb_scratch_in_left",  "Scratch_In_Left",  7, 14f),
+            ("Scratch/In/siberien_black_Scratch_in_right.png", "sibb_scratch_in_right", "Scratch_In_Right", 7, 14f),
+
+            // Scratch Boucle (11f, 5.5 FPS → 2s loop)
+            ("Scratch/Boucle/siberien_Black_Scratch_Left.png",  "sibb_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
+            ("Scratch/Boucle/siberien_Black_Scratch_Right.png", "sibb_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
+
+            // Scratch Out (7f, 14 FPS → 0.5s)
+            ("Scratch/Out/siberien_black_Scratch_Out_Left.png",  "sibb_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
+            ("Scratch/Out/siberien_Black_Scratch_Out_Right.png", "sibb_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+        };
+
+        // ==================== SIBERIAN WHITE ====================
+        // Same structure as Black, different sprites. Filenames follow same pattern with "white" instead of "black"
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] SibWhiteAnimConfigs =
+        {
+            // Walk (8f, 12 FPS) — same filename typos
+            ("Walk/siberien_white_walk_face.png",   "sibw_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/siberien_white_walk_back.png",   "sibw_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/siberienl_white_walk_left.png",  "sibw_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/sibeiren_white_walk_right.png",  "sibw_walk_right", "Walk_Right", 8, 12f),
+
+            // Idle1 (6f, 6 FPS)
+            ("Idle 1/siberien_white_idle1_face.png",  "sibw_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/siberien_white_idle1_back.png",  "sibw_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/siberien_white_idle1_left.png",  "sibw_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/siberien_white_idle1_right.png", "sibw_idle1_right", "Idle1_Right", 6, 6f),
+
+            // Idle2 (6f, 6 FPS) — no back
+            ("Idle 2/siberien_white_idle2_face.png",  "sibw_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/siberien_white_idle2_left.png",  "sibw_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/siberien_white_idle2_right.png", "sibw_idle2_right", "Idle2_Right", 6, 6f),
+
+            // Idle3 (8f, 8 FPS)
+            ("Idle 3/siberien_white_idle3_face.png",  "sibw_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/siberien_white_idle3_back.png",  "sibw_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/siberien_white_idle3_left.png",  "sibw_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/siberien_white_idle3_right.png", "sibw_idle3_right", "Idle3_Right", 8, 8f),
+
+            // Sleep (9f @256, 4.5 FPS)
+            ("Sleep/siberien_white_sleeping_face.png",  "sibw_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/siberien_white_sleeping_left.png",  "sibw_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/siberien_white_sleeping_right.png", "sibw_sleeping_right", "Sleep_Right", 9, 4.5f),
+
+            // Eat (12f, 6 FPS)
+            ("Eating/siberien_white_eating_face.png",  "sibw_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/siberien_white_eating_left.png",  "sibw_eating_left",  "Eat_Left",  12, 6f),
+            ("Eating/siberien_white_eating_right.png", "sibw_eating_right", "Eat_Right", 12, 6f),
+
+            // Drink (8f, 4 FPS)
+            ("Drinking/siberien_white_drunking_face.png",  "sibw_drunking_face",  "Drink_Front", 8, 4f),
+            ("Drinking/siberien_white_drunking_left.png",  "sibw_drunking_left",  "Drink_Left",  8, 4f),
+            ("Drinking/siberien_white_drunking_right.png", "sibw_drunking_right", "Drink_Right", 8, 4f),
+
+            // Cleaning (face 13f @256 6.5 FPS, left/right 12f @256 6 FPS)
+            ("Cleaning/siberien_white_cleaning_face.png",  "sibw_cleaning_face",  "Clean_Front", 13, 6.5f),
+            ("Cleaning/siberien_white_cleaning_left.png",  "sibw_cleaning_left",  "Clean_Left",  12, 6f),
+            ("Cleaning/siberien_white_cleaning_right.png", "sibw_cleaning_right", "Clean_Right", 12, 6f),
+
+            // Playing main (23f @512, 11.5 FPS)
+            ("Playing/siberien_white_playing_face.png",  "sibw_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/siberien_white_playing_left.png",  "sibw_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/siberien_white_playing_right.png", "sibw_playing_right", "Play_Right", 23, 11.5f),
+
+            // Happy (20f @512, 10 FPS)
+            ("Happy/siberien_white_happy_face.png",  "sibw_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/siberien_white_happy_left.png",  "sibw_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/siberien_white_happy_right.png", "sibw_happy_right", "Happy_Right", 20, 10f),
+
+            // Unhappy (6f @512, 6 FPS)
+            ("Unhappy/siberien_white_unhappy_face.png",  "sibw_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/siberien_white_unhappy_left.png",  "sibw_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/siberien_white_unhappy_right.png", "sibw_unhappy_right", "Unhappy_Right", 6, 6f),
+
+            // Petting (12f @256, 6 FPS)
+            ("Petting/siberien_white_petting_face.png", "sibw_petting_face", "Pet_Front", 12, 6f),
+
+            // Fighting In (15f @512, 7.5 FPS)
+            ("Fighting/siberien_white_fighting_in_left.png",  "sibw_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/siberien_white_fighting_in_right.png", "sibw_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+
+            // Fighting Out (8f @512, 8 FPS)
+            ("Fighting/siberien_white_fighting_out_left.png",  "sibw_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/siberien_white_fighting_out_right.png", "sibw_fighting_out_right", "Fight_Out_Right", 8, 8f),
+
+            // SadWalk (8f, 12 FPS)
+            ("Walk Sad/siberien_white_walk_sad_right.png", "sibw_sadwalk_right", "SadWalk_Right", 8, 12f),
+
+            // Scratch In (7f, 14 FPS → 0.5s)
+            ("Scratch/In/siberien_white_Scratch_In_left.png",  "sibw_scratch_in_left",  "Scratch_In_Left",  7, 14f),
+            ("Scratch/In/siberien_white_Scratch_in_right.png", "sibw_scratch_in_right", "Scratch_In_Right", 7, 14f),
+
+            // Scratch Boucle (11f, 5.5 FPS → 2s loop)
+            ("Scratch/Boucle/siberien_white_Scratch_Left.png",  "sibw_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
+            ("Scratch/Boucle/siberien_white_Scratch_Right.png", "sibw_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
+
+            // Scratch Out (7f, 14 FPS → 0.5s)
+            ("Scratch/Out/siberien_white_Scratch_Out_Left.png",  "sibw_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
+            ("Scratch/Out/siberien_white_Scratch_Out_Right.png", "sibw_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+        };
+
         // ==================== CLEO (Special Cat) ====================
         private static readonly (string file, string prefix, string state, int frames, float fps)[] CleoAnimConfigs =
         {
@@ -717,6 +903,8 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(Eur3AnimRoot, Eur3AnimConfigs);
             ProcessAnimConfigs(SiamoisAnimRoot, SiamoisAnimConfigs);
             ProcessAnimConfigs(RagdollAnimRoot, RagdollAnimConfigs);
+            ProcessAnimConfigs(SibBlackAnimRoot, SibBlackAnimConfigs);
+            ProcessAnimConfigs(SibWhiteAnimRoot, SibWhiteAnimConfigs);
             ProcessAnimConfigs(CleoAnimRoot, CleoAnimConfigs);
             ProcessAnimConfigs(AristoteAnimRoot, AristoteAnimConfigs);
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
@@ -732,6 +920,8 @@ namespace CatHotel.Editor
             var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
             var siamoisController = CreateAnimController(SiamoisControllerPath, SiamoisAnimRoot, SiamoisAnimConfigs);
             var ragdollController = CreateAnimController(RagdollControllerPath, RagdollAnimRoot, RagdollAnimConfigs);
+            var sibBlackController = CreateAnimController(SibBlackControllerPath, SibBlackAnimRoot, SibBlackAnimConfigs);
+            var sibWhiteController = CreateAnimController(SibWhiteControllerPath, SibWhiteAnimRoot, SibWhiteAnimConfigs);
             var cleoController = CreateAnimController(CleoControllerPath, CleoAnimRoot, CleoAnimConfigs);
             var aristoteController = CreateAnimController(AristoteControllerPath, AristoteAnimRoot, AristoteAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
@@ -739,9 +929,11 @@ namespace CatHotel.Editor
             var coinSpinController = CreateAnimController(CoinSpinControllerPath, CoinSpinRoot, CoinSpinAnimConfigs);
             CreateAnimController(AquariumControllerPath, AquariumAnimRoot, AquariumAnimConfigs);
             CreateAnimController(CarpetCosmicControllerPath, CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, ragdollController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, ragdollController, sibBlackController, sibWhiteController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + RagdollAnimConfigs.Length + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
+                      + SiamoisAnimConfigs.Length + RagdollAnimConfigs.Length
+                      + SibBlackAnimConfigs.Length + SibWhiteAnimConfigs.Length
+                      + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -851,6 +1043,14 @@ namespace CatHotel.Editor
                 $"{AristoteSpritesRoot}/CAT_EUR_Aristote_FRONT.png",
                 $"{AristoteSpritesRoot}/CAT_EUR_Aristote_RIGHT.png",
                 $"{AristoteSpritesRoot}/CAT_EUR_Aristote_BACK.png",
+                // Siberian Black
+                $"{SibBlackSpritesRoot}/CAT_SIB_01_FRONT.png",
+                $"{SibBlackSpritesRoot}/CAT_SIB_01_RIGHT.png",
+                $"{SibBlackSpritesRoot}/CAT_SIB_01_BACK.png",
+                // Siberian White
+                $"{SibWhiteSpritesRoot}/CAT_SIB_FRONT.png",
+                $"{SibWhiteSpritesRoot}/CAT_SIB_RIGHT.png",
+                $"{SibWhiteSpritesRoot}/CAT_SIB_BACK.png",
                 // Cleo (Special)
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png",
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png",
@@ -860,6 +1060,10 @@ namespace CatHotel.Editor
             foreach (string path in paths)
                 ConfigureSprite(path, 200, FilterMode.Bilinear);
         }
+
+        /// <summary>Alias for ConfigureSpritesheet — slices a PNG into N horizontal frames.</summary>
+        private static void SliceSpritesheet(string path, int frames, string prefix)
+            => ConfigureSpritesheet(path, prefix, frames);
 
         private static void ConfigureSpritesheet(string sheetPath, string namePrefix, int frameCount)
         {
@@ -1143,6 +1347,8 @@ namespace CatHotel.Editor
             RuntimeAnimatorController eur3Controller,
             RuntimeAnimatorController siamoisController,
             RuntimeAnimatorController ragdollController,
+            RuntimeAnimatorController sibBlackController,
+            RuntimeAnimatorController sibWhiteController,
             RuntimeAnimatorController cleoController,
             RuntimeAnimatorController aristoteController,
             RuntimeAnimatorController cloudController,
@@ -1266,6 +1472,7 @@ namespace CatHotel.Editor
             var breedAssets = CreateBreedAssets(
                 eurController, eur2Controller, eur3Controller,
                 siamoisController, ragdollController,
+                sibBlackController, sibWhiteController,
                 cleoController, aristoteController);
 
             // --- Create GameConfig SO asset ---
@@ -1662,12 +1869,36 @@ namespace CatHotel.Editor
                 ObjectCategory.Decoration, 70, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01.png", size: new Vector2Int(2, 1), wallMount: true);
 
-            // --- Decorations: Aquarium (animated) ---
-            var aqController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AquariumControllerPath);
-            CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
+            // --- Decorations: Aquarium (animated via SpriteFrameAnimator) ---
+            // Slice spritesheet_aquarium.png into 40 frames
+            string aqSheetPath = $"{ObjectsRoot}/Deco/spritesheet_aquarium.png";
+            SliceSpritesheet(aqSheetPath, 40, "aquarium");
+
+            var aqAsset = CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
                 ObjectCategory.Decoration, 200, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/Aquarium.png", size: Vector2Int.one,
-                visualScale: 2f, requiresTable: true, animController: aqController);
+                visualScale: 2f, requiresTable: true);
+
+            // Load sliced sub-sprites and wire to animFrames
+            var aqAllAssets = AssetDatabase.LoadAllAssetsAtPath(aqSheetPath);
+            var aqFrames = new System.Collections.Generic.List<Sprite>();
+            foreach (var obj in aqAllAssets)
+                if (obj is Sprite s && s.name != "spritesheet_aquarium") aqFrames.Add(s);
+            aqFrames.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+            if (aqFrames.Count > 0 && aqAsset != null)
+            {
+                var soAq = new SerializedObject(aqAsset);
+                var framesProp = soAq.FindProperty("animFrames");
+                framesProp.arraySize = aqFrames.Count;
+                for (int i = 0; i < aqFrames.Count; i++)
+                    framesProp.GetArrayElementAtIndex(i).objectReferenceValue = aqFrames[i];
+                soAq.FindProperty("animFps").floatValue = 12f;
+                soAq.ApplyModifiedProperties();
+            }
+            else
+            {
+                Debug.LogWarning($"[Setup] Aquarium: found {aqFrames.Count} sub-sprites in {aqSheetPath}");
+            }
 
             // --- Carpets ---
             CreateObjectAsset($"{D}/Obj_CarpetConfort.asset", "Tapis Confort",
@@ -1953,6 +2184,7 @@ namespace CatHotel.Editor
             RuntimeAnimatorController eurCtrl, RuntimeAnimatorController eur2Ctrl,
             RuntimeAnimatorController eur3Ctrl, RuntimeAnimatorController siamoisCtrl,
             RuntimeAnimatorController ragdollCtrl,
+            RuntimeAnimatorController sibBlackCtrl, RuntimeAnimatorController sibWhiteCtrl,
             RuntimeAnimatorController cleoCtrl, RuntimeAnimatorController aristoteCtrl)
         {
             const string D = "Assets/_Project/Data/Breeds";
@@ -1981,6 +2213,18 @@ namespace CatHotel.Editor
                 RagdollSpritesRoot, "CAT_RD_FRONT.png", "CAT_RD_RIGHT.png", "CAT_RD_BACK.png",
                 ragdollCtrl,
                 demand: 0.9f, sTrait: 1.4f, size: 1.1f, speed: 0.8f, minRep: 0);
+
+            // Siberian Black (thick fur, sturdy, GDD: Hunger +30%, demand 1.1, speed 0.9, size 1.15)
+            var sibBlack = CreateBreedAsset($"{D}/Breed_SiberienBlack.asset", "Sibérien",
+                SibBlackSpritesRoot, "CAT_SIB_01_FRONT.png", "CAT_SIB_01_RIGHT.png", "CAT_SIB_01_BACK.png",
+                sibBlackCtrl,
+                demand: 1.1f, hTrait: 1.3f, size: 1.15f, speed: 0.9f, minRep: 0);
+
+            // Siberian White (variant, same breed stats)
+            var sibWhite = CreateBreedAsset($"{D}/Breed_SiberienWhite.asset", "Sibérien",
+                SibWhiteSpritesRoot, "CAT_SIB_FRONT.png", "CAT_SIB_RIGHT.png", "CAT_SIB_BACK.png",
+                sibWhiteCtrl,
+                demand: 1.1f, hTrait: 1.3f, size: 1.15f, speed: 0.9f, minRep: 0);
 
             // Wire special cat data on Europeen breed (Aristote)
             var soEur = new SerializedObject(eur1);
@@ -2017,7 +2261,7 @@ namespace CatHotel.Editor
             AssetDatabase.SaveAssets();
             Debug.Log("[Setup] Created breed SO assets.");
 
-            return new[] { eur1, eur2, eur3, siam, ragdoll };
+            return new[] { eur1, eur2, eur3, siam, ragdoll, sibBlack, sibWhite };
         }
     }
 }

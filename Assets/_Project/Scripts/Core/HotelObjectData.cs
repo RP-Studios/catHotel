@@ -28,6 +28,9 @@ namespace CatHotel.Core
         [Header("Animation")]
         [Tooltip("Animator controller for animated objects (aquarium, lamp light, etc.)")]
         public RuntimeAnimatorController worldAnimController;
+        [Tooltip("Sprite frames for simple frame-by-frame animation (alternative to Animator)")]
+        public Sprite[] animFrames;
+        public float animFps = 12f;
 
         [Header("Placement")]
         public Vector2Int size = Vector2Int.one;

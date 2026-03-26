@@ -9,6 +9,12 @@ namespace CatHotel.Core
     /// </summary>
     public class SortByY : MonoBehaviour
     {
+        /// <summary>Extra bias added to sortingOrder (e.g. +1 for on-table objects).</summary>
+        public int OrderBias;
+
+        /// <summary>Override Y used for sorting (e.g. use table's Y for on-table objects).</summary>
+        public float? SortYOverride;
+
         private SpriteRenderer _sr;
         private float _bottomOffset;
 
@@ -17,7 +23,6 @@ namespace CatHotel.Core
             _sr = GetComponent<SpriteRenderer>();
             if (_sr != null && _sr.sprite != null)
             {
-                // Use the bottom of the sprite bounds for sorting
                 _bottomOffset = _sr.sprite.bounds.min.y * transform.localScale.y;
             }
         }
@@ -25,9 +30,8 @@ namespace CatHotel.Core
         private void LateUpdate()
         {
             if (_sr == null) return;
-            float bottomY = transform.position.y + _bottomOffset;
-            // Same scale as CatEntity: *100 + 10000
-            _sr.sortingOrder = Mathf.RoundToInt(-bottomY * 100f) + 10000;
+            float sortY = SortYOverride ?? (transform.position.y + _bottomOffset);
+            _sr.sortingOrder = Mathf.RoundToInt(-sortY * 100f) + 10000 + OrderBias;
         }
     }
 }

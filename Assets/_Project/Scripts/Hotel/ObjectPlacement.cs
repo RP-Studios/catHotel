@@ -301,11 +301,34 @@ namespace CatHotel.Hotel
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _currentData.worldSprite != null ? _currentData.worldSprite : _currentData.icon;
 
-            if (_currentData.wallMount || _currentData.requiresTable)
+            if (_currentData.wallMount)
             {
-                // Wall/table objects: fixed sorting
-                int sortOrder = _currentData.wallMount ? 7 : 9;
-                sr.sortingOrder = sortOrder;
+                sr.sortingOrder = 7;
+            }
+            else if (_currentData.requiresTable)
+            {
+                // On-table objects: find the table and always stay 1 above its sortingOrder
+                SpriteRenderer tableSr = null;
+                var tableCell = new Vector2Int(_currentGridPos.x, _currentGridPos.y - 1);
+                foreach (var obj in ObjectRegistry.Objects)
+                {
+                    var objRect = new RectInt(obj.GridPos, obj.Data.size);
+                    if (objRect.Contains(tableCell))
+                    {
+                        tableSr = obj.GetComponent<SpriteRenderer>();
+                        break;
+                    }
+                }
+                if (tableSr != null)
+                {
+                    var follower = go.AddComponent<Core.SortOrderFollower>();
+                    follower.Init(tableSr, 1);
+                }
+                else
+                {
+                    // Fallback
+                    go.AddComponent<Core.SortByY>();
+                }
             }
             else
             {
@@ -317,7 +340,12 @@ namespace CatHotel.Hotel
             ScaleToFit(go, sr, _currentData);
 
             // Animated objects (aquarium, etc.)
-            if (_currentData.worldAnimController != null)
+            if (_currentData.animFrames != null && _currentData.animFrames.Length > 0)
+            {
+                var frameAnim = go.AddComponent<Core.SpriteFrameAnimator>();
+                frameAnim.Init(_currentData.animFrames, _currentData.animFps);
+            }
+            else if (_currentData.worldAnimController != null)
             {
                 var anim = go.AddComponent<Animator>();
                 anim.runtimeAnimatorController = _currentData.worldAnimController;

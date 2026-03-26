@@ -171,7 +171,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -192,10 +192,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -233,903 +233,507 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: siberien_white_playing_face_0
+      name: sibw_playing_face_0
       rect:
         serializedVersion: 2
-        x: 168
-        y: 136
-        width: 174
-        height: 280
+        x: 0
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: cc69dccc13a7a7200800000000000000
-      internalID: 178589489542567628
+      spriteID: e93f3db988b89e549a6be16e7d1f88d6
+      internalID: 1323708996
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_1
+      name: sibw_playing_face_1
       rect:
         serializedVersion: 2
-        x: 189
-        y: 58
-        width: 72
-        height: 79
+        x: 512
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4c93926b5fda34ac0800000000000000
-      internalID: -3872059983773746748
+      spriteID: fede44c899f5124438ef5b631bbedbfe
+      internalID: -998339188
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_2
+      name: sibw_playing_face_2
       rect:
         serializedVersion: 2
-        x: 680
-        y: 136
-        width: 174
-        height: 277
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f957a74b11dc54e20800000000000000
-      internalID: 3334296575063782815
+      spriteID: 5d66db9aa522ac24c94d86f3c39ec246
+      internalID: -1182890037
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_3
+      name: sibw_playing_face_3
       rect:
         serializedVersion: 2
-        x: 701
-        y: 58
-        width: 72
-        height: 79
+        x: 1536
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2bebfa8b236fb4870800000000000000
-      internalID: 8668292605511974578
+      spriteID: 8ed88b84c5d14774aa623c964dcf28d7
+      internalID: -799100030
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_4
+      name: sibw_playing_face_4
       rect:
         serializedVersion: 2
-        x: 1192
-        y: 136
-        width: 174
-        height: 276
+        x: 2048
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a89c7360244707200800000000000000
-      internalID: 175768212388432266
+      spriteID: c80a3465247ec6d4ab5950268b6e56b3
+      internalID: 106216692
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_5
+      name: sibw_playing_face_5
       rect:
         serializedVersion: 2
-        x: 1213
-        y: 58
-        width: 72
-        height: 79
+        x: 2560
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 33501cf5181651b00800000000000000
-      internalID: 798651717213291827
+      spriteID: 8f663766e2fb7234597ecaa0b520dccf
+      internalID: -1884726412
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_6
+      name: sibw_playing_face_6
       rect:
         serializedVersion: 2
-        x: 1705
-        y: 136
-        width: 173
-        height: 277
+        x: 3072
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7b4fba26abb125530800000000000000
-      internalID: 3842163919433757879
+      spriteID: b0605ba64fdbd014e910c308d4367f1d
+      internalID: 1583332576
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_7
+      name: sibw_playing_face_7
       rect:
         serializedVersion: 2
-        x: 1725
-        y: 58
-        width: 72
-        height: 79
+        x: 3584
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3071db257216b03d0800000000000000
-      internalID: -3239388685443197181
+      spriteID: 090801730c104fb4da22c928dbd5ac36
+      internalID: 567918308
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_8
+      name: sibw_playing_face_8
       rect:
         serializedVersion: 2
-        x: 2217
-        y: 58
-        width: 173
-        height: 372
+        x: 4096
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 700076f375605db60800000000000000
-      internalID: 7770123703893295111
+      spriteID: a75d4ea82e2b94948907907944d1d94a
+      internalID: 946384684
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_9
+      name: sibw_playing_face_9
       rect:
         serializedVersion: 2
-        x: 2729
-        y: 58
-        width: 173
-        height: 360
+        x: 4608
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2218d23eb67401d50800000000000000
-      internalID: 6705938373853151522
+      spriteID: ed5c8988cc4b86c45ada297bffa1fa46
+      internalID: 291624452
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_10
+      name: sibw_playing_face_10
       rect:
         serializedVersion: 2
-        x: 3241
-        y: 122
-        width: 173
-        height: 296
+        x: 5120
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 665d6b19ba335a4a0800000000000000
-      internalID: -6582798468355009178
+      spriteID: 9164fbe36be03084c92b0fb6ed4d9c7e
+      internalID: 1284181009
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_11
+      name: sibw_playing_face_11
       rect:
         serializedVersion: 2
-        x: 3261
-        y: 58
-        width: 72
-        height: 79
+        x: 5632
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f00cc8ec8847028a0800000000000000
-      internalID: -6331932945153212401
+      spriteID: a7bd16e8b3724e74d80288a66e88959c
+      internalID: -2134884610
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_12
+      name: sibw_playing_face_12
       rect:
         serializedVersion: 2
-        x: 3752
-        y: 113
-        width: 174
-        height: 293
+        x: 6144
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a38c87e8f2f472880800000000000000
-      internalID: -8635846694787299270
+      spriteID: 7366d74858d896941ad3750c0a89c20c
+      internalID: -1456804405
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_13
+      name: sibw_playing_face_13
       rect:
         serializedVersion: 2
-        x: 3773
-        y: 58
-        width: 98
-        height: 79
+        x: 6656
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4ac6c88f71c1dacd0800000000000000
-      internalID: -2545347325114684252
+      spriteID: 3070f5f7569c90843b887de6c26c9d9e
+      internalID: 1506065145
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_14
+      name: sibw_playing_face_14
       rect:
         serializedVersion: 2
-        x: 4264
-        y: 113
-        width: 174
-        height: 303
+        x: 7168
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: be91820a4b90a2c40800000000000000
-      internalID: 5488209767290116587
+      spriteID: cb007bdaa0bf0064594587910dc281e0
+      internalID: 1342417103
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_15
+      name: sibw_playing_face_15
       rect:
         serializedVersion: 2
-        x: 4285
-        y: 58
-        width: 103
-        height: 79
+        x: 7680
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d5cb00922435dab70800000000000000
-      internalID: 8911870781256940637
+      spriteID: 3d05f8897630718418099b1ff4322ee9
+      internalID: -878521454
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_16
+      name: sibw_playing_face_16
       rect:
         serializedVersion: 2
-        x: 4775
-        y: 127
-        width: 174
-        height: 286
+        x: 8192
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 1e42fa876a7668390800000000000000
-      internalID: -7816446138567940895
+      spriteID: 9716cf0df53d9fb4aa9af01a2688a7dc
+      internalID: -303326118
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_17
+      name: sibw_playing_face_17
       rect:
         serializedVersion: 2
-        x: 5287
-        y: 137
-        width: 174
-        height: 275
+        x: 8704
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9aa534be2898e9290800000000000000
-      internalID: -7881711102465975639
+      spriteID: 3cfb1a18711874247bbcb1175bafe430
+      internalID: -1666981266
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_18
+      name: sibw_playing_face_18
       rect:
         serializedVersion: 2
-        x: 5799
-        y: 136
-        width: 174
-        height: 277
+        x: 9216
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f062b2af7b4da6f20800000000000000
-      internalID: 3416777153955177999
+      spriteID: e00f7a0cd6998a844974e6e1085d09c9
+      internalID: -445039473
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_19
+      name: sibw_playing_face_19
       rect:
         serializedVersion: 2
-        x: 6314
-        y: 136
-        width: 173
-        height: 294
+        x: 9728
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6224d5d36e6db7470800000000000000
-      internalID: 8393538614895395366
+      spriteID: b6591fcbb0bef2f4a8d65b7a820ac6ba
+      internalID: 1039964590
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_20
+      name: sibw_playing_face_20
       rect:
         serializedVersion: 2
-        x: 6826
-        y: 58
-        width: 173
-        height: 360
+        x: 10240
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7e9ab8627aec1eb60800000000000000
-      internalID: 7773721649119734247
+      spriteID: bb6cd179a9269e94398f512d7a4efd40
+      internalID: 1676821037
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_21
+      name: sibw_playing_face_21
       rect:
         serializedVersion: 2
-        x: 7338
-        y: 122
-        width: 173
-        height: 296
+        x: 10752
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: e7824ab60f68178a0800000000000000
-      internalID: -6309113235813160834
+      spriteID: 1e5893fc6eb0be147900ff8ae2f10cb3
+      internalID: -1841016426
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: siberien_white_playing_face_22
+      name: sibw_playing_face_22
       rect:
         serializedVersion: 2
-        x: 7850
-        y: 122
-        width: 173
-        height: 284
+        x: 11264
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ec8b85195f1f78360800000000000000
-      internalID: 7171966968618596558
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_23
-      rect:
-        serializedVersion: 2
-        x: 8362
-        y: 58
-        width: 174
-        height: 358
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 881ca05c1b82be540800000000000000
-      internalID: 5038165352124170632
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_24
-      rect:
-        serializedVersion: 2
-        x: 8874
-        y: 58
-        width: 174
-        height: 355
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a45dc6f9cec2a42f0800000000000000
-      internalID: -987927773455788726
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_25
-      rect:
-        serializedVersion: 2
-        x: 9387
-        y: 127
-        width: 174
-        height: 285
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7f298f36b0a2b8740800000000000000
-      internalID: 5155260426865906423
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_26
-      rect:
-        serializedVersion: 2
-        x: 9899
-        y: 137
-        width: 174
-        height: 276
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e022e1efd5370d460800000000000000
-      internalID: 7264433046481150478
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_27
-      rect:
-        serializedVersion: 2
-        x: 9917
-        y: 58
-        width: 72
-        height: 79
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b8aeed7d8a536b740800000000000000
-      internalID: 5167376621746711179
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_28
-      rect:
-        serializedVersion: 2
-        x: 10411
-        y: 136
-        width: 174
-        height: 270
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: a51605bbed0122880800000000000000
-      internalID: -8637322586531798694
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_29
-      rect:
-        serializedVersion: 2
-        x: 10429
-        y: 58
-        width: 72
-        height: 79
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 675f79a25f35d75f0800000000000000
-      internalID: -757356849881680522
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_30
-      rect:
-        serializedVersion: 2
-        x: 10920
-        y: 136
-        width: 174
-        height: 282
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2ec3476277435ee70800000000000000
-      internalID: 9143772304796564706
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_31
-      rect:
-        serializedVersion: 2
-        x: 10941
-        y: 58
-        width: 72
-        height: 79
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 8bf2c3af29b192420800000000000000
-      internalID: 2605644177487966136
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_32
-      rect:
-        serializedVersion: 2
-        x: 11432
-        y: 136
-        width: 174
-        height: 270
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 05a59d0a9bd6fb030800000000000000
-      internalID: 3512646878407252560
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_33
-      rect:
-        serializedVersion: 2
-        x: 11453
-        y: 58
-        width: 72
-        height: 79
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 09fba4d6d9f9ba4e0800000000000000
-      internalID: -1969304913552162928
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_34
-      rect:
-        serializedVersion: 2
-        x: 4797
-        y: 58
-        width: 108
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0d7222ca6e10c58e0800000000000000
-      internalID: -1703484468810864688
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_35
-      rect:
-        serializedVersion: 2
-        x: 5309
-        y: 58
-        width: 111
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 61ff68d827478d3b0800000000000000
-      internalID: -5487508110601421034
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_36
-      rect:
-        serializedVersion: 2
-        x: 5821
-        y: 58
-        width: 113
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4c2f74a2a6c0012f0800000000000000
-      internalID: -1004289066788195644
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_37
-      rect:
-        serializedVersion: 2
-        x: 6333
-        y: 58
-        width: 113
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ab4c5415dfbbd5ed0800000000000000
-      internalID: -2423574327790811974
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_38
-      rect:
-        serializedVersion: 2
-        x: 7357
-        y: 58
-        width: 113
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 3e83f1264f1aa7c80800000000000000
-      internalID: -8324162890250635037
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_39
-      rect:
-        serializedVersion: 2
-        x: 7869
-        y: 58
-        width: 113
-        height: 77
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: b2b9d2e3ebb6b8e80800000000000000
-      internalID: -8175322233729869013
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: siberien_white_playing_face_40
-      rect:
-        serializedVersion: 2
-        x: 9405
-        y: 58
-        width: 78
-        height: 78
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 453a19a819cb9c9d0800000000000000
-      internalID: -2753462363879267500
+      spriteID: 28060f1c139a68f49b90c0d8f5d2de17
+      internalID: 1081722305
       vertices: []
       indices: 
       edges: []
@@ -1138,7 +742,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: d6bcb0f7f7130df4f9ba61a258dc021e
     internalID: 0
     vertices: []
     indices: 
@@ -1189,6 +793,47 @@ TextureImporter:
       siberien_white_playing_face_7: -3239388685443197181
       siberien_white_playing_face_8: 7770123703893295111
       siberien_white_playing_face_9: 6705938373853151522
+      sibw_playing_face_0: 1323708996
+      sibw_playing_face_1: -998339188
+      sibw_playing_face_10: 1284181009
+      sibw_playing_face_11: -2134884610
+      sibw_playing_face_12: -1456804405
+      sibw_playing_face_13: 1506065145
+      sibw_playing_face_14: 1342417103
+      sibw_playing_face_15: -878521454
+      sibw_playing_face_16: -303326118
+      sibw_playing_face_17: -1666981266
+      sibw_playing_face_18: -445039473
+      sibw_playing_face_19: 1039964590
+      sibw_playing_face_2: -1182890037
+      sibw_playing_face_20: 1676821037
+      sibw_playing_face_21: -1841016426
+      sibw_playing_face_22: 1081722305
+      sibw_playing_face_23: 77064010
+      sibw_playing_face_24: 1059184265
+      sibw_playing_face_25: 239388565
+      sibw_playing_face_26: 830754688
+      sibw_playing_face_27: 1804485794
+      sibw_playing_face_28: -571221575
+      sibw_playing_face_29: -871220508
+      sibw_playing_face_3: -799100030
+      sibw_playing_face_30: -1612085129
+      sibw_playing_face_31: -453399706
+      sibw_playing_face_32: -577423308
+      sibw_playing_face_33: 1510874085
+      sibw_playing_face_34: -943550650
+      sibw_playing_face_35: 63816165
+      sibw_playing_face_36: 806102912
+      sibw_playing_face_37: -417286874
+      sibw_playing_face_38: 1082518501
+      sibw_playing_face_39: 115597521
+      sibw_playing_face_4: 106216692
+      sibw_playing_face_40: 192377141
+      sibw_playing_face_5: -1884726412
+      sibw_playing_face_6: 1583332576
+      sibw_playing_face_7: 567918308
+      sibw_playing_face_8: 946384684
+      sibw_playing_face_9: 291624452
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
