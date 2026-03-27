@@ -201,7 +201,7 @@ namespace CatHotel.Hotel
             if (_currentData.wallMount)
                 cy = _currentGridPos.y + 0.65f; // centered on wall tile
             else
-                cy = _currentGridPos.y + _currentData.size.y * 0.5f;
+                cy = _currentGridPos.y + 0.25f;
             _previewObj.transform.position = new Vector3(cx, cy, 0f);
             UpdateButtonPositions();
         }
@@ -294,7 +294,7 @@ namespace CatHotel.Hotel
             if (_currentData.wallMount)
                 posY = _currentGridPos.y + 0.65f;
             else
-                posY = _currentGridPos.y + _currentData.size.y * 0.5f;
+                posY = _currentGridPos.y + 0.25f;
             go.transform.position = new Vector3(
                 _currentGridPos.x + _currentData.size.x * 0.5f, posY, 0f);
 
@@ -332,8 +332,11 @@ namespace CatHotel.Hotel
             }
             else
             {
-                // Floor objects: dynamic Y-sorting (same formula as cats)
-                go.AddComponent<Core.SortByY>();
+                // Floor objects: dynamic Y-sorting
+                // Tables use higher base (20000) so cats walk behind them
+                var sortByY = go.AddComponent<Core.SortByY>();
+                if (_currentData.isTable)
+                    sortByY.OrderBias = 10000;
             }
 
             // Scale to fit

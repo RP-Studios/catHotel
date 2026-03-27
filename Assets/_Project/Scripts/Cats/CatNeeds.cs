@@ -10,6 +10,7 @@ namespace CatHotel.Cats
     public class CatNeeds : MonoBehaviour
     {
         private float _hunger = 100f;
+        private float _thirst = 100f;
         private float _sleep = 100f;
         private float _play = 100f;
         private float _clean = 100f;
@@ -25,12 +26,13 @@ namespace CatHotel.Cats
         private float _tickAccumulator;
 
         public float Hunger => _hunger;
+        public float Thirst => _thirst;
         public float Sleep => _sleep;
         public float Play => _play;
         public float Clean => _clean;
 
-        /// <summary>Average of all 4 needs (0-100).</summary>
-        public float Average => (_hunger + _sleep + _play + _clean) / 4f;
+        /// <summary>Average of all 5 needs (0-100).</summary>
+        public float Average => (_hunger + _thirst + _sleep + _play + _clean) / 5f;
 
         public void Init(CatBreedData breed, GameConfig config, bool isSpecial = false)
         {
@@ -38,6 +40,7 @@ namespace CatHotel.Cats
             _config = config;
             _isSpecial = isSpecial;
             _hunger = Random.Range(70f, 100f);
+            _thirst = Random.Range(70f, 100f);
             _sleep = Random.Range(70f, 100f);
             _play = Random.Range(70f, 100f);
             _clean = Random.Range(70f, 100f);
@@ -61,8 +64,8 @@ namespace CatHotel.Cats
         public void SetRefugeStartValues()
         {
             int lowCount = Random.Range(1, 3); // 1 or 2 low gauges
-            float[] vals = { _hunger, _sleep, _play, _clean };
-            var indices = new System.Collections.Generic.List<int> { 0, 1, 2, 3 };
+            float[] vals = { _hunger, _thirst, _sleep, _play, _clean };
+            var indices = new System.Collections.Generic.List<int> { 0, 1, 2, 3, 4 };
 
             for (int i = 0; i < lowCount && indices.Count > 0; i++)
             {
@@ -72,9 +75,10 @@ namespace CatHotel.Cats
             }
 
             _hunger = vals[0];
-            _sleep = vals[1];
-            _play = vals[2];
-            _clean = vals[3];
+            _thirst = vals[1];
+            _sleep = vals[2];
+            _play = vals[3];
+            _clean = vals[4];
         }
 
         private void Update()
@@ -88,6 +92,7 @@ namespace CatHotel.Cats
             _tickAccumulator = 0f;
 
             _hunger = Mathf.Max(0f, _hunger - GetDecayRate(NeedType.Hunger) * dt);
+            _thirst = Mathf.Max(0f, _thirst - GetDecayRate(NeedType.Thirst) * dt);
             _sleep = Mathf.Max(0f, _sleep - GetDecayRate(NeedType.Sleep) * dt);
             _play = Mathf.Max(0f, _play - GetDecayRate(NeedType.Play) * dt);
             _clean = Mathf.Max(0f, _clean - GetDecayRate(NeedType.Clean) * dt);
@@ -113,6 +118,7 @@ namespace CatHotel.Cats
             return need switch
             {
                 NeedType.Hunger => _hunger,
+                NeedType.Thirst => _thirst,
                 NeedType.Sleep => _sleep,
                 NeedType.Play => _play,
                 NeedType.Clean => _clean,
@@ -127,6 +133,7 @@ namespace CatHotel.Cats
             float worstVal = float.MaxValue;
 
             CheckNeed(NeedType.Hunger, _hunger, ref worst, ref worstVal);
+            CheckNeed(NeedType.Thirst, _thirst, ref worst, ref worstVal);
             CheckNeed(NeedType.Sleep, _sleep, ref worst, ref worstVal);
             CheckNeed(NeedType.Play, _play, ref worst, ref worstVal);
             CheckNeed(NeedType.Clean, _clean, ref worst, ref worstVal);
@@ -149,6 +156,7 @@ namespace CatHotel.Cats
             switch (need)
             {
                 case NeedType.Hunger: _hunger = Mathf.Min(100f, _hunger + amount); break;
+                case NeedType.Thirst: _thirst = Mathf.Min(100f, _thirst + amount); break;
                 case NeedType.Sleep: _sleep = Mathf.Min(100f, _sleep + amount); break;
                 case NeedType.Play: _play = Mathf.Min(100f, _play + amount); break;
                 case NeedType.Clean: _clean = Mathf.Min(100f, _clean + amount); break;
@@ -159,21 +167,23 @@ namespace CatHotel.Cats
         public bool HasCriticalNeed()
         {
             return _hunger < _config.criticalThreshold
+                || _thirst < _config.criticalThreshold
                 || _sleep < _config.criticalThreshold
                 || _play < _config.criticalThreshold
                 || _clean < _config.criticalThreshold;
         }
 
         /// <summary>For save/load.</summary>
-        public float[] ToArray() => new[] { _hunger, _sleep, _play, _clean };
+        public float[] ToArray() => new[] { _hunger, _thirst, _sleep, _play, _clean };
 
         public void FromArray(float[] values)
         {
-            if (values == null || values.Length < 4) return;
+            if (values == null || values.Length < 5) return;
             _hunger = values[0];
-            _sleep = values[1];
-            _play = values[2];
-            _clean = values[3];
+            _thirst = values[1];
+            _sleep = values[2];
+            _play = values[3];
+            _clean = values[4];
         }
     }
 }

@@ -4,6 +4,7 @@ namespace CatHotel.Core
     public enum NeedType
     {
         Hunger,
+        Thirst,
         Sleep,
         Play,
         Clean
@@ -36,6 +37,7 @@ namespace CatHotel.Core
     public enum ObjectCategory
     {
         Food,
+        Water,
         Sleep,
         Play,
         Clean,

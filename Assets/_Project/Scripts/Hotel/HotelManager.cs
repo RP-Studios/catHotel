@@ -26,6 +26,21 @@ namespace CatHotel.Hotel
         [SerializeField] private EconomyManager _economy;
         [SerializeField] private ReputationManager _reputation;
         [SerializeField] private CatSpawner _catSpawner;
+        [SerializeField] private FloatingCoinView _floatingCoinView;
+
+        [Header("Mood Bubbles")]
+        [SerializeField] private Sprite _moodHappy;
+        [SerializeField] private Sprite _moodEcstatic;
+        [SerializeField] private Sprite _moodDepressed;
+        [SerializeField] private Sprite _moodAggressive;
+        [SerializeField] private Sprite _moodAngry;
+
+        [Header("Need Bubbles")]
+        [SerializeField] private Sprite _needHungry;
+        [SerializeField] private Sprite _needThirsty;
+        [SerializeField] private Sprite _needTired;
+        [SerializeField] private Sprite _needBored;
+        [SerializeField] private Sprite _needDirty;
 
         private readonly List<CatInstance> _cats = new();
         private float _arrivalTimer;
@@ -210,7 +225,10 @@ namespace CatHotel.Hotel
             var happiness = go.AddComponent<CatHappiness>();
             happiness.Init(needs, _config);
 
-            // Add CatEntity last — Init() calls GetComponent<CatNeeds>()
+            var moodBubble = go.AddComponent<CatMoodBubble>();
+            moodBubble.Init(happiness, needs, _config,
+                _moodHappy, _moodEcstatic, _moodDepressed, _moodAggressive, _moodAngry,
+                _needHungry, _needThirsty, _needTired, _needBored, _needDirty);
             var entity = go.AddComponent<CatEntity>();
             var frontSpr = isSpecial && breed.specialFrontSprite != null ? breed.specialFrontSprite : breed.frontSprite;
             var rightSpr = isSpecial && breed.specialRightSprite != null ? breed.specialRightSprite : breed.rightSprite;
@@ -313,10 +331,7 @@ namespace CatHotel.Hotel
             Sprite frontSprite = cat.IsSpecial && cat.Breed.specialFrontSprite != null
                 ? cat.Breed.specialFrontSprite : cat.Breed.frontSprite;
 
-            // Pause game
-            Time.timeScale = 0f;
-
-            // Show panel
+            // Show panel (game continues running)
             var panel = GetComponent<EndPensionPanel>();
             if (panel != null)
             {
@@ -330,8 +345,6 @@ namespace CatHotel.Hotel
                     TotalCoins = totalCoins
                 }, (finalCoins) =>
                 {
-                    // Collect callback — unpause, add coins, award XP, finalize departure
-                    Time.timeScale = 1f;
                     _economy.AddCoins(finalCoins);
 
                     _reputation.AwardPensionXp(happiness, cat.IsSpecial,
@@ -342,8 +355,7 @@ namespace CatHotel.Hotel
             }
             else
             {
-                // Fallback if no panel — old behavior
-                Time.timeScale = 1f;
+                // Fallback if no panel
                 _economy.AddCoins(totalCoins);
                 _reputation.AwardPensionXp(happiness, cat.IsSpecial,
                     _cats.Count, GetAverageHappiness(), _economy.TrySpend);
@@ -416,9 +428,9 @@ namespace CatHotel.Hotel
             CatNames.ReleaseName(cat.CatName);
             OnCatDeparted?.Invoke(cat);
 
-            // Auto-collect floating coin for departing cat
-            if (_economy != null && cat.Entity != null)
-                _economy.CollectCoinForCat(cat.Entity.transform);
+            // Auto-collect floating coin for departing cat (via view so it animates properly)
+            if (_floatingCoinView != null && cat.Entity != null)
+                _floatingCoinView.CollectCoinForCat(cat.Entity.transform);
 
             if (cat.Entity != null)
                 Destroy(cat.Entity.gameObject);

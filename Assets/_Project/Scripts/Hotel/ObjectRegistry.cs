@@ -93,9 +93,7 @@ namespace CatHotel.Hotel
         {
             foreach (var obj in All)
             {
-                if (obj.Data.displayName == null) continue;
-                string n = obj.Data.displayName.ToLowerInvariant();
-                if (!n.Contains("table") && !n.Contains("commode")) continue;
+                if (!obj.Data.isTable) continue;
                 var objRect = new RectInt(obj.GridPos, obj.Data.size);
                 if (area.Overlaps(objRect)) return true;
             }
@@ -109,6 +107,7 @@ namespace CatHotel.Hotel
             return need switch
             {
                 NeedType.Hunger => ObjectCategory.Food,
+                NeedType.Thirst => ObjectCategory.Water,
                 NeedType.Sleep => ObjectCategory.Sleep,
                 NeedType.Play => ObjectCategory.Play,
                 NeedType.Clean => ObjectCategory.Clean,

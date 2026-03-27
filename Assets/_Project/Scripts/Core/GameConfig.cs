@@ -8,6 +8,7 @@ namespace CatHotel.Core
         [Header("Needs - Base Decay Per Second")]
         [Tooltip("GDD: Hunger 0.7/s, Sleep 0.5/s, Play 0.6/s, Clean 0.45/s")]
         public float hungerDecay = 0.7f;
+        public float thirstDecay = 0.8f;
         public float sleepDecay = 0.5f;
         public float playDecay = 0.6f;
         public float cleanDecay = 0.45f;
@@ -20,6 +21,16 @@ namespace CatHotel.Core
         public float happyThreshold = 70f;
         public float neutralThreshold = 40f;
         public float unhappyLeaveThreshold = 20f;
+
+        [Header("Mood Bubbles")]
+        [Tooltip("Happiness above this → content (Joyous bubble)")]
+        public float moodHappyThreshold = 60f;
+        [Tooltip("Happiness above this → enthousiaste (Very Happy bubble)")]
+        public float moodEcstaticThreshold = 90f;
+        [Tooltip("Happiness below this → déprimé (Upset bubble)")]
+        public float moodDepressedThreshold = 25f;
+        [Tooltip("Height offset for mood bubble above cat (between cat and coin)")]
+        public float moodBubbleHeight = 1f;
         [Tooltip("Seconds below unhappy threshold before cat leaves")]
         public float leaveDelay = 30f;
 
@@ -82,6 +93,7 @@ namespace CatHotel.Core
             return need switch
             {
                 NeedType.Hunger => hungerDecay,
+                NeedType.Thirst => thirstDecay,
                 NeedType.Sleep => sleepDecay,
                 NeedType.Play => playDecay,
                 NeedType.Clean => cleanDecay,

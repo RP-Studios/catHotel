@@ -45,6 +45,8 @@ namespace CatHotel.Core
         public bool wallMount;
         [Tooltip("Must be placed on a table")]
         public bool requiresTable;
+        [Tooltip("This object is a table (cats walk behind it)")]
+        public bool isTable;
 
         [Header("Carpet bonus (carpet only)")]
         [Tooltip("Which need gets the zone bonus")]
@@ -64,6 +66,7 @@ namespace CatHotel.Core
         public NeedType? SatisfiedNeed => category switch
         {
             ObjectCategory.Food => NeedType.Hunger,
+            ObjectCategory.Water => NeedType.Thirst,
             ObjectCategory.Sleep => NeedType.Sleep,
             ObjectCategory.Play => NeedType.Play,
             ObjectCategory.Clean => NeedType.Clean,

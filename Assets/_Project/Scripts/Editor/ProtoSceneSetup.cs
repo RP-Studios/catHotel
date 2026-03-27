@@ -509,10 +509,10 @@ namespace CatHotel.Editor
             ("Drinking/ragodoll_base_drinking_left.png",  "rd_drinking_left",  "Drink_Left",  8, 4f),
             ("Drinking/ragodoll_base_drinking_right.png", "rd_drinking_right", "Drink_Right", 8, 4f),
 
-            // Cleaning (11f, 5.5 FPS)
-            ("Cleaning/ragdoll_base_cleaning_face.png",  "rd_cleaning_face",  "Clean_Front", 11, 5.5f),
-            ("Cleaning/ragdoll_base_cleaning_left.png",  "rd_cleaning_left",  "Clean_Left",  11, 5.5f),
-            ("Cleaning/ragdoll_base_cleaning_right.png", "rd_cleaning_right", "Clean_Right", 11, 5.5f),
+            // Cleaning (face 13f @6.5 FPS, left/right 12f @6 FPS)
+            ("Cleaning/ragdoll_base_cleaning_face.png",  "rd_cleaning_face",  "Clean_Front", 13, 6.5f),
+            ("Cleaning/ragdoll_base_cleaning_left.png",  "rd_cleaning_left",  "Clean_Left",  12, 6f),
+            ("Cleaning/ragdoll_base_cleaning_right.png", "rd_cleaning_right", "Clean_Right", 12, 6f),
 
             // Playing main (23f, 11.5 FPS)
             ("Playing/ragdoll_base_playing_face.png",  "rd_playing_face",  "Play_Front", 23, 11.5f),
@@ -529,8 +529,8 @@ namespace CatHotel.Editor
             ("Unhappy/ragdoll_base_unhappy_left.png",  "rd_unhappy_left",  "Unhappy_Left",  6, 6f),
             ("Unhappy/ragdoll_base_unhappy_right.png", "rd_unhappy_right", "Unhappy_Right", 6, 6f),
 
-            // Petting (9f, 6.5 FPS)
-            ("Petting/ragdoll_base_petting_face.png", "rd_petting_face", "Pet_Front", 9, 6.5f),
+            // Petting (12f @256, 6 FPS)
+            ("Petting/ragdoll_base_petting_face.png", "rd_petting_face", "Pet_Front", 12, 6f),
 
             // Fighting In (15f, 7.5 FPS)
             ("Fighting/ragdoll_base_fighting_in_left.png",  "rd_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
@@ -1068,6 +1068,25 @@ namespace CatHotel.Editor
                 $"{ObjectsRoot}/Carpets/CARPET_PLAY_SELEC.png",
             };
             foreach (var s in objectSprites)
+                ConfigureSprite(s, 200, FilterMode.Bilinear);
+
+            // Mood bubble sprites — PPU 200 (same as cats)
+            string[] bubbleSprites =
+            {
+                // Mood
+                "Assets/_Project/Art/States/BULLE_EMOTIONS_Joyous.png",
+                "Assets/_Project/Art/States/BULLE_EMOTIONS_Very_Happy.png",
+                "Assets/_Project/Art/States/BULLE_EMOTIONS_Upset.png",
+                "Assets/_Project/Art/States/BULLE_EMOTIONS_Fights.png",
+                "Assets/_Project/Art/States/BULLE_EMOTIONS_Mad.png",
+                // Needs
+                "Assets/_Project/Art/States/BULLE_NEEDS_Hungry.png",
+                "Assets/_Project/Art/States/BULLE_NEEDS_Starving.png",
+                "Assets/_Project/Art/States/BULLE_NEEDS_Tired.png",
+                "Assets/_Project/Art/States/BULLE_NEEDS_Bored.png",
+                "Assets/_Project/Art/States/BULLE_NEEDS_Dirty.png",
+            };
+            foreach (var s in bubbleSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
         }
 
@@ -1741,6 +1760,31 @@ namespace CatHotel.Editor
 
             soCoinView.ApplyModifiedProperties();
 
+            // Wire FloatingCoinView on HotelManager (created after initial soHotel pass)
+            var soHotel2 = new SerializedObject(hotelMgr);
+            soHotel2.FindProperty("_floatingCoinView").objectReferenceValue = coinView;
+            soHotel2.FindProperty("_moodHappy").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_EMOTIONS_Joyous.png");
+            soHotel2.FindProperty("_moodEcstatic").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_EMOTIONS_Very_Happy.png");
+            soHotel2.FindProperty("_moodDepressed").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_EMOTIONS_Upset.png");
+            soHotel2.FindProperty("_moodAggressive").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_EMOTIONS_Fights.png");
+            soHotel2.FindProperty("_moodAngry").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_EMOTIONS_Mad.png");
+            soHotel2.FindProperty("_needHungry").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_NEEDS_Hungry.png");
+            soHotel2.FindProperty("_needThirsty").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_NEEDS_Starving.png");
+            soHotel2.FindProperty("_needTired").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_NEEDS_Tired.png");
+            soHotel2.FindProperty("_needBored").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_NEEDS_Bored.png");
+            soHotel2.FindProperty("_needDirty").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/States/BULLE_NEEDS_Dirty.png");
+            soHotel2.ApplyModifiedProperties();
+
             // --- Interactive Hotel Objects ---
             PlaceHotelObjects();
 
@@ -1876,24 +1920,24 @@ namespace CatHotel.Editor
                 visualScale: 0.5f,
                 selectedSpritePath: $"{ObjectsRoot}/Food/FOOD_BOWL_Var_04_SELEC.png");
 
-            // --- Water (Hunger) ---
+            // --- Water (Thirst) ---
             CreateObjectAsset($"{D}/Obj_WaterBowl.asset", "Bol d'eau",
-                ObjectCategory.Food, 25, 1f, 4f, maxUsers: 1,
+                ObjectCategory.Water, 25, 1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f,
                 selectedSpritePath: $"{ObjectsRoot}/Water/WATER_BOWL_SELEC.png");
             CreateObjectAsset($"{D}/Obj_WaterBowl04.asset", "Bol d'eau moderne",
-                ObjectCategory.Food, 35, 1.2f, 4f, maxUsers: 1,
+                ObjectCategory.Water, 35, 1.2f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_04_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f,
                 selectedSpritePath: $"{ObjectsRoot}/Water/WATER_BOWL_04_SELEC.png");
             CreateObjectAsset($"{D}/Obj_WaterBowlVar02.asset", "Bol d'eau var. 2",
-                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 1,
+                ObjectCategory.Water, 30, 1.1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_02_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f,
                 selectedSpritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_02_SELEC.png");
             CreateObjectAsset($"{D}/Obj_WaterBowlVar03.asset", "Bol d'eau var. 3",
-                ObjectCategory.Food, 30, 1.1f, 4f, maxUsers: 1,
+                ObjectCategory.Water, 30, 1.1f, 4f, maxUsers: 1,
                 spritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_03_Full.png", size: Vector2Int.one,
                 visualScale: 0.5f,
                 selectedSpritePath: $"{ObjectsRoot}/Water/WATER_BOWL_Var_03_SELEC.png");
@@ -1953,11 +1997,11 @@ namespace CatHotel.Editor
             CreateObjectAsset($"{D}/Obj_TableCoffee.asset", "Table basse",
                 ObjectCategory.Decoration, 80, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png", size: Vector2Int.one, visualScale: 2f,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/COFFEE_TABLE_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/COFFEE_TABLE_SELEC.png", isTable: true);
             CreateObjectAsset($"{D}/Obj_TableDrawer.asset", "Commode",
                 ObjectCategory.Decoration, 90, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one, visualScale: 1f,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/DRAWER_Small_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/DRAWER_Small_SELEC.png", isTable: true);
 
             // --- Decorations: Plants ---
             CreateObjectAsset($"{D}/Obj_PlantBig.asset", "Grande plante",
@@ -2036,7 +2080,7 @@ namespace CatHotel.Editor
             int maxUsers = 1, string spritePath = null, Vector2Int? size = null,
             float visualScale = 1f, bool wallMount = false, bool requiresTable = false,
             RuntimeAnimatorController animController = null, Sprite iconOverride = null,
-            string selectedSpritePath = null)
+            string selectedSpritePath = null, bool isTable = false)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -2049,6 +2093,7 @@ namespace CatHotel.Editor
             so.FindProperty("visualScale").floatValue = visualScale;
             so.FindProperty("wallMount").boolValue = wallMount;
             so.FindProperty("requiresTable").boolValue = requiresTable;
+            so.FindProperty("isTable").boolValue = isTable;
             so.FindProperty("worldAnimController").objectReferenceValue = animController;
 
             if (spritePath != null)

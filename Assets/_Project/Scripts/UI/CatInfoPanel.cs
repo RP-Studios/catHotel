@@ -47,6 +47,8 @@ namespace CatHotel.UI
         private TMP_Text _happinessText;
         private RectTransform _angerBar;
         private TMP_Text _angerText;
+        private RectTransform _thirstBar;
+        private TMP_Text _thirstText;
         private RectTransform _sleepBar;
         private TMP_Text _sleepText;
         private RectTransform _playBar;
@@ -63,6 +65,7 @@ namespace CatHotel.UI
         private float _refreshTimer;
         private int _prevHappiness = -1;
         private int _prevHunger = -1;
+        private int _prevThirst = -1;
         private int _prevSleep = -1;
         private int _prevPlay = -1;
         private int _prevClean = -1;
@@ -134,8 +137,10 @@ namespace CatHotel.UI
             // Need bars + values
             _happinessBar = FindBar(_panelObj, "HapinessImageValue");
             _happinessText = FindText(_panelObj, "HapinessValue");
-            _angerBar = FindBar(_panelObj, "AngerImageValue");
-            _angerText = FindText(_panelObj, "AngerValue");
+            _angerBar = FindBar(_panelObj, "HungerImageValue");
+            _angerText = FindText(_panelObj, "HungerValue");
+            _thirstBar = FindBar(_panelObj, "StarvingImageValue");
+            _thirstText = FindText(_panelObj, "StarvingValue");
             _sleepBar = FindBar(_panelObj, "SleepImageValue");
             _sleepText = FindText(_panelObj, "SleepValue");
             _playBar = FindBar(_panelObj, "PlayImageValue");
@@ -268,6 +273,7 @@ namespace CatHotel.UI
             if (cat.Needs != null)
             {
                 SetBarIfChanged(_angerBar, _angerText, cat.Needs.Hunger, ref _prevHunger);
+                SetBarIfChanged(_thirstBar, _thirstText, cat.Needs.Thirst, ref _prevThirst);
                 SetBarIfChanged(_sleepBar, _sleepText, cat.Needs.Sleep, ref _prevSleep);
                 SetBarIfChanged(_playBar, _playText, cat.Needs.Play, ref _prevPlay);
                 SetBarIfChanged(_cleanBar, _cleanText, cat.Needs.Clean, ref _prevClean);
@@ -276,7 +282,7 @@ namespace CatHotel.UI
 
         private void ResetDirtyState()
         {
-            _prevHappiness = _prevHunger = _prevSleep = _prevPlay = _prevClean = _prevTimeSec = -1;
+            _prevHappiness = _prevHunger = _prevThirst = _prevSleep = _prevPlay = _prevClean = _prevTimeSec = -1;
         }
 
         // Bar color thresholds

@@ -24,6 +24,7 @@ namespace CatHotel.Core
 
         [Tooltip("Per-need trait multipliers (stacked on top of demandMultiplier)")]
         public float hungerTrait = 1f;
+        public float thirstTrait = 1f;
         public float sleepTrait = 1f;
         public float playTrait = 1f;
         public float cleanTrait = 1f;
@@ -59,6 +60,7 @@ namespace CatHotel.Core
             return need switch
             {
                 NeedType.Hunger => hungerTrait,
+                NeedType.Thirst => thirstTrait,
                 NeedType.Sleep => sleepTrait,
                 NeedType.Play => playTrait,
                 NeedType.Clean => cleanTrait,

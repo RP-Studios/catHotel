@@ -105,9 +105,10 @@ namespace CatHotel.Cats
 
         private void LateUpdate()
         {
-            // Sort by Y: lower Y = closer to camera = higher sortingOrder
+            // Sort by Y: cats use a higher base (15000) than objects (10000)
+            // so they always render in front, except tables (base 20000)
             if (_sr != null)
-                _sr.sortingOrder = Mathf.RoundToInt(-transform.position.y * 100f) + 10000 + (GetInstanceID() & 0xFF);
+                _sr.sortingOrder = Mathf.RoundToInt(-transform.position.y * 100f) + 15000;
 
             if (_fightCooldown > 0f)
                 _fightCooldown -= Time.deltaTime;
@@ -182,6 +183,7 @@ namespace CatHotel.Cats
 
         private void ReleaseCurrentObject()
         {
+            ClearUseOffset();
             if (_targetObject != null)
             {
                 // Show toy objects again after cat is done playing
@@ -361,8 +363,17 @@ namespace CatHotel.Cats
             _targetObject = obj;
             _isUsingObject = false;
 
-            WalkToTarget(obj.GridPos, () => StartUsingObject(urgentNeed.Value));
+            var usePos = FindUsePosition(obj);
+            WalkToTarget(usePos, () => StartUsingObject(urgentNeed.Value));
             return true;
+        }
+
+        private void ApplyUseOffset(HotelObject obj) { }
+        private void ClearUseOffset() { }
+
+        private Vector2Int FindUsePosition(HotelObject obj)
+        {
+            return obj.GridPos;
         }
 
         /// <summary>
@@ -378,6 +389,9 @@ namespace CatHotel.Cats
 
             _isUsingObject = true;
 
+            // Offset cat to the side of the object so sprites don't overlap
+            ApplyUseOffset(_targetObject);
+
             // Hide toy objects while cat is playing with them
             if (_targetObject.Data.category == CatHotel.Core.ObjectCategory.Play)
                 SetObjectVisible(_targetObject, false);
@@ -385,6 +399,7 @@ namespace CatHotel.Cats
             string animPrefix = need switch
             {
                 NeedType.Hunger => "Eat",
+                NeedType.Thirst => "Drink",
                 NeedType.Sleep => "Sleep",
                 NeedType.Play => "Play",
                 NeedType.Clean => "Clean",

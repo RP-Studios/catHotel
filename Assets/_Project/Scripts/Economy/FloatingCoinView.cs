@@ -420,6 +420,18 @@ namespace CatHotel.Economy
             });
         }
 
+        /// <summary>
+        /// Auto-collect the floating coin for a specific cat (used on pension departure).
+        /// Triggers the same fly animation as a manual tap.
+        /// </summary>
+        public void CollectCoinForCat(Transform catTransform)
+        {
+            var coin = FindCoinForCat(catTransform);
+            if (coin == null) return;
+            _economy.StartCollect(coin);
+            AnimateCollect(coin);
+        }
+
         public int PendingCoinCount => _coinViews.Count;
 
         private void PlayCoinCollectSfx()

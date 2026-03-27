@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Core.GameConfig
   hungerDecay: 0.7
+  thirstDecay: 0.8
   sleepDecay: 0.5
   playDecay: 0.6
   cleanDecay: 0.45
@@ -21,6 +22,10 @@ MonoBehaviour:
   happyThreshold: 70
   neutralThreshold: 40
   unhappyLeaveThreshold: 20
+  moodHappyThreshold: 60
+  moodEcstaticThreshold: 90
+  moodDepressedThreshold: 25
+  moodBubbleHeight: 1
   leaveDelay: 8
   coinsPerServiceUse: 5
   pensionBaseRate: 0.5

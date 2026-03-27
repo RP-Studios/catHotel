@@ -20,9 +20,10 @@ namespace CatHotel.UI
     }
 
     /// <summary>
-    /// End-of-pension recap panel. Pauses the game, shows cat stats and earnings,
-    /// animates numbers counting up, then collects coins with fly animation.
-    /// Panel stays INACTIVE until Show() is called.
+    /// End-of-pension recap panel. Does NOT pause the game.
+    /// Shows cat stats and earnings, animates numbers counting up,
+    /// then auto-collects coins with fly animation + SFX.
+    /// Panel stays open 15s for optional x2 rewarded ad, then auto-closes.
     /// </summary>
     public class EndPensionPanel : MonoBehaviour
     {
@@ -32,6 +33,7 @@ namespace CatHotel.UI
         private Tween _slideTween;
         private bool _isOpen;
         private bool _initialized;
+        private bool _collected; // coins already collected (prevent double)
 
         // UI elements
         private Image _catImage;
@@ -40,7 +42,8 @@ namespace CatHotel.UI
         private TMP_Text _baseValue;
         private TMP_Text _tipValue;
         private TMP_Text _totalValue;
-        private RectTransform _collectRect;
+        private RectTransform _byeRect;
+        private TMP_Text _byeLabel;
         private RectTransform _doubleRect;
 
         // Coin fly
@@ -51,6 +54,10 @@ namespace CatHotel.UI
         private Action<int> _onCollect;
         private PensionEndData _data;
         private Coroutine _animCoroutine;
+        private Coroutine _autoCloseCoroutine;
+
+        // Auto-close delay for x2 opportunity
+        private const float DoubleWindowDuration = 15f;
 
         // SFX
         [SerializeField] private AudioClip _collectSfx;
@@ -93,10 +100,11 @@ namespace CatHotel.UI
             _baseValue = FindTMP(_panelObj, "BaseValue");
             _tipValue = FindTMP(_panelObj, "TipValue");
             _totalValue = FindTMP(_panelObj, "TotalValue");
-            _collectRect = FindRect(_panelObj, "CollectAction");
+            _byeRect = FindRect(_panelObj, "ByeAction");
+            _byeLabel = FindTMP(_panelObj, "ByeLabel");
             _doubleRect = FindRect(_panelObj, "X2GainCollectRewardedAdAction");
 
-            AddJuice(_collectRect);
+            AddJuice(_byeRect);
             AddJuice(_doubleRect);
 
             // Coin fly target + sprite
@@ -125,21 +133,22 @@ namespace CatHotel.UI
 
         private void Update()
         {
-            if (!_isOpen) return;
+            if (!_isOpen || !_collected) return;
 
             var pointer = Pointer.current;
             if (pointer == null || !pointer.press.wasPressedThisFrame) return;
             Vector2 screenPos = pointer.position.ReadValue();
 
-            if (_collectRect != null &&
-                RectTransformUtility.RectangleContainsScreenPoint(_collectRect, screenPos, null))
+            // Bye button → close panel
+            if (_byeRect != null &&
+                RectTransformUtility.RectangleContainsScreenPoint(_byeRect, screenPos, null))
             {
-                Collect();
+                Close();
                 return;
             }
 
             // Double gains via rewarded ad
-            if (_doubleRect != null &&
+            if (_doubleRect != null && _doubleRect.gameObject.activeSelf &&
                 RectTransformUtility.RectangleContainsScreenPoint(_doubleRect, screenPos, null))
             {
                 TryDoubleGains();
@@ -153,6 +162,7 @@ namespace CatHotel.UI
 
             _data = data;
             _onCollect = onCollect;
+            _collected = false;
 
             // Activate and position offscreen
             _panelObj.SetActive(true);
@@ -164,7 +174,7 @@ namespace CatHotel.UI
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
 
-            // Set cat image (keep stretch layout, don't call SetNativeSize)
+            // Set cat image
             if (_catImage != null && data.CatSprite != null)
                 _catImage.sprite = data.CatSprite;
 
@@ -177,25 +187,29 @@ namespace CatHotel.UI
             if (_tipValue != null) _tipValue.text = "0";
             if (_totalValue != null) _totalValue.text = "0";
 
-            // Re-enable double button (may have been disabled in previous pension)
+            // Set bye label
+            if (_byeLabel != null)
+                _byeLabel.text = $"Au revoir {data.CatName} !";
+
+            // Re-enable double button
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(true);
 
-            // Slide in
+            // Slide in, then animate numbers
             _isOpen = true;
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
                 .SetEase(Ease.OutBack)
-                .SetUpdate(true)
                 .OnComplete(() =>
                 {
                     if (_animCoroutine != null) StopCoroutine(_animCoroutine);
-                    _animCoroutine = StartCoroutine(AnimateNumbers());
+                    _animCoroutine = StartCoroutine(AnimateNumbersThenCollect());
                 });
         }
 
         private void Close()
         {
+            if (!_isOpen) return;
             _isOpen = false;
             _slideTween?.Kill();
             if (_animCoroutine != null)
@@ -203,32 +217,39 @@ namespace CatHotel.UI
                 StopCoroutine(_animCoroutine);
                 _animCoroutine = null;
             }
+            if (_autoCloseCoroutine != null)
+            {
+                StopCoroutine(_autoCloseCoroutine);
+                _autoCloseCoroutine = null;
+            }
 
             _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
                 .SetEase(Ease.InCubic)
-                .SetUpdate(true)
                 .OnComplete(() =>
                 {
                     _panelObj.SetActive(false);
                     var cb = _onCollect;
-                    _onCollect = null; // prevent double-invoke
+                    _onCollect = null;
                     cb?.Invoke(_data.TotalCoins);
                 });
         }
 
-        private IEnumerator AnimateNumbers()
+        private IEnumerator AnimateNumbersThenCollect()
         {
+            // Animate happiness
             yield return StartCoroutine(AnimateValue(
                 _happinessRecap, 0f, _data.AvgHappiness, 0.6f, v => $"{v:0}%"));
 
-            yield return WaitRealtime(0.15f);
+            yield return new WaitForSeconds(0.15f);
 
+            // Animate base coins
             yield return StartCoroutine(AnimateValue(
                 _baseValue, 0f, _data.BaseCoins, 0.5f, v => $"{v:0}"));
 
+            // Animate tip
             if (_data.TipCoins > 0)
             {
-                yield return WaitRealtime(0.1f);
+                yield return new WaitForSeconds(0.1f);
                 yield return StartCoroutine(AnimateValue(
                     _tipValue, 0f, _data.TipCoins, 0.4f, v => $"+{v:0}"));
             }
@@ -237,21 +258,49 @@ namespace CatHotel.UI
                 if (_tipValue != null) _tipValue.text = "-";
             }
 
-            yield return WaitRealtime(0.15f);
+            yield return new WaitForSeconds(0.15f);
+
+            // Animate total
             yield return StartCoroutine(AnimateValue(
                 _totalValue, 0f, _data.TotalCoins, 0.6f, v => $"{v:0}"));
 
+            // Punch total
             if (_totalValue != null)
             {
                 var rt = _totalValue.GetComponent<RectTransform>();
                 if (rt != null)
-                {
-                    DOTween.Sequence().SetUpdate(true)
-                        .Append(rt.DOPunchScale(Vector3.one * 0.3f, 0.3f, 8, 0.5f));
-                }
+                    rt.DOPunchScale(Vector3.one * 0.3f, 0.3f, 8, 0.5f);
             }
 
             _animCoroutine = null;
+
+            // Auto-collect immediately after total animation
+            yield return new WaitForSeconds(0.3f);
+            AutoCollect();
+        }
+
+        private void AutoCollect()
+        {
+            if (_collected) return;
+            _collected = true;
+
+            // SFX
+            if (_sfxSource != null && _collectSfx != null)
+                _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
+
+            // Coin fly animation from total value position
+            int coinCount = Mathf.Clamp(_data.TotalCoins / 10, 3, 8);
+            StartCoroutine(CoinFlyFromTotal(coinCount));
+
+            // Start auto-close timer for x2 window
+            _autoCloseCoroutine = StartCoroutine(AutoCloseAfterDelay());
+        }
+
+        private IEnumerator AutoCloseAfterDelay()
+        {
+            yield return new WaitForSeconds(DoubleWindowDuration);
+            _autoCloseCoroutine = null;
+            Close();
         }
 
         private IEnumerator AnimateValue(TMP_Text text, float from, float to, float duration,
@@ -262,7 +311,7 @@ namespace CatHotel.UI
             float elapsed = 0f;
             while (elapsed < duration)
             {
-                elapsed += Time.unscaledDeltaTime;
+                elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / duration);
                 float eased = 1f - Mathf.Pow(1f - t, 3f);
                 float current = Mathf.Lerp(from, to, eased);
@@ -274,28 +323,23 @@ namespace CatHotel.UI
 
         private void TryDoubleGains()
         {
-            if (!_isOpen) return;
+            if (!_isOpen || !_collected) return;
 
             var ads = AdManager.Instance;
             if (ads == null || !ads.IsAdReady)
             {
-                Debug.LogWarning("[Pension] Ad not ready — collecting normally");
-                Collect();
+                Debug.LogWarning("[Pension] Ad not ready");
                 return;
             }
 
             ads.OnPensionAdCompleted += OnPensionAdSuccess;
             ads.OnPensionAdFailed += OnPensionAdFail;
-
-            // Ads don't work while timeScale=0 — unpause for the ad
-            Time.timeScale = 1f;
             ads.ShowPensionAd();
         }
 
         private void OnPensionAdSuccess()
         {
             UnsubPensionAd();
-            Time.timeScale = 0f; // re-pause after ad
             _data.TotalCoins *= 2;
 
             if (_totalValue != null)
@@ -306,7 +350,7 @@ namespace CatHotel.UI
                 {
                     rt.DOKill();
                     rt.localScale = Vector3.one;
-                    rt.DOPunchScale(Vector3.one * 0.4f, 0.35f, 8, 0.5f).SetUpdate(true);
+                    rt.DOPunchScale(Vector3.one * 0.4f, 0.35f, 8, 0.5f);
                 }
             }
 
@@ -314,15 +358,24 @@ namespace CatHotel.UI
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(false);
 
+            // Play SFX + extra coin fly for the bonus
+            if (_sfxSource != null && _collectSfx != null)
+                _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
+
+            int bonusCoins = Mathf.Clamp(_data.TotalCoins / 20, 2, 6);
+            StartCoroutine(CoinFlyFromTotal(bonusCoins));
+
             Debug.Log($"[Pension] Gains doubled to {_data.TotalCoins}");
+
+            // Close shortly after double
+            if (_autoCloseCoroutine != null) StopCoroutine(_autoCloseCoroutine);
+            _autoCloseCoroutine = StartCoroutine(AutoCloseAfterDelay());
         }
 
         private void OnPensionAdFail()
         {
             UnsubPensionAd();
-            Time.timeScale = 0f; // re-pause after ad
-            Debug.LogWarning("[Pension] Ad failed — collecting normally");
-            Collect();
+            Debug.LogWarning("[Pension] Ad failed");
         }
 
         private void UnsubPensionAd()
@@ -333,28 +386,18 @@ namespace CatHotel.UI
             ads.OnPensionAdFailed -= OnPensionAdFail;
         }
 
-        private void Collect()
+        private IEnumerator CoinFlyFromTotal(int count)
         {
-            if (!_isOpen) return;
-            _isOpen = false; // prevent double-tap
+            // Use totalValue position as source (or panel center as fallback)
+            RectTransform srcRect = _totalValue != null
+                ? _totalValue.GetComponent<RectTransform>()
+                : _panel;
 
-            if (_sfxSource != null && _collectSfx != null)
-                _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
-
-            int coinCount = Mathf.Clamp(_data.TotalCoins / 10, 3, 8);
-            StartCoroutine(CoinFlySequence(coinCount, Close));
-        }
-
-        private IEnumerator CoinFlySequence(int count, Action onDone)
-        {
-            if (_overlayCanvas == null || _coinTarget == null || _collectRect == null)
-            {
-                onDone?.Invoke();
+            if (_overlayCanvas == null || _coinTarget == null || srcRect == null)
                 yield break;
-            }
 
             Vector3[] srcCorners = new Vector3[4];
-            _collectRect.GetWorldCorners(srcCorners);
+            srcRect.GetWorldCorners(srcCorners);
             Vector3 srcCenter = (srcCorners[0] + srcCorners[2]) / 2f;
 
             Vector3[] dstCorners = new Vector3[4];
@@ -362,7 +405,6 @@ namespace CatHotel.UI
             Vector3 dstCenter = (dstCorners[0] + dstCorners[2]) / 2f;
 
             var canvasRt = _overlayCanvas.GetComponent<RectTransform>();
-            int completed = 0;
 
             for (int i = 0; i < count; i++)
             {
@@ -393,7 +435,7 @@ namespace CatHotel.UI
                 float delay = i * 0.08f;
                 float flyDuration = 0.4f;
 
-                var seq = DOTween.Sequence().SetUpdate(true);
+                var seq = DOTween.Sequence();
                 seq.AppendInterval(delay);
                 seq.Append(coinRt.DOScale(Vector3.one * 1.3f, 0.08f).SetEase(Ease.OutBack));
                 seq.Append(coinRt.DOAnchorPos(dstLocal, flyDuration).SetEase(Ease.InQuad));
@@ -401,37 +443,16 @@ namespace CatHotel.UI
                 seq.OnComplete(() =>
                 {
                     Destroy(coinGo);
-                    completed++;
-
                     if (_coinTarget != null)
                     {
                         _coinTarget.DOKill();
                         _coinTarget.localScale = Vector3.one;
-                        _coinTarget.DOPunchScale(Vector3.one * 0.2f, 0.15f, 6, 0.5f)
-                            .SetUpdate(true);
+                        _coinTarget.DOPunchScale(Vector3.one * 0.2f, 0.15f, 6, 0.5f);
                     }
                 });
             }
 
-            float maxWait = count * 0.08f + 0.5f + 0.2f;
-            float waited = 0f;
-            while (waited < maxWait && completed < count)
-            {
-                waited += Time.unscaledDeltaTime;
-                yield return null;
-            }
-
-            onDone?.Invoke();
-        }
-
-        private static IEnumerator WaitRealtime(float seconds)
-        {
-            float elapsed = 0f;
-            while (elapsed < seconds)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                yield return null;
-            }
+            yield return null;
         }
 
         private static void AddJuice(RectTransform rt)

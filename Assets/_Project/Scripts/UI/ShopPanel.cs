@@ -220,6 +220,7 @@ namespace CatHotel.UI
             if (name.Contains("food") || name.Contains("croquette")) return ShopCategory.Croquettes;
             if (name.Contains("water")) return ShopCategory.Water;
             if (name.Contains("woolball") || name.Contains("ball")) return ShopCategory.Balls;
+            if (name.Contains("cattree")) return ShopCategory.Scratchers;
             if (name.Contains("scratcher") || name.Contains("griffoir")) return ShopCategory.Scratchers;
             if (name.Contains("litter") || name.Contains("litiere")) return ShopCategory.Litters;
             if (name.Contains("frame")) return ShopCategory.Frames;
@@ -235,6 +236,7 @@ namespace CatHotel.UI
             {
                 ObjectCategory.Sleep => ShopCategory.Beds,
                 ObjectCategory.Food => ShopCategory.Croquettes,
+                ObjectCategory.Water => ShopCategory.Water,
                 ObjectCategory.Play => ShopCategory.Balls,
                 ObjectCategory.Clean => ShopCategory.Litters,
                 ObjectCategory.Decoration => ShopCategory.Lamps,
