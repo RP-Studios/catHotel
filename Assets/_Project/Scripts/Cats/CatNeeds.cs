@@ -20,6 +20,7 @@ namespace CatHotel.Cats
         private bool _isSpecial;
         private int _reputationDeficit; // how many levels below min reputation
         private float _sizeMultiplier = 1f; // small cats have higher needs
+        private CatTraitModifiers _traitMods = CatTraitModifiers.Default;
 
         // Tick-based update: needs don't need per-frame precision
         private const float TickInterval = 0.2f;
@@ -58,6 +59,11 @@ namespace CatHotel.Cats
         public void SetSizeMultiplier(float scale)
         {
             _sizeMultiplier = scale < 0.7f ? Mathf.Lerp(1.2f, 1f, (scale - 0.6f) / 0.1f) : 1f;
+        }
+
+        public void SetTraitModifiers(CatTraitModifiers mods)
+        {
+            _traitMods = mods;
         }
 
         /// <summary>Set initial need values for refuge cats: 1-2 random gauges are low.</summary>
@@ -110,7 +116,8 @@ namespace CatHotel.Cats
             float special = _isSpecial ? _breed.specialDemandMult : 1f;
             float repPenalty = 1f + 0.3f * _reputationDeficit;
 
-            return baseRate * trait * demand * special * repPenalty * _sizeMultiplier;
+            float personality = _traitMods.GetNeedDecayMult(need);
+            return baseRate * trait * demand * special * repPenalty * _sizeMultiplier * personality;
         }
 
         public float GetNeed(NeedType need)

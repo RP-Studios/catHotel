@@ -115,11 +115,24 @@ namespace CatHotel.Cats
         }
 
         /// <summary>Set breed data for speed multiplier.</summary>
+        private CatTraitModifiers _traitMods = CatTraitModifiers.Default;
+
         public void SetBreed(CatBreedData breed)
         {
             _breed = breed;
-            if (breed != null)
-                _cellMoveTime = 0.7f / breed.speed;
+            ApplySpeed();
+        }
+
+        public void SetTraitModifiers(CatTraitModifiers mods)
+        {
+            _traitMods = mods;
+            ApplySpeed();
+        }
+
+        private void ApplySpeed()
+        {
+            float breedSpeed = _breed != null ? _breed.speed : 1f;
+            _cellMoveTime = 0.7f / (breedSpeed * _traitMods.SpeedMult);
         }
 
         private void OnDestroy()
@@ -238,17 +251,28 @@ namespace CatHotel.Cats
             var happiness = GetComponent<CatHappiness>();
             if (happiness != null && happiness.Value >= 50f) return false;
 
-            var leftPos = new Vector2Int(_gridPos.x - 1, _gridPos.y);
-            var rightPos = new Vector2Int(_gridPos.x + 1, _gridPos.y);
+            // Find nearest cat on the SAME Y row and within 1.5 cells horizontally
+            CatEntity neighbor = null;
+            float bestDist = 1.5f;
+            foreach (var other in _spawner.AllCats)
+            {
+                if (other == this || !other.CanFight() || other.IsFighting) continue;
+                // Must be on same grid row
+                if (other.GridPos.y != _gridPos.y) continue;
+                float dx = Mathf.Abs(transform.position.x - other.transform.position.x);
+                float dy = Mathf.Abs(transform.position.y - other.transform.position.y);
+                // Must be close horizontally AND at same visual height
+                if (dx < bestDist && dy < 0.6f)
+                {
+                    bestDist = dx;
+                    neighbor = other;
+                }
+            }
 
-            var neighbor = _spawner.GetCatAt(leftPos, this);
-            if (neighbor == null || !neighbor.CanFight())
-                neighbor = _spawner.GetCatAt(rightPos, this);
-            if (neighbor == null || !neighbor.CanFight())
-                return false;
+            if (neighbor == null) return false;
 
-            CatEntity leftCat = _gridPos.x < neighbor.GridPos.x ? this : neighbor;
-            CatEntity rightCat = _gridPos.x < neighbor.GridPos.x ? neighbor : this;
+            CatEntity leftCat = transform.position.x < neighbor.transform.position.x ? this : neighbor;
+            CatEntity rightCat = transform.position.x < neighbor.transform.position.x ? neighbor : this;
 
             RunFightSequence(leftCat, rightCat);
             return true;
@@ -269,6 +293,12 @@ namespace CatHotel.Cats
         {
             left.EnterFight();
             right.EnterFight();
+
+            // Snap both cats to same Y and face each other, ~0.5 apart
+            float midX = (left.transform.position.x + right.transform.position.x) / 2f;
+            float midY = (left.transform.position.y + right.transform.position.y) / 2f;
+            left.transform.position = new Vector3(midX - 0.4f, midY, 0f);
+            right.transform.position = new Vector3(midX + 0.4f, midY, 0f);
 
             // Apply happiness penalty (GDD: -25)
             var leftH = left.GetComponent<CatHappiness>();

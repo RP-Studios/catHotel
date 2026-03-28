@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -21,9 +22,9 @@ namespace CatHotel.UI
 
     /// <summary>
     /// End-of-pension recap panel. Does NOT pause the game.
-    /// Shows cat stats and earnings, animates numbers counting up,
-    /// then auto-collects coins with fly animation + SFX.
-    /// Panel stays open 15s for optional x2 rewarded ad, then auto-closes.
+    /// Shows cat stats, animates numbers, auto-collects coins immediately,
+    /// then offers 15s window for x2 rewarded ad.
+    /// Queues multiple pension ends so they play one after another.
     /// </summary>
     public class EndPensionPanel : MonoBehaviour
     {
@@ -33,7 +34,7 @@ namespace CatHotel.UI
         private Tween _slideTween;
         private bool _isOpen;
         private bool _initialized;
-        private bool _collected; // coins already collected (prevent double)
+        private bool _collected;
 
         // UI elements
         private Image _catImage;
@@ -51,17 +52,23 @@ namespace CatHotel.UI
         private Sprite _coinSprite;
         private Canvas _overlayCanvas;
 
+        // Current session
         private Action<int> _onCollect;
         private PensionEndData _data;
+        private int _bonusCoins; // extra coins from x2 ad (same amount again)
         private Coroutine _animCoroutine;
         private Coroutine _autoCloseCoroutine;
 
-        // Auto-close delay for x2 opportunity
+        // Queue for multiple pension ends
+        private readonly Queue<(PensionEndData data, Action<int> onCollect)> _pendingQueue = new();
+
         private const float DoubleWindowDuration = 15f;
 
         // SFX
         [SerializeField] private AudioClip _collectSfx;
         private AudioSource _sfxSource;
+
+        public bool IsOpen => _isOpen;
 
         private void Start()
         {
@@ -84,7 +91,6 @@ namespace CatHotel.UI
 
             _panel = _panelObj.GetComponent<RectTransform>();
 
-            // Ensure raycastable background
             var panelImg = _panelObj.GetComponent<Image>();
             if (panelImg == null)
             {
@@ -93,7 +99,6 @@ namespace CatHotel.UI
             }
             panelImg.raycastTarget = true;
 
-            // Find UI elements while panel might still be inactive
             _catImage = FindImage(_panelObj, "CatImage");
             _catName = FindTMP(_panelObj, "CatName");
             _happinessRecap = FindTMP(_panelObj, "HapinessRecapValue");
@@ -107,7 +112,6 @@ namespace CatHotel.UI
             AddJuice(_byeRect);
             AddJuice(_doubleRect);
 
-            // Coin fly target + sprite
             var coinTargetObj = GameObject.Find("CatCoinsImage");
             if (coinTargetObj != null)
             {
@@ -116,7 +120,6 @@ namespace CatHotel.UI
                 if (coinImg != null) _coinSprite = coinImg.sprite;
             }
 
-            // Overlay canvas for coin fly
             foreach (var c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             {
                 if (c.renderMode == RenderMode.ScreenSpaceOverlay)
@@ -126,7 +129,6 @@ namespace CatHotel.UI
                 }
             }
 
-            // Keep panel inactive until Show()
             _panelObj.SetActive(false);
             _initialized = true;
         }
@@ -139,7 +141,6 @@ namespace CatHotel.UI
             if (pointer == null || !pointer.press.wasPressedThisFrame) return;
             Vector2 screenPos = pointer.position.ReadValue();
 
-            // Bye button → close panel
             if (_byeRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_byeRect, screenPos, null))
             {
@@ -147,7 +148,6 @@ namespace CatHotel.UI
                 return;
             }
 
-            // Double gains via rewarded ad
             if (_doubleRect != null && _doubleRect.gameObject.activeSelf &&
                 RectTransformUtility.RectangleContainsScreenPoint(_doubleRect, screenPos, null))
             {
@@ -160,11 +160,23 @@ namespace CatHotel.UI
             CacheReferences();
             if (_panel == null) return;
 
+            // If already showing a panel, queue this one
+            if (_isOpen)
+            {
+                _pendingQueue.Enqueue((data, onCollect));
+                return;
+            }
+
+            ShowInternal(data, onCollect);
+        }
+
+        private void ShowInternal(PensionEndData data, Action<int> onCollect)
+        {
             _data = data;
             _onCollect = onCollect;
             _collected = false;
+            _bonusCoins = 0;
 
-            // Activate and position offscreen
             _panelObj.SetActive(true);
             Canvas.ForceUpdateCanvases();
             _panelWidth = _panel.rect.width;
@@ -174,28 +186,22 @@ namespace CatHotel.UI
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
 
-            // Set cat image
             if (_catImage != null && data.CatSprite != null)
                 _catImage.sprite = data.CatSprite;
-
             if (_catName != null)
                 _catName.text = data.CatName;
 
-            // Reset values to 0
             if (_happinessRecap != null) _happinessRecap.text = "0%";
             if (_baseValue != null) _baseValue.text = "0";
             if (_tipValue != null) _tipValue.text = "0";
             if (_totalValue != null) _totalValue.text = "0";
 
-            // Set bye label
             if (_byeLabel != null)
                 _byeLabel.text = $"Au revoir {data.CatName} !";
 
-            // Re-enable double button
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(true);
 
-            // Slide in, then animate numbers
             _isOpen = true;
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
@@ -223,30 +229,49 @@ namespace CatHotel.UI
                 _autoCloseCoroutine = null;
             }
 
+            // If coins weren't collected yet (e.g. early close), collect now
+            if (!_collected)
+            {
+                _collected = true;
+                _onCollect?.Invoke(_data.TotalCoins);
+                _onCollect = null;
+            }
+
+            // Add bonus coins from x2 ad if any
+            if (_bonusCoins > 0)
+            {
+                _onCollect = null; // already invoked
+            }
+
             _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
                 .SetEase(Ease.InCubic)
                 .OnComplete(() =>
                 {
                     _panelObj.SetActive(false);
-                    var cb = _onCollect;
                     _onCollect = null;
-                    cb?.Invoke(_data.TotalCoins);
+                    ShowNextInQueue();
                 });
+        }
+
+        private void ShowNextInQueue()
+        {
+            if (_pendingQueue.Count > 0)
+            {
+                var (data, cb) = _pendingQueue.Dequeue();
+                ShowInternal(data, cb);
+            }
         }
 
         private IEnumerator AnimateNumbersThenCollect()
         {
-            // Animate happiness
             yield return StartCoroutine(AnimateValue(
                 _happinessRecap, 0f, _data.AvgHappiness, 0.6f, v => $"{v:0}%"));
 
             yield return new WaitForSeconds(0.15f);
 
-            // Animate base coins
             yield return StartCoroutine(AnimateValue(
                 _baseValue, 0f, _data.BaseCoins, 0.5f, v => $"{v:0}"));
 
-            // Animate tip
             if (_data.TipCoins > 0)
             {
                 yield return new WaitForSeconds(0.1f);
@@ -260,11 +285,9 @@ namespace CatHotel.UI
 
             yield return new WaitForSeconds(0.15f);
 
-            // Animate total
             yield return StartCoroutine(AnimateValue(
                 _totalValue, 0f, _data.TotalCoins, 0.6f, v => $"{v:0}"));
 
-            // Punch total
             if (_totalValue != null)
             {
                 var rt = _totalValue.GetComponent<RectTransform>();
@@ -274,7 +297,6 @@ namespace CatHotel.UI
 
             _animCoroutine = null;
 
-            // Auto-collect immediately after total animation
             yield return new WaitForSeconds(0.3f);
             AutoCollect();
         }
@@ -284,11 +306,15 @@ namespace CatHotel.UI
             if (_collected) return;
             _collected = true;
 
+            // Add coins immediately
+            _onCollect?.Invoke(_data.TotalCoins);
+            _onCollect = null;
+
             // SFX
             if (_sfxSource != null && _collectSfx != null)
                 _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
 
-            // Coin fly animation from total value position
+            // Coin fly animation
             int coinCount = Mathf.Clamp(_data.TotalCoins / 10, 3, 8);
             StartCoroutine(CoinFlyFromTotal(coinCount));
 
@@ -340,11 +366,14 @@ namespace CatHotel.UI
         private void OnPensionAdSuccess()
         {
             UnsubPensionAd();
-            _data.TotalCoins *= 2;
+
+            // Bonus = same amount as original total (not double — total was already collected)
+            _bonusCoins = _data.TotalCoins;
+            int newTotal = _data.TotalCoins + _bonusCoins;
 
             if (_totalValue != null)
             {
-                _totalValue.text = $"{_data.TotalCoins}";
+                _totalValue.text = $"{newTotal}";
                 var rt = _totalValue.GetComponent<RectTransform>();
                 if (rt != null)
                 {
@@ -358,16 +387,22 @@ namespace CatHotel.UI
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(false);
 
-            // Play SFX + extra coin fly for the bonus
+            // Add bonus coins immediately
+            // Use _economy via the same callback pattern — find EconomyManager
+            var economy = GetComponent<CatHotel.Economy.EconomyManager>();
+            if (economy != null)
+                economy.AddCoins(_bonusCoins);
+
+            // SFX + coin fly for the bonus
             if (_sfxSource != null && _collectSfx != null)
                 _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
 
-            int bonusCoins = Mathf.Clamp(_data.TotalCoins / 20, 2, 6);
-            StartCoroutine(CoinFlyFromTotal(bonusCoins));
+            int flyCoinCount = Mathf.Clamp(_bonusCoins / 10, 2, 6);
+            StartCoroutine(CoinFlyFromTotal(flyCoinCount));
 
-            Debug.Log($"[Pension] Gains doubled to {_data.TotalCoins}");
+            Debug.Log($"[Pension] x2 bonus: +{_bonusCoins} coins (total shown: {newTotal})");
 
-            // Close shortly after double
+            // Reset auto-close timer
             if (_autoCloseCoroutine != null) StopCoroutine(_autoCloseCoroutine);
             _autoCloseCoroutine = StartCoroutine(AutoCloseAfterDelay());
         }
@@ -388,7 +423,6 @@ namespace CatHotel.UI
 
         private IEnumerator CoinFlyFromTotal(int count)
         {
-            // Use totalValue position as source (or panel center as fallback)
             RectTransform srcRect = _totalValue != null
                 ? _totalValue.GetComponent<RectTransform>()
                 : _panel;

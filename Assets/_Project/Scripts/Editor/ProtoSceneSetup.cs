@@ -1553,6 +1553,9 @@ namespace CatHotel.Editor
             // --- Create GameConfig SO asset ---
             var gameConfig = CreateOrLoadAsset<GameConfig>("Assets/_Project/Data/GameConfig.asset");
 
+            // --- Create CatPersonalityConfig SO asset ---
+            var personalityConfig = CreateOrLoadAsset<CatPersonalityConfig>("Assets/_Project/Data/CatPersonalityConfig.asset");
+
             // --- AppLifecycleManager (frame rate, pause, accelerometer) ---
             if (mgrObj.GetComponent<CatHotel.Core.AppLifecycleManager>() == null)
                 mgrObj.AddComponent<CatHotel.Core.AppLifecycleManager>();
@@ -1578,6 +1581,7 @@ namespace CatHotel.Editor
 
             var soHotel = new SerializedObject(hotelMgr);
             soHotel.FindProperty("_config").objectReferenceValue = gameConfig;
+            soHotel.FindProperty("_personalityConfig").objectReferenceValue = personalityConfig;
             soHotel.FindProperty("_gridRenderer").objectReferenceValue = renderer;
             soHotel.FindProperty("_economy").objectReferenceValue = economyMgr;
             soHotel.FindProperty("_reputation").objectReferenceValue = repMgr;

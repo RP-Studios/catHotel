@@ -19,6 +19,7 @@ namespace CatHotel.Hotel
     {
         [Header("Config")]
         [SerializeField] private GameConfig _config;
+        [SerializeField] private CatPersonalityConfig _personalityConfig;
         [SerializeField] private CatBreedData[] _availableBreeds;
 
         [Header("References")]
@@ -244,6 +245,48 @@ namespace CatHotel.Hotel
             float pensionDuration = mode == CatMode.Pension
                 ? UnityEngine.Random.Range(60f, 300f) : 0f;
 
+            // Generate personality description + gameplay modifiers
+            string description = "";
+            var traitMods = CatTraitModifiers.Default;
+            if (_personalityConfig != null)
+            {
+                var (desc, mods) = _personalityConfig.GeneratePersonality(breed, catName.GetHashCode());
+                description = desc;
+                traitMods = mods;
+            }
+
+            // Apply trait modifiers to gameplay systems
+            needs.SetTraitModifiers(traitMods);
+            happiness.SetTraitModifiers(traitMods);
+            entity.SetTraitModifiers(traitMods);
+
+            // Generate breed affinities (deterministic)
+            var affinityRng = new System.Random(catName.GetHashCode() + 7919);
+            CatBreedData likedBreed = null;
+            CatBreedData dislikedBreed = null;
+            if (_availableBreeds.Length > 1)
+            {
+                // Build list of other breeds
+                var otherBreeds = new System.Collections.Generic.List<CatBreedData>();
+                foreach (var b in _availableBreeds)
+                    if (b.breedName != breed.breedName) otherBreeds.Add(b);
+
+                if (otherBreeds.Count > 0 && affinityRng.NextDouble() < _config.likedBreedChance)
+                {
+                    likedBreed = otherBreeds[affinityRng.Next(otherBreeds.Count)];
+                }
+
+                if (otherBreeds.Count > 0 && affinityRng.NextDouble() < _config.dislikedBreedChance)
+                {
+                    // Pick a breed different from the liked one
+                    var dislikeCandidates = new System.Collections.Generic.List<CatBreedData>();
+                    foreach (var b in otherBreeds)
+                        if (likedBreed == null || b.breedName != likedBreed.breedName) dislikeCandidates.Add(b);
+                    if (dislikeCandidates.Count > 0)
+                        dislikedBreed = dislikeCandidates[affinityRng.Next(dislikeCandidates.Count)];
+                }
+            }
+
             var instance = new CatInstance
             {
                 Entity = entity,
@@ -253,10 +296,21 @@ namespace CatHotel.Hotel
                 Mode = mode,
                 IsSpecial = isSpecial,
                 CatName = catName,
+                Description = description,
+                TraitModifiers = traitMods,
+                LikedBreed = likedBreed,
+                DislikedBreed = dislikedBreed,
                 State = CatState.Arriving,
                 PensionTimeRemaining = pensionDuration,
                 PensionDuration = pensionDuration
             };
+
+            // Breed affinity system
+            if (likedBreed != null || dislikedBreed != null)
+            {
+                var affinity = go.AddComponent<CatAffinity>();
+                affinity.Init(likedBreed, dislikedBreed, happiness, entity, _catSpawner, _config);
+            }
 
             // Generate a floating coin each time this cat finishes using a service
             entity.OnServiceUsed += () => OnCatServiceUsed(instance);
@@ -467,6 +521,12 @@ namespace CatHotel.Hotel
         public CatState State;
         public bool IsSpecial;
         public string CatName;
+        public string Description;
+        public CatTraitModifiers TraitModifiers;
+
+        // Breed affinities
+        public CatBreedData LikedBreed;   // nullable — breed this cat likes
+        public CatBreedData DislikedBreed; // nullable — breed this cat dislikes
 
         // Pension tracking
         public float PensionDuration;

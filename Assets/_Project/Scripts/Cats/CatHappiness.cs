@@ -12,6 +12,7 @@ namespace CatHotel.Cats
     {
         private CatNeeds _needs;
         private GameConfig _config;
+        private CatTraitModifiers _traitMods = CatTraitModifiers.Default;
 
         private float _happiness = 100f;
         private float _fightPenalty;
@@ -19,6 +20,7 @@ namespace CatHotel.Cats
         private float _petBonusTimer;
         private float _comfort = 50f;
         private int _unsatisfiedCaprices;
+        private float _affinityOffset; // accumulated from proximity to liked/disliked breeds
 
         // Tracks time spent below leave threshold
         private float _unhappyTimer;
@@ -43,16 +45,29 @@ namespace CatHotel.Cats
 
         public void SetComfort(float comfort) => _comfort = comfort;
         public void SetUnsatisfiedCaprices(int count) => _unsatisfiedCaprices = count;
+        public void SetTraitModifiers(CatTraitModifiers mods) => _traitMods = mods;
 
         public void ApplyFightPenalty()
         {
-            _fightPenalty += _config.fightPenalty;
+            _fightPenalty += _config.fightPenalty * _traitMods.FightPenaltyMult;
         }
 
         public void ApplyPetBonus()
         {
-            _petBonus = _config.petHappinessBoost;
+            _petBonus = _config.petHappinessBoost * _traitMods.PetBonusMult;
             _petBonusTimer = _config.petCooldown;
+        }
+
+        /// <summary>Passive happiness bonus from being near a liked breed.</summary>
+        public void ApplyAffinityBonus(float amount)
+        {
+            _affinityOffset += amount;
+        }
+
+        /// <summary>Passive happiness penalty from being near a disliked breed.</summary>
+        public void ApplyAffinityPenalty(float amount)
+        {
+            _affinityOffset -= amount;
         }
 
         private void Update()
@@ -73,17 +88,24 @@ namespace CatHotel.Cats
                     _petBonus = 0f;
             }
 
-            // Decay fight penalty over time (recover 5/s)
+            // Decay fight penalty over time (recover 5/s × trait recovery mult)
             if (_fightPenalty > 0f)
-                _fightPenalty = Mathf.Max(0f, _fightPenalty - 5f * dt);
+                _fightPenalty = Mathf.Max(0f, _fightPenalty - 5f * _traitMods.FightRecoveryMult * dt);
 
-            // GDD formula
+            // Decay affinity offset toward 0 (fades when no longer near liked/disliked)
+            if (_affinityOffset > 0f)
+                _affinityOffset = Mathf.Max(0f, _affinityOffset - 1f * dt);
+            else if (_affinityOffset < 0f)
+                _affinityOffset = Mathf.Min(0f, _affinityOffset + 1f * dt);
+
+            // GDD formula + personality + affinity
             float needsAvg = _needs.Average;
             float capriceMultiplier = 1f - 0.2f * _unsatisfiedCaprices;
             float comfortBonus = (_comfort - _config.comfortNeutral) * _config.comfortHappinessScale;
 
             _happiness = Mathf.Clamp(
-                needsAvg * capriceMultiplier - _fightPenalty + comfortBonus + _petBonus,
+                needsAvg * capriceMultiplier - _fightPenalty + comfortBonus + _petBonus
+                + _traitMods.HappinessOffset + _affinityOffset,
                 0f, 100f);
 
             // Track time below leave threshold

@@ -39,8 +39,10 @@ namespace CatHotel.UI
         private TMP_Text _catSpecies;
         private TMP_Text _timeRemaining;
 
-        // Age
+        // Age, Description & Affinities
         private TMP_Text _catAge;
+        private TMP_Text _catDesc;
+        private TMP_Text _catSpeciesSpec;
 
         // Need bars (image Right offset: 150 = 0%, 0 = 100%)
         private RectTransform _happinessBar;
@@ -131,8 +133,10 @@ namespace CatHotel.UI
             var remainingT = FindInChildren(_panelObj.transform, "RemaingTimePension");
             if (remainingT != null) _remainingTimePensionObj = remainingT.gameObject;
 
-            // Age
+            // Age, Description & Affinities
             _catAge = FindText(_panelObj, "CatAgeValue");
+            _catDesc = FindText(_panelObj, "CatDescValue");
+            _catSpeciesSpec = FindText(_panelObj, "CatSpeciesSpecValue");
 
             // Need bars + values
             _happinessBar = FindBar(_panelObj, "HapinessImageValue");
@@ -189,6 +193,16 @@ namespace CatHotel.UI
             if (_catName != null) _catName.text = cat.CatName;
             if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
             if (_catAge != null) _catAge.text = cat.Breed.size < 1f ? "Chaton" : "Chat adulte";
+            if (_catDesc != null) _catDesc.text = cat.Description ?? "";
+            if (_catSpeciesSpec != null)
+            {
+                var parts = new System.Collections.Generic.List<string>();
+                if (cat.LikedBreed != null)
+                    parts.Add($"Aime les {cat.LikedBreed.breedName}");
+                if (cat.DislikedBreed != null)
+                    parts.Add($"Déteste les {cat.DislikedBreed.breedName}");
+                _catSpeciesSpec.text = parts.Count > 0 ? string.Join("\n", parts) : "";
+            }
             if (_catPortrait != null && cat.Breed.frontSprite != null)
                 _catPortrait.sprite = cat.Breed.frontSprite;
 

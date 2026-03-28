@@ -81,6 +81,24 @@ namespace CatHotel.Core
         public int startingGems;
         public int roomCostPerCell = 10;
 
+        [Header("Breed Affinities")]
+        [Tooltip("Chance (0-1) of liking a breed")]
+        [Range(0f, 1f)] public float likedBreedChance = 0.6f;
+        [Tooltip("Chance (0-1) of disliking a breed")]
+        [Range(0f, 1f)] public float dislikedBreedChance = 0.4f;
+        [Tooltip("Proximity radius in grid cells to detect liked/disliked breeds")]
+        public float affinityCheckRadius = 3f;
+        [Tooltip("Seconds between affinity proximity checks")]
+        public float affinityCheckInterval = 1f;
+        [Tooltip("Happiness bonus per second when near a liked breed")]
+        public float likedHappinessBonus = 2f;
+        [Tooltip("Happiness penalty per second when near a disliked breed")]
+        public float dislikedHappinessPenalty = 3f;
+        [Tooltip("Chance (0-1) per check of following a liked cat when both idle")]
+        [Range(0f, 1f)] public float followLikedChance = 0.3f;
+        [Tooltip("Chance (0-1) per check of becoming angry near disliked breed")]
+        [Range(0f, 1f)] public float angerOnDislikeChance = 0.15f;
+
         [Header("Comfort")]
         public float comfortNeutral = 50f;
         public float comfortHappinessScale = 0.2f;

@@ -1,0 +1,407 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e81b9ad7924674d4db58f0aef58482cd, type: 3}
+  m_Name: CatPersonalityConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Core.CatPersonalityConfig
+  traitHunger: Gourmand
+  traitThirst: "Assoiff\xE9"
+  traitSleep: Dormeur
+  traitPlay: Joueur
+  traitClean: Maniaque
+  traitAggressive: Bagarreur
+  traitBig: Imposant
+  traitSmall: Petit gabarit
+  traitFast: Rapide
+  traitSlow: Nonchalant
+  bigSizeThreshold: 1.1
+  smallSizeThreshold: 0.95
+  fastSpeedThreshold: 1.1
+  slowSpeedThreshold: 0.85
+  dominantTraitThreshold: 1.2
+  personalityChance: 0.5
+  personalityPool:
+  - traitName: "C\xE2lin"
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1.4
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: "Ind\xE9pendant"
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 0.6
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Curieux
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1.15
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Craintif
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1.5
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Affectueux
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1.5
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 2
+  - traitName: Observateur
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Discret
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Pot de colle
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1.6
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Aventurier
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1.2
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Territorial
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 0.7
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Sociable
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 3
+  - traitName: Solitaire
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: -2
+  - traitName: Malin
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Paresseux
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1.3
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 0.8
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: "Fid\xE8le"
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 2
+  - traitName: Capricieux
+    hungerDecayMult: 1.15
+    thirstDecayMult: 1.15
+    sleepDecayMult: 1.15
+    playDecayMult: 1.15
+    cleanDecayMult: 1.15
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  quirkyChance: 0.33
+  quirkyPool:
+  - traitName: Rancunier
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 0.4
+    happinessOffset: 0
+  - traitName: Susceptible
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1.4
+    fightRecoveryMult: 1
+    happinessOffset: -2
+  - traitName: Idiot
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 0.9
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Gros mangeur
+    hungerDecayMult: 1.4
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Soiffard
+    hungerDecayMult: 1
+    thirstDecayMult: 1.4
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Voleur de croquettes
+    hungerDecayMult: 0.7
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Ronfleur
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 0.8
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: "Peureux des liti\xE8res"
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1.3
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Jaloux
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1.3
+    fightRecoveryMult: 1
+    happinessOffset: -3
+  - traitName: Frimeur
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1.3
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Drama queen
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1.4
+    fightPenaltyMult: 1.5
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Collectionneur de poils
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Grognon
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: -5
+  - traitName: Maladroit
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Hypocondriaque
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1.4
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: "Roi du canap\xE9"
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1.3
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 0.85
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
+  - traitName: Snob
+    hungerDecayMult: 1
+    thirstDecayMult: 1
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 0.7
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: -3
+  - traitName: Chapardeur
+    hungerDecayMult: 0.8
+    thirstDecayMult: 0.8
+    sleepDecayMult: 1
+    playDecayMult: 1
+    cleanDecayMult: 1
+    speedMult: 1
+    petBonusMult: 1
+    fightPenaltyMult: 1
+    fightRecoveryMult: 1
+    happinessOffset: 0
