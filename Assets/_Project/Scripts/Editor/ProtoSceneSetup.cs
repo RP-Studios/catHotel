@@ -88,12 +88,6 @@ namespace CatHotel.Editor
             ("Coin_Collect_all.png", "coin_collect_all", "CoinCollectAll", 24, 24f),
         };
 
-        private const string AquariumAnimRoot = "Assets/_Project/Art/Objects/Deco";
-        private const string AquariumControllerPath = AquariumAnimRoot + "/Aquarium.controller";
-
-        private static readonly (string file, string prefix, string state, int frames, float fps)[] AquariumAnimConfigs =
-            System.Array.Empty<(string, string, string, int, float)>();
-
         private const string CarpetCosmicAnimRoot = "Assets/_Project/Art/Objects/Carpets";
         private const string CarpetCosmicControllerPath = CarpetCosmicAnimRoot + "/CarpetCosmic.controller";
 
@@ -1081,7 +1075,6 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
             ProcessAnimConfigs(PettingRoot, HandPetAnimConfigs);
             ProcessAnimConfigs(CoinSpinRoot, CoinSpinAnimConfigs);
-            ProcessAnimConfigs(AquariumAnimRoot, AquariumAnimConfigs);
             ProcessAnimConfigs(CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
             AssetDatabase.Refresh();
 
@@ -1101,14 +1094,13 @@ namespace CatHotel.Editor
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
             var coinSpinController = CreateAnimController(CoinSpinControllerPath, CoinSpinRoot, CoinSpinAnimConfigs);
-            CreateAnimController(AquariumControllerPath, AquariumAnimRoot, AquariumAnimConfigs);
             CreateAnimController(CarpetCosmicControllerPath, CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
             BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, ragdollController, sibBlackController, sibWhiteController, chartrController, cleoController, aristoteController, napoleonController, orionController, cloudController, handPetController, coinSpinController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
                       + SiamoisAnimConfigs.Length + RagdollAnimConfigs.Length
                       + SibBlackAnimConfigs.Length + SibWhiteAnimConfigs.Length
                       + ChartrAnimConfigs.Length + NapoleonAnimConfigs.Length + OrionAnimConfigs.Length
-                      + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
+                      + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -1340,7 +1332,7 @@ namespace CatHotel.Editor
             importer.spriteImportMode = SpriteImportMode.Multiple;
             importer.spritePixelsPerUnit = 200;
             importer.filterMode = FilterMode.Bilinear;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.textureCompression = TextureImporterCompression.Compressed;
 
             importer.GetSourceTextureWidthAndHeight(out int texW, out int texH);
 
@@ -1502,7 +1494,7 @@ namespace CatHotel.Editor
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = ppu;
             importer.filterMode = filter;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.textureCompression = TextureImporterCompression.Compressed;
 
             if (customPivot.HasValue)
             {
@@ -2216,36 +2208,11 @@ namespace CatHotel.Editor
                 spritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01.png", size: new Vector2Int(2, 1), wallMount: true,
                 selectedSpritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01_SELEC.png");
 
-            // --- Decorations: Aquarium (animated via SpriteFrameAnimator) ---
-            // Slice spritesheet_aquarium.png into 40 frames
-            string aqSheetPath = $"{ObjectsRoot}/Deco/spritesheet_aquarium.png";
-            SliceSpritesheet(aqSheetPath, 40, "aquarium");
-
-            var aqAsset = CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
+            // --- Decorations: Aquarium (static sprite only — spritesheet removed) ---
+            CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
                 ObjectCategory.Decoration, 200, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/Aquarium.png", size: Vector2Int.one,
                 visualScale: 2f, requiresTable: true);
-
-            // Load sliced sub-sprites and wire to animFrames
-            var aqAllAssets = AssetDatabase.LoadAllAssetsAtPath(aqSheetPath);
-            var aqFrames = new System.Collections.Generic.List<Sprite>();
-            foreach (var obj in aqAllAssets)
-                if (obj is Sprite s && s.name != "spritesheet_aquarium") aqFrames.Add(s);
-            aqFrames.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
-            if (aqFrames.Count > 0 && aqAsset != null)
-            {
-                var soAq = new SerializedObject(aqAsset);
-                var framesProp = soAq.FindProperty("animFrames");
-                framesProp.arraySize = aqFrames.Count;
-                for (int i = 0; i < aqFrames.Count; i++)
-                    framesProp.GetArrayElementAtIndex(i).objectReferenceValue = aqFrames[i];
-                soAq.FindProperty("animFps").floatValue = 12f;
-                soAq.ApplyModifiedProperties();
-            }
-            else
-            {
-                Debug.LogWarning($"[Setup] Aquarium: found {aqFrames.Count} sub-sprites in {aqSheetPath}");
-            }
 
             // --- Carpets ---
             CreateObjectAsset($"{D}/Obj_CarpetConfort.asset", "Tapis Confort",
