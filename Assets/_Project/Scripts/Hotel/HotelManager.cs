@@ -189,8 +189,11 @@ namespace CatHotel.Hotel
             // Pick entrance
             var entrance = entrances[UnityEngine.Random.Range(0, entrances.Count)];
 
-            // Special variants disabled for J1
-            bool isSpecial = false;
+            // Roll for special variant
+            bool isSpecial = breed.hasSpecialVariant
+                && breed.specialController != null
+                && UnityEngine.Random.value < breed.specialChance
+                && !HasSpecialOfBreed(breed);
 
             // Create the cat GameObject
             var go = new GameObject($"Cat_{_cats.Count}_{breed.breedName}");
@@ -335,6 +338,15 @@ namespace CatHotel.Hotel
 
         // Reusable buffer to avoid allocation per spawn
         private readonly List<CatBreedData> _unlockedBuffer = new();
+
+        /// <summary>GDD: only one special cat per breed at a time.</summary>
+        private bool HasSpecialOfBreed(CatBreedData breed)
+        {
+            foreach (var cat in _cats)
+                if (cat.IsSpecial && cat.Breed == breed)
+                    return true;
+            return false;
+        }
 
         private CatBreedData PickRandomBreed()
         {

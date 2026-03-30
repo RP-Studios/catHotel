@@ -7,7 +7,10 @@ namespace CatHotel.UI
 {
     /// <summary>
     /// Manages the "ParametersPanel" overlay.
-    /// Opens from OptionsPanel > ParamsOption, slides in from the right.
+    /// Music and Effects volumes are independent:
+    ///   - Music slider controls MusicVolume (applied to any AudioSource tagged as music)
+    ///   - Effects slider controls EffectsVolume (used by SFX PlayOneShot calls)
+    ///   - AudioListener.volume stays at 1.0 always
     /// </summary>
     public class ParametersPanel : MonoBehaviour
     {
@@ -50,6 +53,21 @@ namespace CatHotel.UI
 
         public bool IsOpen => _isOpen;
         public System.Action OnClosed;
+
+        // --- Static volumes ---
+        private static float _musicVolume = 1f;
+        private static float _effectsVolume = 1f;
+
+        /// <summary>Current music volume (0-1). Apply to music AudioSources.</summary>
+        public static float MusicVolume => _musicVolume;
+
+        /// <summary>Current effects volume (0-1). Use this to scale SFX.</summary>
+        public static float EffectsVolume => _effectsVolume;
+
+        /// <summary>
+        /// Event fired when music volume changes. Music players should subscribe.
+        /// </summary>
+        public static event System.Action<float> OnMusicVolumeChanged;
 
         private void Start()
         {
@@ -108,6 +126,9 @@ namespace CatHotel.UI
             var effectsBarT = FindInChildren(_panelObj.transform, "EffectsImageValue");
             if (effectsBarT != null) _effectsImageValue = effectsBarT.GetComponent<RectTransform>();
 
+            // Ensure AudioListener.volume is always 1 (never touch it)
+            AudioListener.volume = 1f;
+
             // Restore saved state
             RestorePrefs();
         }
@@ -129,7 +150,7 @@ namespace CatHotel.UI
                     _isDraggingMusic = true;
 
                 if (_isDraggingMusic && pointer.press.isPressed)
-                    UpdateSliderDrag(screenPos, _musicControl, _musicImageValue, vol => AudioListener.volume = vol);
+                    UpdateSliderDrag(screenPos, _musicControl, _musicImageValue, SetMusicVolume);
 
                 if (_isDraggingMusic && pointer.press.wasReleasedThisFrame)
                 {
@@ -182,6 +203,12 @@ namespace CatHotel.UI
             }
         }
 
+        private static void SetMusicVolume(float vol)
+        {
+            _musicVolume = vol;
+            OnMusicVolumeChanged?.Invoke(vol);
+        }
+
         private void TogglePush()
         {
             if (_pushToggleOn == null || _pushToggleOff == null) return;
@@ -201,11 +228,6 @@ namespace CatHotel.UI
             PlayerPrefs.SetInt(PrefBattery, wasOn ? 0 : 1);
             PlayerPrefs.Save();
         }
-
-        private static float _effectsVolume = 1f;
-
-        /// <summary>Current effects volume (0-1). Use this to scale SFX.</summary>
-        public static float EffectsVolume => _effectsVolume;
 
         private void UpdateSliderDrag(Vector2 screenPos, RectTransform control,
             RectTransform bar, System.Action<float> applyVolume)
@@ -272,7 +294,7 @@ namespace CatHotel.UI
 
             // Music volume (default: 1.0)
             float musicVol = PlayerPrefs.GetFloat(PrefMusic, 1f);
-            AudioListener.volume = musicVol;
+            SetMusicVolume(musicVol);
             RestoreSlider(_musicControl, _musicImageValue, musicVol);
 
             // Effects volume (default: 1.0)

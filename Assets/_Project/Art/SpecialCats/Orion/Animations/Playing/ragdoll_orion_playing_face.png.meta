@@ -123,7 +123,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -144,10 +144,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 16384
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -185,551 +185,507 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_0
+      name: ori_playing_face_0
       rect:
         serializedVersion: 2
-        x: 163
-        y: 58
-        width: 184
-        height: 363
+        x: 0
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 5416562e2141b4de0800000000000000
-      internalID: -1347961592127069883
+      spriteID: e77cf1fd955b2fc4580b4f0e390c3593
+      internalID: -270208211
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_1
+      name: ori_playing_face_1
       rect:
         serializedVersion: 2
-        x: 676
-        y: 58
-        width: 182
-        height: 360
+        x: 512
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2b6eba38f53fd8250800000000000000
-      internalID: 5948678274382816946
+      spriteID: b97a49ca3c518d54fbb773e07ac74652
+      internalID: -1651949552
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_2
+      name: ori_playing_face_2
       rect:
         serializedVersion: 2
-        x: 1188
-        y: 58
-        width: 182
-        height: 359
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 72c1b08b7f1b11470800000000000000
-      internalID: 8363661660506496039
+      spriteID: 9553ec14ddce4474cb1d92f76b2f8ab3
+      internalID: -54934590
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_3
+      name: ori_playing_face_3
       rect:
         serializedVersion: 2
-        x: 1701
-        y: 58
-        width: 182
-        height: 360
+        x: 1536
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 26997483eba68b2b0800000000000000
-      internalID: -5568583574023071390
+      spriteID: c520053c937af3e4c8e8ff134b71b52c
+      internalID: 1416974541
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_4
+      name: ori_playing_face_4
       rect:
         serializedVersion: 2
-        x: 2213
-        y: 58
-        width: 182
-        height: 377
+        x: 2048
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: cc053a9513c2630a0800000000000000
-      internalID: -6902280788429811508
+      spriteID: 9957527ca24662145b4b99bf34cd4466
+      internalID: -1996695843
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_5
+      name: ori_playing_face_5
       rect:
         serializedVersion: 2
-        x: 2725
-        y: 58
-        width: 182
-        height: 365
+        x: 2560
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9421033a53b1c59c0800000000000000
-      internalID: -3937242057043602871
+      spriteID: 1f397f68d994325439de7ea9e991be9f
+      internalID: -501523575
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_6
+      name: ori_playing_face_6
       rect:
         serializedVersion: 2
-        x: 3237
-        y: 58
-        width: 182
-        height: 365
+        x: 3072
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 720ff80db94e2ed30800000000000000
-      internalID: 4459377938920370215
+      spriteID: 87948bb1b2dac0e4e80ba146707fbe62
+      internalID: -43301566
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_7
+      name: ori_playing_face_7
       rect:
         serializedVersion: 2
-        x: 3747
-        y: 58
-        width: 184
-        height: 353
+        x: 3584
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ac5e19d18da491d80800000000000000
-      internalID: -8279504147874454070
+      spriteID: ca2f03a1b49da0440b6621f7dfc5d5b0
+      internalID: -1011660030
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_8
+      name: ori_playing_face_8
       rect:
         serializedVersion: 2
-        x: 4259
-        y: 58
-        width: 184
-        height: 363
+        x: 4096
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: cef73d348d2060c30800000000000000
-      internalID: 4325147620010065900
+      spriteID: 8e20488e2e11e584c83ce1802496e653
+      internalID: 471424660
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_9
+      name: ori_playing_face_9
       rect:
         serializedVersion: 2
-        x: 4771
-        y: 58
-        width: 183
-        height: 360
+        x: 4608
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: aa8d77fdbfe5336d0800000000000000
-      internalID: -3011959289901754198
+      spriteID: fdea907e893fc2448a2568d2ed3e6ef6
+      internalID: 586240997
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_10
+      name: ori_playing_face_10
       rect:
         serializedVersion: 2
-        x: 5283
-        y: 58
-        width: 183
-        height: 359
+        x: 5120
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b750d6aef663e1040800000000000000
-      internalID: 4620190122030990715
+      spriteID: 09507692c04d578498cb846596d8c3ab
+      internalID: 730669576
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_11
+      name: ori_playing_face_11
       rect:
         serializedVersion: 2
-        x: 5796
-        y: 58
-        width: 182
-        height: 360
+        x: 5632
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c37d9a40bd64dcfa0800000000000000
-      internalID: -5778884840356456644
+      spriteID: ed9f0875769b4bc41b7a4b6a4dfa46e9
+      internalID: -1909531080
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_12
+      name: ori_playing_face_12
       rect:
         serializedVersion: 2
-        x: 6309
-        y: 58
-        width: 182
-        height: 377
+        x: 6144
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c2f7ad346d1ceb9d0800000000000000
-      internalID: -2756552795898609876
+      spriteID: 9d2a15b1cf494dd448f43752c8025acb
+      internalID: -635319903
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_13
+      name: ori_playing_face_13
       rect:
         serializedVersion: 2
-        x: 6821
-        y: 117
-        width: 182
-        height: 306
+        x: 6656
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: eb41d25863ff96d50800000000000000
-      internalID: 6731191727709557950
+      spriteID: 111dd2f75691db74a9d76f2c9917abbd
+      internalID: -282332477
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_14
+      name: ori_playing_face_14
       rect:
         serializedVersion: 2
-        x: 6845
-        y: 58
-        width: 113
-        height: 81
+        x: 7168
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8607dcbd42e9cf5c0800000000000000
-      internalID: -4180292472962977688
+      spriteID: c3dfe73baac4aeb40a5c4afca4b33829
+      internalID: -156826052
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_15
+      name: ori_playing_face_15
       rect:
         serializedVersion: 2
-        x: 7333
-        y: 118
-        width: 182
-        height: 305
+        x: 7680
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d1e0be78398e8fa00800000000000000
-      internalID: 790637454941687325
+      spriteID: 7cf0a9fd3b7055e419437405f398452d
+      internalID: -786860422
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_16
+      name: ori_playing_face_16
       rect:
         serializedVersion: 2
-        x: 7357
-        y: 58
-        width: 113
-        height: 81
+        x: 8192
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2de4ef5c5ed231140800000000000000
-      internalID: 4689142101915356882
+      spriteID: 9c7fe7883e419104cbbc075cac395736
+      internalID: 1314059696
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_17
+      name: ori_playing_face_17
       rect:
         serializedVersion: 2
-        x: 7845
-        y: 58
-        width: 184
-        height: 353
+        x: 8704
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 68852a4f6af4444b0800000000000000
-      internalID: -5457149269978752890
+      spriteID: 2755df946c25b34499801fe09a1e13a8
+      internalID: 816395624
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_18
+      name: ori_playing_face_18
       rect:
         serializedVersion: 2
-        x: 8357
-        y: 58
-        width: 184
-        height: 363
+        x: 9216
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ebc5a6ae5e43d9510800000000000000
-      internalID: 1557459208225053886
+      spriteID: 7d6d68b6512d7eb42bcc606c8fb840a7
+      internalID: -152725700
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_19
+      name: ori_playing_face_19
       rect:
         serializedVersion: 2
-        x: 8870
-        y: 58
-        width: 183
-        height: 360
+        x: 9728
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 159ac03705ea93550800000000000000
-      internalID: 6141131227447208273
+      spriteID: 14e1010645707544c862e0c7ae4d8cc9
+      internalID: -406547617
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_20
+      name: ori_playing_face_20
       rect:
         serializedVersion: 2
-        x: 9382
-        y: 58
-        width: 183
-        height: 359
+        x: 10240
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: d33f3c301f52dd910800000000000000
-      internalID: 1863687537881772861
+      spriteID: 23a1f2a3966e28340a522d9d03419ecc
+      internalID: 863745739
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_21
+      name: ori_playing_face_21
       rect:
         serializedVersion: 2
-        x: 9893
-        y: 58
-        width: 182
-        height: 360
+        x: 10752
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 575e962a9c9487ee0800000000000000
-      internalID: -1263178565115320971
+      spriteID: fbf48b29bbf42fb4983cb68578590bb4
+      internalID: -1054547222
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_playing_face_22
+      name: ori_playing_face_22
       rect:
         serializedVersion: 2
-        x: 10404
-        y: 58
-        width: 182
-        height: 353
+        x: 11264
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8a7125f778519fbe0800000000000000
-      internalID: -1443098533894678616
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_playing_face_23
-      rect:
-        serializedVersion: 2
-        x: 10916
-        y: 58
-        width: 182
-        height: 365
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2d2c37a865b270000800000000000000
-      internalID: 2017975526998738
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_playing_face_24
-      rect:
-        serializedVersion: 2
-        x: 11427
-        y: 58
-        width: 184
-        height: 353
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bd8b0f88c2abaa2a0800000000000000
-      internalID: -6725358393085609765
+      spriteID: c2b59b1afb300684ca057e3dbac69cbf
+      internalID: 1878489636
       vertices: []
       indices: 
       edges: []
@@ -738,7 +694,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: a4459158723e9de4e97b359c06b3f5e4
     internalID: 0
     vertices: []
     indices: 
@@ -748,6 +704,29 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      ori_playing_face_0: -270208211
+      ori_playing_face_1: -1651949552
+      ori_playing_face_10: 730669576
+      ori_playing_face_11: -1909531080
+      ori_playing_face_12: -635319903
+      ori_playing_face_13: -282332477
+      ori_playing_face_14: -156826052
+      ori_playing_face_15: -786860422
+      ori_playing_face_16: 1314059696
+      ori_playing_face_17: 816395624
+      ori_playing_face_18: -152725700
+      ori_playing_face_19: -406547617
+      ori_playing_face_2: -54934590
+      ori_playing_face_20: 863745739
+      ori_playing_face_21: -1054547222
+      ori_playing_face_22: 1878489636
+      ori_playing_face_3: 1416974541
+      ori_playing_face_4: -1996695843
+      ori_playing_face_5: -501523575
+      ori_playing_face_6: -43301566
+      ori_playing_face_7: -1011660030
+      ori_playing_face_8: 471424660
+      ori_playing_face_9: 586240997
       ragdoll_orion_playing_face_0: -1347961592127069883
       ragdoll_orion_playing_face_1: 5948678274382816946
       ragdoll_orion_playing_face_10: 4620190122030990715

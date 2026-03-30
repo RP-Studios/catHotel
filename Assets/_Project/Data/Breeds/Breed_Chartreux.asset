@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19f923d7cb31f4e48b2857ef96bcd268, type: 3}
+  m_Name: Breed_Chartreux
+  m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Core.CatBreedData
+  breedName: Chartreux
+  minReputation: 8
+  isAggressive: 1
+  frontSprite: {fileID: 21300000, guid: 1ba938557516982488363bab41a941d7, type: 3}
+  rightSprite: {fileID: 21300000, guid: 34857742459e6cd4dabafab79e4a8e9f, type: 3}
+  backSprite: {fileID: 21300000, guid: b6228520cb908b643ac266701354bb10, type: 3}
+  controller: {fileID: 9100000, guid: 55e4de966a18c3c4f9cff548f8e9cdb2, type: 2}
+  demandMultiplier: 1.6
+  hungerTrait: 1
+  thirstTrait: 1
+  sleepTrait: 1
+  playTrait: 1
+  cleanTrait: 1
+  size: 1.1
+  speed: 1
+  revenueMultiplier: 1
+  stayDurationRange: {x: 3000, y: 4200}
+  hasSpecialVariant: 1
+  specialName: "Napol\xE9on"
+  specialChance: 0.04
+  specialRevenueMult: 3.2
+  specialDemandMult: 2.3
+  specialFrontSprite: {fileID: 21300000, guid: 90e726efcc3b1104da90838ee1273936, type: 3}
+  specialRightSprite: {fileID: 21300000, guid: e46004a946b6cd24a88c0d0a8fdbb4b3, type: 3}
+  specialBackSprite: {fileID: 21300000, guid: 1a90e423d3aef9445b78992318b8953a, type: 3}
+  specialController: {fileID: 9100000, guid: 1257a1411849dcd4dbc0a369fad9b259, type: 2}

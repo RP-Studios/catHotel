@@ -192,19 +192,40 @@ namespace CatHotel.UI
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
             if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
-            if (_catAge != null) _catAge.text = cat.Breed.size < 1f ? "Chaton" : "Chat adulte";
+            if (_catAge != null) _catAge.text = cat.Breed.size < 1f
+                ? Core.LocalizedStrings.Kitten : Core.LocalizedStrings.AdultCat;
             if (_catDesc != null) _catDesc.text = cat.Description ?? "";
             if (_catSpeciesSpec != null)
             {
                 var parts = new System.Collections.Generic.List<string>();
                 if (cat.LikedBreed != null)
-                    parts.Add($"Aime les {cat.LikedBreed.breedName}");
+                {
+                    string plural = !string.IsNullOrEmpty(cat.LikedBreed.breedNamePlural)
+                        ? cat.LikedBreed.breedNamePlural : cat.LikedBreed.breedName;
+                    parts.Add(string.Format(Core.LocalizedStrings.LikesFormat, plural));
+                }
                 if (cat.DislikedBreed != null)
-                    parts.Add($"Déteste les {cat.DislikedBreed.breedName}");
+                {
+                    string plural = !string.IsNullOrEmpty(cat.DislikedBreed.breedNamePlural)
+                        ? cat.DislikedBreed.breedNamePlural : cat.DislikedBreed.breedName;
+                    parts.Add(string.Format(Core.LocalizedStrings.DislikesFormat, plural));
+                }
                 _catSpeciesSpec.text = parts.Count > 0 ? string.Join("\n", parts) : "";
             }
             if (_catPortrait != null && cat.Breed.frontSprite != null)
-                _catPortrait.sprite = cat.Breed.frontSprite;
+            {
+                var sprite = cat.IsSpecial && cat.Breed.specialFrontSprite != null
+                    ? cat.Breed.specialFrontSprite : cat.Breed.frontSprite;
+                _catPortrait.sprite = sprite;
+
+                // Preserve native size and center within parent
+                var rt = _catPortrait.rectTransform;
+                rt.anchorMin = new Vector2(0.5f, 0.5f);
+                rt.anchorMax = new Vector2(0.5f, 0.5f);
+                rt.pivot = new Vector2(0.5f, 0.5f);
+                _catPortrait.SetNativeSize();
+                rt.anchoredPosition = Vector2.zero;
+            }
 
             // Stay type + pension time visibility
             bool isPension = cat.Mode == Core.CatMode.Pension;
@@ -216,7 +237,8 @@ namespace CatHotel.UI
                 if (icon != null) _stayTypeImage.sprite = icon;
             }
             if (_stayTypeLabel != null)
-                _stayTypeLabel.text = isPension ? "En pension" : "Arrivé au refuge";
+                _stayTypeLabel.text = isPension
+                    ? Core.LocalizedStrings.StayPension : Core.LocalizedStrings.StayRefuge;
 
             RefreshValues();
 
