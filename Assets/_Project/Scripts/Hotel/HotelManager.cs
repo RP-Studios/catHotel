@@ -62,18 +62,21 @@ namespace CatHotel.Hotel
 
         private IEnumerator Start()
         {
-            // Auth (non-bloquant, timeout 5s)
-            if (AuthManager.Instance != null)
+            // Auth/Ads init is now handled by BootManager.
+            // If running Proto directly (editor), fallback to local init.
+            if (AuthManager.Instance == null)
             {
-                var authTask = AuthManager.Instance.InitializeAsync();
+                Debug.Log("[Hotel] No BootManager — running standalone init");
+                // Create a temporary AuthManager for editor testing
+                var authGo = new GameObject("[AuthManager]");
+                var auth = authGo.AddComponent<AuthManager>();
+                var authTask = auth.InitializeAsync();
                 float timeout = 5f;
                 while (!authTask.IsCompleted && timeout > 0f)
                 {
                     timeout -= Time.deltaTime;
                     yield return null;
                 }
-                if (!authTask.IsCompleted)
-                    Debug.LogWarning("[Hotel] Auth timeout — continuing offline");
             }
 
             if (_economy != null && _config != null)
@@ -82,16 +85,13 @@ namespace CatHotel.Hotel
             if (_reputation != null)
                 _reputation.Init(0, 0);
 
-            // Initialize ads (non-blocking)
+            // Hook into ads (already initialized by Boot, or init here as fallback)
             var adManager = AdManager.Instance ?? FindAnyObjectByType<AdManager>();
             if (adManager != null)
             {
                 adManager.OnAdCompleted += OnRewardedAdCompleted;
-                adManager.InitializeAds();
-            }
-            else
-            {
-                Debug.LogWarning("[Hotel] AdManager not found in scene");
+                if (!adManager.IsAdReady)
+                    adManager.InitializeAds(); // fallback if Boot didn't run
             }
 
             // Wait one frame for GridRenderer.Start() to build the room and entrances

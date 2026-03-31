@@ -1786,35 +1786,8 @@ namespace CatHotel.Editor
             soHud.FindProperty("_reputation").objectReferenceValue = repMgr;
             soHud.ApplyModifiedProperties();
 
-            // --- AuthManager ---
-            var authObj = FindOrCreate("[AuthManager]");
-            var authMgr = authObj.GetComponent<AuthManager>();
-            if (authMgr == null)
-                authMgr = authObj.AddComponent<AuthManager>();
-
-            var authConfig = AssetDatabase.LoadAssetAtPath<AuthConfig>(
-                "Assets/_Project/Data/AuthConfig.asset");
-            if (authConfig != null)
-            {
-                var soAuth = new SerializedObject(authMgr);
-                soAuth.FindProperty("_config").objectReferenceValue = authConfig;
-                soAuth.ApplyModifiedProperties();
-            }
-
-            // --- AdManager ---
-            var adObj = FindOrCreate("[AdManager]");
-            var adMgr = adObj.GetComponent<AdManager>();
-            if (adMgr == null)
-                adMgr = adObj.AddComponent<AdManager>();
-
-            var adConfig = AssetDatabase.LoadAssetAtPath<AdConfig>(
-                "Assets/_Project/Data/AdConfig.asset");
-            if (adConfig != null)
-            {
-                var soAd = new SerializedObject(adMgr);
-                soAd.FindProperty("_config").objectReferenceValue = adConfig;
-                soAd.ApplyModifiedProperties();
-            }
+            // AuthManager and AdManager are now created in the Boot scene (DontDestroyOnLoad).
+            // When running Proto directly in editor, HotelManager.Start() handles fallback init.
 
             // --- RevenueBoostManager ---
             var boostObj = FindOrCreate("[RevenueBoostManager]");
@@ -1822,10 +1795,12 @@ namespace CatHotel.Editor
             if (boostMgr == null)
                 boostMgr = boostObj.AddComponent<RevenueBoostManager>();
 
-            if (adConfig != null)
+            var boostAdConfig = AssetDatabase.LoadAssetAtPath<AdConfig>(
+                "Assets/_Project/Data/AdConfig.asset");
+            if (boostAdConfig != null)
             {
                 var soBoost = new SerializedObject(boostMgr);
-                soBoost.FindProperty("_config").objectReferenceValue = adConfig;
+                soBoost.FindProperty("_config").objectReferenceValue = boostAdConfig;
                 soBoost.ApplyModifiedProperties();
             }
 

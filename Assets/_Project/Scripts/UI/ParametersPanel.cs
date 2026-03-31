@@ -69,6 +69,39 @@ namespace CatHotel.UI
         /// </summary>
         public static event System.Action<float> OnMusicVolumeChanged;
 
+        // Saved volumes before mute (to restore on unmute)
+        private float _preMuteMusic = 1f;
+        private float _preMuteEffects = 1f;
+        private bool _isMuted;
+
+        /// <summary>
+        /// Mute/unmute both sliders. Called by MainMenuManager sound toggle.
+        /// </summary>
+        public void SetGlobalMute(bool muted)
+        {
+            if (muted && !_isMuted)
+            {
+                _preMuteMusic = _musicVolume;
+                _preMuteEffects = _effectsVolume;
+                SetMusicVolume(0f);
+                _effectsVolume = 0f;
+                RestoreSlider(_musicControl, _musicImageValue, 0f);
+                RestoreSlider(_effectsControl, _effectsImageValue, 0f);
+                SaveVolumePref(PrefMusic, _musicControl);
+                SaveVolumePref(PrefEffects, _effectsControl);
+            }
+            else if (!muted && _isMuted)
+            {
+                SetMusicVolume(_preMuteMusic);
+                _effectsVolume = _preMuteEffects;
+                RestoreSlider(_musicControl, _musicImageValue, _preMuteMusic);
+                RestoreSlider(_effectsControl, _effectsImageValue, _preMuteEffects);
+                SaveVolumePref(PrefMusic, _musicControl);
+                SaveVolumePref(PrefEffects, _effectsControl);
+            }
+            _isMuted = muted;
+        }
+
         private void Start()
         {
             _panelObj = FindInactiveByName("ParametersPanel");
@@ -312,8 +345,8 @@ namespace CatHotel.UI
             p.x = _panelWidth;
             _panel.anchoredPosition = p;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
-                .SetEase(Ease.OutBack)
+            _slideTween = _panel.DOAnchorPosX(0f, 0.7f)
+                .SetEase(Ease.OutCubic)
                 .SetUpdate(true);
         }
 
@@ -324,7 +357,7 @@ namespace CatHotel.UI
             _isDraggingMusic = false;
             _isDraggingEffects = false;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .SetUpdate(true)
                 .OnComplete(() => _panelObj.SetActive(false));

@@ -26,6 +26,13 @@ namespace CatHotel.Core
         public const string NeedBored = "S'ennuie";
         public const string NeedDirty = "Sale";
 
+        // Loading
+        public const string Loading = "Chargement";
+
+        // Sound
+        public const string SoundEnabled = "Son activé";
+        public const string SoundDisabled = "Son désactivé";
+
         // Mood
         public const string MoodHappy = "Content";
         public const string MoodEcstatic = "Enthousiaste";

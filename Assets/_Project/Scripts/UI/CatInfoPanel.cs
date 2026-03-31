@@ -249,7 +249,7 @@ namespace CatHotel.UI
             _panel.anchoredPosition = p;
 
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f).SetEase(Ease.OutBack);
+            _slideTween = _panel.DOAnchorPosX(0f, 0.7f).SetEase(Ease.OutCubic);
         }
 
         public void Close()
@@ -260,7 +260,7 @@ namespace CatHotel.UI
             _currentCat = null;
 
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .OnComplete(() => _panelObj.SetActive(false));
         }

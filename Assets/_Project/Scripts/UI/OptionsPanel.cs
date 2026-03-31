@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
 
@@ -109,11 +110,11 @@ namespace CatHotel.UI
                 return;
             }
 
-            // MainMenu => not available yet
+            // MainMenu => return to Boot scene
             if (_mainMenuRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_mainMenuRect, screenPos, null))
             {
-                // TODO: return to main menu
+                ReturnToMainMenu();
                 return;
             }
         }
@@ -128,8 +129,8 @@ namespace CatHotel.UI
             _panel.anchoredPosition = p;
             Time.timeScale = 0f;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
-                .SetEase(Ease.OutBack)
+            _slideTween = _panel.DOAnchorPosX(0f, 0.7f)
+                .SetEase(Ease.OutCubic)
                 .SetUpdate(true);
         }
 
@@ -138,7 +139,7 @@ namespace CatHotel.UI
             if (_panel == null) return;
             _isOpen = false;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .SetUpdate(true)
                 .OnComplete(() =>
@@ -146,6 +147,12 @@ namespace CatHotel.UI
                     _panelObj.SetActive(false);
                     Time.timeScale = 1f;
                 });
+        }
+
+        private void ReturnToMainMenu()
+        {
+            _isOpen = false;
+            LoadingScreen.TransitionTo("Boot", () => Time.timeScale = 1f);
         }
 
         private void OpenParameters()

@@ -319,8 +319,8 @@ namespace CatHotel.UI
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
-                .SetEase(Ease.OutBack)
+            _slideTween = _panel.DOAnchorPosX(0f, 0.7f)
+                .SetEase(Ease.OutCubic)
                 .SetUpdate(true);
         }
 
@@ -333,7 +333,7 @@ namespace CatHotel.UI
 
             _isOpen = false;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .SetUpdate(true)
                 .OnComplete(() => _panelObj.SetActive(false));
