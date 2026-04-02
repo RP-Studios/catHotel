@@ -301,13 +301,26 @@ namespace CatHotel.Hotel
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _currentData.worldSprite != null ? _currentData.worldSprite : _currentData.icon;
 
-            if (_currentData.wallMount)
+            // Assign sorting layer based on object type
+            bool isCarpet = _currentData.category == ObjectCategory.Carpet
+                         || _currentData.category == ObjectCategory.Decoration
+                            && _currentData.displayName != null
+                            && _currentData.displayName.Contains("Tapis");
+
+            if (isCarpet)
             {
-                sr.sortingOrder = 7;
+                sr.sortingLayerName = "Carpets";
+                go.AddComponent<Core.SortByY>();
+            }
+            else if (_currentData.wallMount)
+            {
+                sr.sortingLayerName = "Objects";
+                sr.sortingOrder = 0; // wall objects don't Y-sort
             }
             else if (_currentData.requiresTable)
             {
-                // On-table objects: find the table and always stay 1 above its sortingOrder
+                sr.sortingLayerName = "Objects";
+                // On-table objects: follow table's sortingOrder + 1
                 SpriteRenderer tableSr = null;
                 var tableCell = new Vector2Int(_currentGridPos.x, _currentGridPos.y - 1);
                 foreach (var obj in ObjectRegistry.Objects)
@@ -326,17 +339,14 @@ namespace CatHotel.Hotel
                 }
                 else
                 {
-                    // Fallback
                     go.AddComponent<Core.SortByY>();
                 }
             }
             else
             {
-                // Floor objects: dynamic Y-sorting
-                // Tables use higher base (20000) so cats walk behind them
-                var sortByY = go.AddComponent<Core.SortByY>();
-                if (_currentData.isTable)
-                    sortByY.OrderBias = 10000;
+                // Floor objects (beds, bowls, litter, trees, tables...)
+                sr.sortingLayerName = "Objects";
+                go.AddComponent<Core.SortByY>();
             }
 
             // Scale to fit

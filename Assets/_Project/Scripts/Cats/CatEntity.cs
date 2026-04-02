@@ -172,7 +172,8 @@ namespace CatHotel.Cats
                 handGo = new GameObject("HandPet");
                 handGo.transform.position = transform.position + new Vector3(0, 0.5f, 0);
                 var handSr = handGo.AddComponent<SpriteRenderer>();
-                handSr.sortingOrder = 15;
+                handSr.sortingLayerName = "Bubbles";
+                handSr.sortingOrder = 0;
                 var handAnim = handGo.AddComponent<Animator>();
                 handAnim.runtimeAnimatorController = handController;
             }
@@ -328,7 +329,8 @@ namespace CatHotel.Cats
                 cloudGo.transform.position = midpoint;
 
                 var cloudSr = cloudGo.AddComponent<SpriteRenderer>();
-                cloudSr.sortingOrder = 15;
+                cloudSr.sortingLayerName = "Bubbles";
+                cloudSr.sortingOrder = 0;
 
                 if (_spawner != null)
                 {
@@ -401,6 +403,24 @@ namespace CatHotel.Cats
         private void ApplyUseOffset(HotelObject obj) { }
         private void ClearUseOffset() { }
 
+        /// <summary>
+        /// Determines which animation to play for Play-category objects.
+        /// Scratchers and cat trees use Scratch_In → Scratch_Boucle → Scratch_Out sequence.
+        /// Other Play objects (wool ball) use the standard Play animation.
+        /// </summary>
+        private string GetPlayAnimPrefix()
+        {
+            if (_targetObject == null) return "Play";
+            string name = _targetObject.Data.displayName;
+            if (name != null && (name.Contains("Griffoir") || name.Contains("Arbre")))
+            {
+                // Check if this cat has scratch animations
+                if (_animator != null && _animator.HasState(0, Animator.StringToHash("Scratch_Boucle_Left")))
+                    return "Scratch_Boucle";
+            }
+            return "Play";
+        }
+
         private Vector2Int FindUsePosition(HotelObject obj)
         {
             return obj.GridPos;
@@ -422,16 +442,21 @@ namespace CatHotel.Cats
             // Offset cat to the side of the object so sprites don't overlap
             ApplyUseOffset(_targetObject);
 
-            // Hide toy objects while cat is playing with them
+            // Hide toy objects while cat is playing with them (but not scratchers/trees)
             if (_targetObject.Data.category == CatHotel.Core.ObjectCategory.Play)
-                SetObjectVisible(_targetObject, false);
+            {
+                string objName = _targetObject.Data.displayName;
+                bool isScratchObject = objName != null && (objName.Contains("Griffoir") || objName.Contains("Arbre"));
+                if (!isScratchObject)
+                    SetObjectVisible(_targetObject, false);
+            }
 
             string animPrefix = need switch
             {
                 NeedType.Hunger => "Eat",
                 NeedType.Thirst => "Drink",
                 NeedType.Sleep => "Sleep",
-                NeedType.Play => "Play",
+                NeedType.Play => GetPlayAnimPrefix(),
                 NeedType.Clean => "Clean",
                 _ => "Eat"
             };

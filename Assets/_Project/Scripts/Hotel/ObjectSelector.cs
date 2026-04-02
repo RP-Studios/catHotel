@@ -37,6 +37,7 @@ namespace CatHotel.Hotel
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
             Vector2 screenPos = pointer.position.ReadValue();
+            if (float.IsNaN(screenPos.x) || float.IsNaN(screenPos.y)) return;
             Vector3 worldPos = _cam.ScreenToWorldPoint(screenPos);
 
             // Cat has priority — check if a cat is near the tap

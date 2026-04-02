@@ -202,7 +202,10 @@ namespace CatHotel.Hotel
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = isSpecial && breed.specialFrontSprite != null
                 ? breed.specialFrontSprite : breed.frontSprite;
-            sr.sortingOrder = 10;
+
+            // Cats always in front of objects — use "Cats" sorting layer
+            sr.sortingLayerName = "Cats";
+            go.AddComponent<Core.SortByY>();
 
             if (breed.controller != null)
             {
@@ -453,9 +456,9 @@ namespace CatHotel.Hotel
             cat.Entity.SetDeparting();
             cat.Entity.SetSadWalk();
 
-            // Remove any floating coin without collecting it
-            if (_economy != null && cat.Entity != null)
-                _economy.RemoveCoinForCat(cat.Entity.transform);
+            // Force-collect any floating coin immediately (unhappy departure — no animation)
+            if (_floatingCoinView != null && cat.Entity != null)
+                _floatingCoinView.ForceCollectCoinForCat(cat.Entity.transform);
 
             var exits = _gridRenderer.Exits;
             if (exits != null && exits.Count > 0)
@@ -494,9 +497,9 @@ namespace CatHotel.Hotel
             CatNames.ReleaseName(cat.CatName);
             OnCatDeparted?.Invoke(cat);
 
-            // Auto-collect floating coin for departing cat (via view so it animates properly)
+            // Force-collect floating coin before destroying cat
             if (_floatingCoinView != null && cat.Entity != null)
-                _floatingCoinView.CollectCoinForCat(cat.Entity.transform);
+                _floatingCoinView.ForceCollectCoinForCat(cat.Entity.transform);
 
             if (cat.Entity != null)
                 Destroy(cat.Entity.gameObject);

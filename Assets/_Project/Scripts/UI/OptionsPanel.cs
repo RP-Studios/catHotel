@@ -149,6 +149,18 @@ namespace CatHotel.UI
                 });
         }
 
+        /// <summary>Close panel visually without unpausing (used when navigating to sub-panels).</summary>
+        private void CloseKeepPaused()
+        {
+            if (_panel == null) return;
+            _isOpen = false;
+            _slideTween?.Kill();
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
+                .SetEase(Ease.InCubic)
+                .SetUpdate(true)
+                .OnComplete(() => _panelObj.SetActive(false));
+        }
+
         private void ReturnToMainMenu()
         {
             _isOpen = false;
@@ -158,9 +170,9 @@ namespace CatHotel.UI
         private void OpenParameters()
         {
             if (_parametersPanel == null) return;
-            Close();
+            CloseKeepPaused();
             _parametersPanel.Open();
-            _parametersPanel.OnClosed = Open; // Return to OptionsPanel when ParametersPanel closes
+            _parametersPanel.OnClosed = Open; // Return to OptionsPanel when ParametersPanel closes (still paused)
         }
 
         private static void AddJuice(RectTransform rt)

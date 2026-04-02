@@ -72,7 +72,22 @@
       "Bash(find . -name *CARPET_CONFORT* -type f)",
       "Bash(find Assets/_Project/Art/SpecialCats/Napoleon -name *.png ! -name *.meta)",
       "Bash(find Assets/_Project/Art/SpecialCats/Orion -name *.png ! -name *.meta)",
-      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Objects/Deco -name *aquarium* -o -name *Aquarium*)"
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Objects/Deco -name *aquarium* -o -name *Aquarium*)",
+      "Bash(find /d/Unity/catHotel_github/Assets -name *.cs -path */Settings*)",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Cats -name *.png -exec identify -format '%w %h %f\\\\n' {})",
+      "Bash(2)",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Cats -name *.png -exec wc -c {} +)",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/SpecialCats -name *.png -exec wc -c {} +)",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Cats -name *.png -exec ls -la {} +)",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art -name *.png -exec ls -la {} +)",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Cats/British -type f -not -name *.meta)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats/Siamois/Animations\" -name \"*.png\" -exec ls -la {} +)",
+      "Bash(sort -k5 -nr)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\" -name \"*.png.meta\" -exec grep -l \"textureFormat: 52\" {})",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Cats -name *.png.meta -exec grep -l 'crunchedCompression: 1' {})",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/UI\" -name \"*.png\" -exec ls -la {} +)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\" -name \"*.png.meta\" -exec grep -l \"maxTextureSize: 2048\" {})",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\" -name \"*.png.meta\" -exec grep -l \"maxTextureSize: 16384\" {})"
     ]
   }
 }
