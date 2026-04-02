@@ -186,8 +186,16 @@ namespace CatHotel.Hotel
             // 80% pension, 20% refuge
             var mode = UnityEngine.Random.value < 0.8f ? CatMode.Pension : CatMode.Refuge;
 
-            // Pick entrance
-            var entrance = entrances[UnityEngine.Random.Range(0, entrances.Count)];
+            // Pick entrance based on mode: pension → top, refuge → bottom
+            var entrance = mode == CatMode.Pension
+                ? _gridRenderer.PensionEntrance
+                : _gridRenderer.RefugeEntrance;
+
+            // Animate entrance door
+            var entranceDoor = mode == CatMode.Pension
+                ? _gridRenderer.PensionDoor
+                : _gridRenderer.RefugeDoor;
+            if (entranceDoor != null) entranceDoor.PlayOpenClose();
 
             // Roll for special variant
             bool isSpecial = breed.hasSpecialVariant
@@ -368,17 +376,8 @@ namespace CatHotel.Hotel
             cat.State = CatState.Pickup;
             cat.Entity.SetDeparting();
 
-            // Walk to exit first
-            var entrances = _gridRenderer.Entrances;
-            if (entrances != null && entrances.Count > 0)
-            {
-                var exit = entrances[UnityEngine.Random.Range(0, entrances.Count)];
-                cat.Entity.WalkToTarget(exit, () => ShowPensionEndPanel(cat));
-            }
-            else
-            {
-                ShowPensionEndPanel(cat);
-            }
+            // Pension cats leave via top-left entrance (no door animation)
+            cat.Entity.WalkToTarget(_gridRenderer.PensionEntrance, () => ShowPensionEndPanel(cat));
         }
 
         private void ShowPensionEndPanel(CatInstance cat)
@@ -449,27 +448,24 @@ namespace CatHotel.Hotel
             StartCatDeparture(cat, CatState.Adopted);
         }
 
-        /// <summary>Unhappy cat leaves via right exit with sad walk, no coins generated.</summary>
+        /// <summary>Unhappy cat leaves via right exit with sad walk + door animation.</summary>
         private void StartUnhappyDeparture(CatInstance cat)
         {
             cat.State = CatState.Leaving;
             cat.Entity.SetDeparting();
             cat.Entity.SetSadWalk();
 
-            // Force-collect any floating coin immediately (unhappy departure — no animation)
             if (_floatingCoinView != null && cat.Entity != null)
                 _floatingCoinView.ForceCollectCoinForCat(cat.Entity.transform);
 
-            var exits = _gridRenderer.Exits;
-            if (exits != null && exits.Count > 0)
+            // Unhappy cats leave via the single right exit (with door animation)
+            var exit = _gridRenderer.UnhappyExit;
+            var exitDoor = _gridRenderer.ExitDoor;
+            cat.Entity.WalkToTarget(exit, () =>
             {
-                var exit = exits[UnityEngine.Random.Range(0, exits.Count)];
-                cat.Entity.WalkToTarget(exit, () => FinalizeDeparture(cat));
-            }
-            else
-            {
+                if (exitDoor != null) exitDoor.PlayOpenClose();
                 FinalizeDeparture(cat);
-            }
+            });
         }
 
         private void StartCatDeparture(CatInstance cat, CatState reason)
@@ -477,16 +473,8 @@ namespace CatHotel.Hotel
             cat.State = reason;
             cat.Entity.SetDeparting();
 
-            var entrances = _gridRenderer.Entrances;
-            if (entrances != null && entrances.Count > 0)
-            {
-                var exit = entrances[UnityEngine.Random.Range(0, entrances.Count)];
-                cat.Entity.WalkToTarget(exit, () => FinalizeDeparture(cat));
-            }
-            else
-            {
-                FinalizeDeparture(cat);
-            }
+            // Adopted/refuge cats leave via bottom-left entrance (no door animation)
+            cat.Entity.WalkToTarget(_gridRenderer.RefugeEntrance, () => FinalizeDeparture(cat));
         }
 
         private void FinalizeDeparture(CatInstance cat)

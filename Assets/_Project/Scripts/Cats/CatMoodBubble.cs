@@ -51,8 +51,9 @@ namespace CatHotel.Cats
         private const float TickInterval = 0.3f;
         private float _tickTimer;
 
-        // Offset: need bubble is left of mood bubble and slightly lower
-        private const float NeedOffsetX = -0.55f;
+        // Mood bubble offset to the right, need bubble offset to the left
+        private const float MoodOffsetX = 0.35f;
+        private const float NeedOffsetX = -0.35f;
         private const float NeedOffsetY = -0.1f;
 
         // Scale: 2x native size
@@ -96,7 +97,7 @@ namespace CatHotel.Cats
             // Mood bubble (right / center)
             _moodObj = new GameObject("MoodBubble");
             _moodObj.transform.SetParent(transform);
-            _moodObj.transform.localPosition = Vector3.up * _moodBaseY;
+            _moodObj.transform.localPosition = new Vector3(MoodOffsetX, _moodBaseY, 0f);
             _moodObj.transform.localScale = Vector3.one * compensated;
             _moodSr = _moodObj.AddComponent<SpriteRenderer>();
             _moodSr.sortingLayerName = "Bubbles";

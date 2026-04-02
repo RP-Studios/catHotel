@@ -1316,6 +1316,37 @@ namespace CatHotel.Editor
             };
             foreach (var s in bubbleSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
+
+            // Entrance logos
+            ConfigureSprite("Assets/_Project/Art/UI/Logos/Allies_pension.png", 200, FilterMode.Bilinear);
+            ConfigureSprite("Assets/_Project/Art/UI/Logos/Refuge.png", 200, FilterMode.Bilinear);
+
+            // Door spritesheet (pivot bottom-left so door aligns to cell corner)
+            ConfigureSpritesheet(
+                "Assets/_Project/Art/Environment/Doors/DOOR_Open_Spritesheet.png",
+                "door_open", 9,
+                SpriteAlignment.BottomLeft, new Vector2(0f, 0f));
+        }
+
+        /// <summary>Wire door frames to GridRenderer.</summary>
+        private static void WireDoorFrames(GridRenderer renderer)
+        {
+            string sheetPath = "Assets/_Project/Art/Environment/Doors/DOOR_Open_Spritesheet.png";
+            var allAssets = AssetDatabase.LoadAllAssetsAtPath(sheetPath);
+            var frames = new System.Collections.Generic.List<Sprite>();
+            foreach (var obj in allAssets)
+                if (obj is Sprite s) frames.Add(s);
+            frames.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+
+            if (frames.Count > 0)
+            {
+                var so = new SerializedObject(renderer);
+                var prop = so.FindProperty("_doorFrames");
+                prop.arraySize = frames.Count;
+                for (int i = 0; i < frames.Count; i++)
+                    prop.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+                so.ApplyModifiedProperties();
+            }
         }
 
         private static void ConfigureCatSpriteImports()
@@ -1384,7 +1415,8 @@ namespace CatHotel.Editor
         private static void SliceSpritesheet(string path, int frames, string prefix)
             => ConfigureSpritesheet(path, prefix, frames);
 
-        private static void ConfigureSpritesheet(string sheetPath, string namePrefix, int frameCount)
+        private static void ConfigureSpritesheet(string sheetPath, string namePrefix, int frameCount,
+            SpriteAlignment alignment = SpriteAlignment.Center, Vector2? customPivot = null)
         {
             var importer = AssetImporter.GetAtPath(sheetPath) as TextureImporter;
             if (importer == null)
@@ -1464,8 +1496,8 @@ namespace CatHotel.Editor
                     spriteID = existingById.TryGetValue(spriteName, out var existingId)
                         ? existingId : GUID.Generate(),
                     rect = new Rect(i * frameW, 0, frameW, texH),
-                    alignment = SpriteAlignment.Center,
-                    pivot = new Vector2(0.5f, 0.5f)
+                    alignment = alignment,
+                    pivot = customPivot ?? new Vector2(0.5f, 0.5f)
                 };
             }
             provider.SetSpriteRects(rects);
@@ -1793,6 +1825,17 @@ namespace CatHotel.Editor
             so.FindProperty("_intCornerRB").objectReferenceValue   = tiles.intCornerRB;
             so.FindProperty("_intCornerRT").objectReferenceValue   = tiles.intCornerRT;
             so.ApplyModifiedProperties();
+
+            // Wire door frames to GridRenderer
+            WireDoorFrames(renderer);
+
+            // Wire entrance logos
+            var soRenderer = new SerializedObject(renderer);
+            soRenderer.FindProperty("_pensionLogoSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Logos/Allies_pension.png");
+            soRenderer.FindProperty("_refugeLogoSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Logos/Refuge.png");
+            soRenderer.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
             if (builder == null)
