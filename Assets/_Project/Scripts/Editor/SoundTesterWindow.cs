@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -12,6 +13,24 @@ namespace CatHotel.Editor
     {
         private static readonly string[] AudioExtensions = { ".wav", ".mp3", ".ogg", ".aif", ".aiff" };
         private static readonly string SearchRoot = "Assets/_Project";
+        private static readonly string SettingsPath = "Assets/_Project/Audio/SoundTesterSettings.json";
+
+        [Serializable]
+        private class SavedEntryData
+        {
+            public string path;
+            public float volume = 1f;
+            public bool loop;
+        }
+
+        [Serializable]
+        private class SavedSettings
+        {
+            public float masterVolume = 1f;
+            public List<SavedEntryData> entries = new();
+        }
+
+        private bool _dirty;
 
         private List<AudioEntry> _entries = new();
         private Vector2 _scrollPos;
@@ -67,6 +86,7 @@ namespace CatHotel.Editor
         {
             EditorApplication.update -= EditorUpdate;
             EditorApplication.playModeStateChanged -= OnPlayModeChanged;
+            if (_dirty) SaveSettings();
             StopAll();
             DestroyRuntime();
         }
@@ -221,6 +241,74 @@ namespace CatHotel.Editor
             }
         }
 
+        private void SaveSettings()
+        {
+            var data = new SavedSettings { masterVolume = _masterVolume };
+            foreach (var entry in _entries)
+            {
+                if (Math.Abs(entry.Volume - 1f) > 0.001f || entry.Loop)
+                {
+                    data.entries.Add(new SavedEntryData
+                    {
+                        path = entry.Path,
+                        volume = entry.Volume,
+                        loop = entry.Loop,
+                    });
+                }
+            }
+
+            string dir = System.IO.Path.GetDirectoryName(SettingsPath);
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            File.WriteAllText(SettingsPath, JsonUtility.ToJson(data, true));
+            _dirty = false;
+        }
+
+        private void LoadSettings()
+        {
+            if (!File.Exists(SettingsPath)) return;
+
+            try
+            {
+                var data = JsonUtility.FromJson<SavedSettings>(File.ReadAllText(SettingsPath));
+                _masterVolume = data.masterVolume;
+
+                var lookup = new Dictionary<string, SavedEntryData>();
+                foreach (var s in data.entries)
+                    lookup[s.path] = s;
+
+                foreach (var entry in _entries)
+                {
+                    if (lookup.TryGetValue(entry.Path, out var saved))
+                    {
+                        entry.Volume = saved.volume;
+                        entry.Loop = saved.loop;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"[SoundTester] Failed to load settings: {e.Message}");
+            }
+            _dirty = false;
+        }
+
+        private void ResetAllSettings()
+        {
+            _masterVolume = 1f;
+            foreach (var entry in _entries)
+            {
+                entry.Volume = 1f;
+                entry.Loop = false;
+            }
+            ApplyMasterVolume();
+            _dirty = true;
+        }
+
+        private void MarkDirty()
+        {
+            _dirty = true;
+        }
+
         private void RefreshAudioList()
         {
             StopAll();
@@ -257,6 +345,7 @@ namespace CatHotel.Editor
             }
 
             _entries = _entries.OrderBy(e => e.Category).ThenBy(e => e.FileName).ToList();
+            LoadSettings();
         }
 
         private void OnGUI()
@@ -296,6 +385,16 @@ namespace CatHotel.Editor
             if (GUILayout.Button("Stop All", EditorStyles.toolbarButton, GUILayout.Width(60)))
                 StopAll();
 
+            GUILayout.Space(6);
+
+            GUI.enabled = _dirty;
+            if (GUILayout.Button("Save", EditorStyles.toolbarButton, GUILayout.Width(40)))
+                SaveSettings();
+            GUI.enabled = true;
+
+            if (GUILayout.Button("Reset", EditorStyles.toolbarButton, GUILayout.Width(45)))
+                ResetAllSettings();
+
             GUILayout.Space(10);
             EditorGUILayout.LabelField("Recherche", GUILayout.Width(65));
             _searchFilter = EditorGUILayout.TextField(_searchFilter, EditorStyles.toolbarSearchField);
@@ -324,6 +423,7 @@ namespace CatHotel.Editor
             {
                 _masterVolume = newMaster;
                 ApplyMasterVolume();
+                MarkDirty();
             }
             EditorGUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
@@ -391,6 +491,7 @@ namespace CatHotel.Editor
             if (newLoop != entry.Loop)
             {
                 entry.Loop = newLoop;
+                MarkDirty();
                 if (isThisPlaying && UseRuntime && _activeNodes.TryGetValue(entry, out var node) && node != null)
                 {
                     var src = node.GetComponent<AudioSource>();
@@ -409,6 +510,7 @@ namespace CatHotel.Editor
             if (Math.Abs(newVol - entry.Volume) > 0.001f)
             {
                 entry.Volume = newVol;
+                MarkDirty();
                 if (isThisPlaying) ApplyVolume(entry);
             }
             EditorGUI.EndDisabledGroup();
