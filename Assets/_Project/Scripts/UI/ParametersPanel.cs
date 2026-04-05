@@ -30,6 +30,12 @@ namespace CatHotel.UI
         private GameObject _batteryToggleOn;
         private GameObject _batteryToggleOff;
 
+        // Language toggles
+        private RectTransform _enActiveRect;
+        private RectTransform _enInactiveRect;
+        private RectTransform _frActiveRect;
+        private RectTransform _frInactiveRect;
+
         // Music slider
         private RectTransform _musicControl;
         private RectTransform _musicImageValue;
@@ -147,6 +153,17 @@ namespace CatHotel.UI
             _batteryToggleOn = FindGO("BatteryToggleOn");
             _batteryToggleOff = FindGO("BatteryToggleOff");
 
+            // Language toggles
+            _enActiveRect = FindRect("ENActiveAction");
+            _enInactiveRect = FindRect("ENInactiveAction");
+            _frActiveRect = FindRect("FRActiveAction");
+            _frInactiveRect = FindRect("FRInactiveAction");
+            AddJuice(_enActiveRect);
+            AddJuice(_enInactiveRect);
+            AddJuice(_frActiveRect);
+            AddJuice(_frInactiveRect);
+            Debug.Log($"[Params] Lang buttons: ENActive={_enActiveRect != null}, ENInactive={_enInactiveRect != null}, FRActive={_frActiveRect != null}, FRInactive={_frInactiveRect != null}");
+
             // Music slider
             var musicT = FindInChildren(_panelObj.transform, "MusicControl");
             if (musicT != null) _musicControl = musicT.GetComponent<RectTransform>();
@@ -234,12 +251,53 @@ namespace CatHotel.UI
                 ToggleBattery();
                 return;
             }
+
+            // Language: tap any language button that is currently active (visible)
+            if (_enActiveRect != null && _enActiveRect.gameObject.activeSelf &&
+                RectTransformUtility.RectangleContainsScreenPoint(_enActiveRect, screenPos, null))
+                return; // already EN, do nothing
+            if (_frActiveRect != null && _frActiveRect.gameObject.activeSelf &&
+                RectTransformUtility.RectangleContainsScreenPoint(_frActiveRect, screenPos, null))
+                return; // already FR, do nothing
+            if (_enInactiveRect != null && _enInactiveRect.gameObject.activeSelf &&
+                RectTransformUtility.RectangleContainsScreenPoint(_enInactiveRect, screenPos, null))
+            {
+                SetLanguageEN();
+                return;
+            }
+            if (_frInactiveRect != null && _frInactiveRect.gameObject.activeSelf &&
+                RectTransformUtility.RectangleContainsScreenPoint(_frInactiveRect, screenPos, null))
+            {
+                SetLanguageFR();
+                return;
+            }
         }
 
         private static void SetMusicVolume(float vol)
         {
             _musicVolume = vol;
             OnMusicVolumeChanged?.Invoke(vol);
+        }
+
+        private void SetLanguageEN()
+        {
+            CatHotel.Core.LocalizedStrings.SetLanguage("en");
+            UpdateLanguageToggles();
+        }
+
+        private void SetLanguageFR()
+        {
+            CatHotel.Core.LocalizedStrings.SetLanguage("fr");
+            UpdateLanguageToggles();
+        }
+
+        private void UpdateLanguageToggles()
+        {
+            bool isEN = CatHotel.Core.LocalizedStrings.CurrentLanguage == "en";
+            if (_enActiveRect != null) _enActiveRect.gameObject.SetActive(isEN);
+            if (_enInactiveRect != null) _enInactiveRect.gameObject.SetActive(!isEN);
+            if (_frActiveRect != null) _frActiveRect.gameObject.SetActive(!isEN);
+            if (_frInactiveRect != null) _frInactiveRect.gameObject.SetActive(isEN);
         }
 
         private void TogglePush()
@@ -334,6 +392,9 @@ namespace CatHotel.UI
             float effectsVol = PlayerPrefs.GetFloat(PrefEffects, 1f);
             _effectsVolume = effectsVol;
             RestoreSlider(_effectsControl, _effectsImageValue, effectsVol);
+
+            // Language toggles
+            UpdateLanguageToggles();
         }
 
         public void Open()
@@ -362,6 +423,13 @@ namespace CatHotel.UI
                 .SetUpdate(true)
                 .OnComplete(() => _panelObj.SetActive(false));
             OnClosed?.Invoke();
+        }
+
+        private static void AddJuice(RectTransform rt)
+        {
+            if (rt == null) return;
+            if (rt.GetComponent<ButtonJuice>() == null)
+                rt.gameObject.AddComponent<ButtonJuice>();
         }
 
         private RectTransform FindRect(string name)

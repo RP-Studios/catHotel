@@ -191,9 +191,9 @@ namespace CatHotel.UI
 
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
-            if (_catSpecies != null) _catSpecies.text = cat.Breed.breedName;
+            if (_catSpecies != null) _catSpecies.text = LocalizeBreedName(cat.Breed.breedName);
             if (_catAge != null) _catAge.text = cat.Breed.size < 1f
-                ? Core.LocalizedStrings.Kitten : Core.LocalizedStrings.AdultCat;
+                ? Core.LocalizedStrings.Get("cat.kitten") : Core.LocalizedStrings.Get("cat.adult");
             if (_catDesc != null) _catDesc.text = cat.Description ?? "";
             if (_catSpeciesSpec != null)
             {
@@ -202,13 +202,13 @@ namespace CatHotel.UI
                 {
                     string plural = !string.IsNullOrEmpty(cat.LikedBreed.breedNamePlural)
                         ? cat.LikedBreed.breedNamePlural : cat.LikedBreed.breedName;
-                    parts.Add(string.Format(Core.LocalizedStrings.LikesFormat, plural));
+                    parts.Add(Core.LocalizedStrings.Get("cat.likes", plural));
                 }
                 if (cat.DislikedBreed != null)
                 {
                     string plural = !string.IsNullOrEmpty(cat.DislikedBreed.breedNamePlural)
                         ? cat.DislikedBreed.breedNamePlural : cat.DislikedBreed.breedName;
-                    parts.Add(string.Format(Core.LocalizedStrings.DislikesFormat, plural));
+                    parts.Add(Core.LocalizedStrings.Get("cat.dislikes", plural));
                 }
                 _catSpeciesSpec.text = parts.Count > 0 ? string.Join("\n", parts) : "";
             }
@@ -238,7 +238,7 @@ namespace CatHotel.UI
             }
             if (_stayTypeLabel != null)
                 _stayTypeLabel.text = isPension
-                    ? Core.LocalizedStrings.StayPension : Core.LocalizedStrings.StayRefuge;
+                    ? Core.LocalizedStrings.Get("cat.stay.pension") : Core.LocalizedStrings.Get("cat.stay.refuge");
 
             RefreshValues();
 
@@ -297,7 +297,7 @@ namespace CatHotel.UI
                 else if (_prevTimeSec != 0)
                 {
                     _prevTimeSec = 0;
-                    _timeRemaining.text = "--:--:--";
+                    _timeRemaining.text = Core.LocalizedStrings.Get("cat.time.none");
                 }
             }
 
@@ -359,6 +359,22 @@ namespace CatHotel.UI
             int m = (total % 3600) / 60;
             int s = total % 60;
             return $"{h:D2}:{m:D2}:{s:D2}";
+        }
+
+        private static readonly System.Collections.Generic.Dictionary<string, string> BreedNameToKey = new()
+        {
+            { "Européen", "breed.europeen" },
+            { "Siamois", "breed.siamois" },
+            { "Ragdoll", "breed.ragdoll" },
+            { "Sibérien", "breed.siberien" },
+            { "Chartreux", "breed.chartreux" },
+        };
+
+        private static string LocalizeBreedName(string frenchName)
+        {
+            if (BreedNameToKey.TryGetValue(frenchName, out var key))
+                return Core.LocalizedStrings.Get(key);
+            return frenchName;
         }
 
         private static TMP_Text FindText(GameObject root, string childName)

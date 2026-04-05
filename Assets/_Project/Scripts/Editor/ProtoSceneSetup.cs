@@ -1874,6 +1874,10 @@ namespace CatHotel.Editor
             if (mgrObj.GetComponent<CatHotel.Core.AppLifecycleManager>() == null)
                 mgrObj.AddComponent<CatHotel.Core.AppLifecycleManager>();
 
+            // --- SceneTextLocalizer (localize static labels) ---
+            if (mgrObj.GetComponent<CatHotel.UI.SceneTextLocalizer>() == null)
+                mgrObj.AddComponent<CatHotel.UI.SceneTextLocalizer>();
+
             // --- EconomyManager ---
             var economyMgr = mgrObj.GetComponent<EconomyManager>();
             if (economyMgr == null)

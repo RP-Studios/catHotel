@@ -207,7 +207,7 @@ namespace CatHotel.UI
             if (_totalValue != null) _totalValue.text = "0";
 
             if (_byeLabel != null)
-                _byeLabel.text = string.Format(Core.LocalizedStrings.ByeFormat, data.CatName);
+                _byeLabel.text = Core.LocalizedStrings.Get("pension.bye", data.CatName);
 
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(true);

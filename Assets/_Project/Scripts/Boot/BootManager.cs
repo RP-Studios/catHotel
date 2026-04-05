@@ -17,6 +17,9 @@ namespace CatHotel.Boot
 
         private IEnumerator Start()
         {
+            // Detect and apply language (from saved pref or system language)
+            CatHotel.Core.LocalizedStrings.InitFromSystem();
+
             // Reduce async loading impact on main thread → smoother animations during load
             Application.backgroundLoadingPriority = ThreadPriority.Low;
 

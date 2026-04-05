@@ -109,7 +109,7 @@ namespace CatHotel.UI
             var textObj = new GameObject("LoadingText");
             textObj.transform.SetParent(transform, false);
             _loadingText = textObj.AddComponent<TextMeshProUGUI>();
-            _loadingText.text = "Chargement";
+            _loadingText.text = Core.LocalizedStrings.Get("ui.loading");
             _loadingText.fontSize = 36;
             _loadingText.color = new Color(1f, 1f, 1f, 0.7f);
             _loadingText.alignment = TextAlignmentOptions.Center;
@@ -226,7 +226,7 @@ namespace CatHotel.UI
 
         private IEnumerator AnimateDots()
         {
-            string baseText = Core.LocalizedStrings.Loading;
+            string baseText = Core.LocalizedStrings.Get("ui.loading");
             int dots = 0;
             while (true)
             {

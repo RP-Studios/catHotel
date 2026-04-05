@@ -60,6 +60,13 @@ namespace CatHotel.Boot
             // Restore sound state
             _soundEnabled = PlayerPrefs.GetInt(PrefSound, 1) == 1;
             ApplySoundState();
+
+            Core.LocalizedStrings.OnLanguageChanged += ApplySoundState;
+        }
+
+        private void OnDestroy()
+        {
+            Core.LocalizedStrings.OnLanguageChanged -= ApplySoundState;
         }
 
         private void Update()
@@ -144,8 +151,8 @@ namespace CatHotel.Boot
 
             if (_soundStateLabel != null)
                 _soundStateLabel.text = _soundEnabled
-                    ? Core.LocalizedStrings.SoundEnabled
-                    : Core.LocalizedStrings.SoundDisabled;
+                    ? Core.LocalizedStrings.Get("sound.on")
+                    : Core.LocalizedStrings.Get("sound.off");
 
             // Sync ParametersPanel sliders if open or cached
             if (_parametersPanel == null)

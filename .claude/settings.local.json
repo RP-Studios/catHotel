@@ -88,7 +88,15 @@
       "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/UI\" -name \"*.png\" -exec ls -la {} +)",
       "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\" -name \"*.png.meta\" -exec grep -l \"maxTextureSize: 2048\" {})",
       "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats\" -name \"*.png.meta\" -exec grep -l \"maxTextureSize: 16384\" {})",
-      "Bash(python -c \":*)"
+      "Bash(python -c \":*)",
+      "Bash(ls -d \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats/\"*/)",
+      "Bash(ls -d \"d:/Unity/catHotel_github/Assets/_Project/Art/SpecialCats/\"*/)",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats/Europeen/Animations\" -name \"*.png\" -exec ls -la {})",
+      "Bash(find d:/Unity/catHotel_github/Assets/_Project/Art/Cats -name *.controller)",
+      "Bash(grep -rn '\\\\.text = \\\\$\\\\|\\\\.text = \"' Assets/_Project/Scripts/ --include=\"*.cs\")",
+      "Bash(grep -v \"Editor/\\\\|Debug\\\\.\\\\|Log\\(\\\\|\\\\.text = \\\\$\\\\\"{[a-z]\\\\|format\\(\")",
+      "Bash(grep -v \"^[0-9]\\\\|^$\\\\|^v\\\\.\\\\|^--\")",
+      "Bash(grep -iv \"^[0-9]\\\\|^$\\\\|^--\\\\|^v\\\\.\\\\|Category name\\\\|Nom du chat\\\\|Mina\\\\|RDC\")"
     ]
   }
 }

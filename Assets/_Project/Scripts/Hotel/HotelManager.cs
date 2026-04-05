@@ -60,8 +60,24 @@ namespace CatHotel.Hotel
         public event Action<CatInstance> OnCatArrived;
         public event Action<CatInstance> OnCatDeparted;
 
+        private void OnDestroy()
+        {
+            LocalizedStrings.OnLanguageChanged -= RefreshDescriptions;
+        }
+
+        private void RefreshDescriptions()
+        {
+            if (_personalityConfig == null) return;
+            foreach (var cat in _cats)
+            {
+                var (desc, _) = _personalityConfig.GeneratePersonality(cat.Breed, cat.CatName.GetHashCode());
+                cat.Description = desc;
+            }
+        }
+
         private IEnumerator Start()
         {
+            LocalizedStrings.OnLanguageChanged += RefreshDescriptions;
             // Auth/Ads init is now handled by BootManager.
             // If running Proto directly (editor), fallback to local init.
             if (AuthManager.Instance == null)
