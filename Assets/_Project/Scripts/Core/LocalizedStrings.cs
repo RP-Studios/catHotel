@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using CatHotel.Services;
 
 namespace CatHotel.Core
 {
@@ -42,20 +43,42 @@ namespace CatHotel.Core
         {
             CurrentLanguage = langCode;
             _current = langCode == "en" ? English : French;
-            UnityEngine.PlayerPrefs.SetString(PrefKey, langCode);
-            UnityEngine.PlayerPrefs.Save();
+
+            if (CloudSaveManager.Instance != null)
+            {
+                CloudSaveManager.Instance.Settings.language = langCode;
+                CloudSaveManager.Instance.SaveSettings();
+            }
+
             OnLanguageChanged?.Invoke();
         }
 
         /// <summary>Initialize language from saved preference or system language.</summary>
         public static void InitFromSystem()
         {
-            // Check saved pref first
+            // Try cloud save first
+            if (CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
+                && !string.IsNullOrEmpty(CloudSaveManager.Instance.Settings.language))
+            {
+                string saved = CloudSaveManager.Instance.Settings.language;
+                CurrentLanguage = saved;
+                _current = saved == "en" ? English : French;
+                return;
+            }
+
+            // Fallback: check PlayerPrefs (migration from old system)
             if (UnityEngine.PlayerPrefs.HasKey(PrefKey))
             {
                 string saved = UnityEngine.PlayerPrefs.GetString(PrefKey);
                 CurrentLanguage = saved;
                 _current = saved == "en" ? English : French;
+
+                // Migrate to cloud save
+                if (CloudSaveManager.Instance != null)
+                {
+                    CloudSaveManager.Instance.Settings.language = saved;
+                    CloudSaveManager.Instance.SaveSettings();
+                }
                 return;
             }
 
@@ -72,8 +95,11 @@ namespace CatHotel.Core
                 _current = English;
             }
 
-            UnityEngine.PlayerPrefs.SetString(PrefKey, CurrentLanguage);
-            UnityEngine.PlayerPrefs.Save();
+            if (CloudSaveManager.Instance != null)
+            {
+                CloudSaveManager.Instance.Settings.language = CurrentLanguage;
+                CloudSaveManager.Instance.SaveSettings();
+            }
         }
 
         // ==================== FRENCH ====================

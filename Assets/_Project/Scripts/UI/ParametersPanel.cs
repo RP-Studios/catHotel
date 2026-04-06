@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using DG.Tweening;
+using CatHotel.Services;
 
 namespace CatHotel.UI
 {
@@ -306,8 +307,12 @@ namespace CatHotel.UI
             bool wasOn = _pushToggleOn.activeSelf;
             _pushToggleOn.SetActive(!wasOn);
             _pushToggleOff.SetActive(wasOn);
-            PlayerPrefs.SetInt(PrefPush, wasOn ? 0 : 1);
-            PlayerPrefs.Save();
+
+            if (CloudSaveManager.Instance != null)
+            {
+                CloudSaveManager.Instance.Settings.pushNotifications = !wasOn;
+                CloudSaveManager.Instance.SaveSettings();
+            }
         }
 
         private void ToggleBattery()
@@ -316,8 +321,12 @@ namespace CatHotel.UI
             bool wasOn = _batteryToggleOn.activeSelf;
             _batteryToggleOn.SetActive(!wasOn);
             _batteryToggleOff.SetActive(wasOn);
-            PlayerPrefs.SetInt(PrefBattery, wasOn ? 0 : 1);
-            PlayerPrefs.Save();
+
+            if (CloudSaveManager.Instance != null)
+            {
+                CloudSaveManager.Instance.Settings.batterySaving = !wasOn;
+                CloudSaveManager.Instance.SaveSettings();
+            }
         }
 
         private void UpdateSliderDrag(Vector2 screenPos, RectTransform control,
@@ -367,31 +376,70 @@ namespace CatHotel.UI
             float t = 0f;
             if (control != null)
                 t = Mathf.InverseLerp(SliderMinX, SliderMaxX, control.anchoredPosition.x);
-            PlayerPrefs.SetFloat(key, t);
-            PlayerPrefs.Save();
+
+            if (CloudSaveManager.Instance != null)
+            {
+                if (key == PrefMusic)
+                    CloudSaveManager.Instance.Settings.musicVolume = t;
+                else if (key == PrefEffects)
+                    CloudSaveManager.Instance.Settings.effectsVolume = t;
+                CloudSaveManager.Instance.SaveSettings();
+            }
         }
 
         private void RestorePrefs()
         {
-            // Push notifications (default: on)
-            bool pushOn = PlayerPrefs.GetInt(PrefPush, 1) == 1;
-            if (_pushToggleOn != null) _pushToggleOn.SetActive(pushOn);
-            if (_pushToggleOff != null) _pushToggleOff.SetActive(!pushOn);
+            var settings = CloudSaveManager.Instance?.Settings;
 
-            // Battery saving (default: off)
-            bool batteryOn = PlayerPrefs.GetInt(PrefBattery, 0) == 1;
-            if (_batteryToggleOn != null) _batteryToggleOn.SetActive(batteryOn);
-            if (_batteryToggleOff != null) _batteryToggleOff.SetActive(!batteryOn);
+            if (settings != null && CloudSaveManager.Instance.IsLoaded)
+            {
+                // Push notifications
+                bool pushOn = settings.pushNotifications;
+                if (_pushToggleOn != null) _pushToggleOn.SetActive(pushOn);
+                if (_pushToggleOff != null) _pushToggleOff.SetActive(!pushOn);
 
-            // Music volume (default: 1.0)
-            float musicVol = PlayerPrefs.GetFloat(PrefMusic, 1f);
-            SetMusicVolume(musicVol);
-            RestoreSlider(_musicControl, _musicImageValue, musicVol);
+                // Battery saving
+                bool batteryOn = settings.batterySaving;
+                if (_batteryToggleOn != null) _batteryToggleOn.SetActive(batteryOn);
+                if (_batteryToggleOff != null) _batteryToggleOff.SetActive(!batteryOn);
 
-            // Effects volume (default: 1.0)
-            float effectsVol = PlayerPrefs.GetFloat(PrefEffects, 1f);
-            _effectsVolume = effectsVol;
-            RestoreSlider(_effectsControl, _effectsImageValue, effectsVol);
+                // Music volume
+                SetMusicVolume(settings.musicVolume);
+                RestoreSlider(_musicControl, _musicImageValue, settings.musicVolume);
+
+                // Effects volume
+                _effectsVolume = settings.effectsVolume;
+                RestoreSlider(_effectsControl, _effectsImageValue, settings.effectsVolume);
+            }
+            else
+            {
+                // Fallback to PlayerPrefs for migration / first launch
+                bool pushOn = PlayerPrefs.GetInt(PrefPush, 1) == 1;
+                if (_pushToggleOn != null) _pushToggleOn.SetActive(pushOn);
+                if (_pushToggleOff != null) _pushToggleOff.SetActive(!pushOn);
+
+                bool batteryOn = PlayerPrefs.GetInt(PrefBattery, 0) == 1;
+                if (_batteryToggleOn != null) _batteryToggleOn.SetActive(batteryOn);
+                if (_batteryToggleOff != null) _batteryToggleOff.SetActive(!batteryOn);
+
+                float musicVol = PlayerPrefs.GetFloat(PrefMusic, 1f);
+                SetMusicVolume(musicVol);
+                RestoreSlider(_musicControl, _musicImageValue, musicVol);
+
+                float effectsVol = PlayerPrefs.GetFloat(PrefEffects, 1f);
+                _effectsVolume = effectsVol;
+                RestoreSlider(_effectsControl, _effectsImageValue, effectsVol);
+
+                // Migrate to cloud save
+                if (CloudSaveManager.Instance != null)
+                {
+                    CloudSaveManager.Instance.Settings.pushNotifications = pushOn;
+                    CloudSaveManager.Instance.Settings.batterySaving = batteryOn;
+                    CloudSaveManager.Instance.Settings.musicVolume = musicVol;
+                    CloudSaveManager.Instance.Settings.effectsVolume = effectsVol;
+                    CloudSaveManager.Instance.SaveSettings();
+                }
+            }
 
             // Language toggles
             UpdateLanguageToggles();

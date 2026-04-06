@@ -379,6 +379,10 @@ namespace CatHotel.Hotel
             Vector2Int placedPos = _currentGridPos;
             CleanupPlacement();
             Debug.Log($"[Placement] Placed {placedName} at {placedPos}");
+
+            // Auto-save after placing object
+            var hotel = GetComponent<HotelManager>() ?? FindAnyObjectByType<HotelManager>();
+            if (hotel != null) hotel.SaveProgression();
         }
 
         public void CancelPlacement()
