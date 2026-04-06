@@ -96,7 +96,8 @@
       "Bash(grep -rn '\\\\.text = \\\\$\\\\|\\\\.text = \"' Assets/_Project/Scripts/ --include=\"*.cs\")",
       "Bash(grep -v \"Editor/\\\\|Debug\\\\.\\\\|Log\\(\\\\|\\\\.text = \\\\$\\\\\"{[a-z]\\\\|format\\(\")",
       "Bash(grep -v \"^[0-9]\\\\|^$\\\\|^v\\\\.\\\\|^--\")",
-      "Bash(grep -iv \"^[0-9]\\\\|^$\\\\|^--\\\\|^v\\\\.\\\\|Category name\\\\|Nom du chat\\\\|Mina\\\\|RDC\")"
+      "Bash(grep -iv \"^[0-9]\\\\|^$\\\\|^--\\\\|^v\\\\.\\\\|Category name\\\\|Nom du chat\\\\|Mina\\\\|RDC\")",
+      "Bash(grep -l \"save\\\\|Save\\\\|SAVE\\\\|cloud\\\\|Cloud\\\\|persistence\\\\|data\" \"/d/Unity/catHotel_github/docs/\"*.md)"
     ]
   }
 }

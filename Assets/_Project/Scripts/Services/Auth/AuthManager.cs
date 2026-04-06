@@ -43,7 +43,9 @@ namespace CatHotel.Services
                 options.SetEnvironmentName(_config.environmentName);
                 await UnityServices.InitializeAsync(options);
 
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                if (!AuthenticationService.Instance.IsSignedIn)
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
                 PlayerId = AuthenticationService.Instance.PlayerId;
                 IsSignedIn = true;
                 Debug.Log($"[Auth] UGS anonymous sign-in OK. PlayerId: {PlayerId}");
