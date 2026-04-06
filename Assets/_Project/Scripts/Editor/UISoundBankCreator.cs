@@ -46,6 +46,10 @@ namespace CatHotel.Editor
                 "Assets/_Project/Audio/SFX/UI/UI_TapNeutral.ogg");
             bank.tapNegativeClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
                 "Assets/_Project/Audio/SFX/UI/UI_TapNegative.ogg");
+            bank.openSectionClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/UI/UI_OpenSection.ogg");
+            bank.closeSectionClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/UI/UI_CloseSection.ogg");
         }
     }
 }

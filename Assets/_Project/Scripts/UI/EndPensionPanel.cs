@@ -188,6 +188,7 @@ namespace CatHotel.UI
             _bonusCoins = 0;
             _adInProgress = false;
 
+            UISoundManager.Instance?.PlayOpenSection();
             _panelObj.SetActive(true);
             Canvas.ForceUpdateCanvases();
             _panelWidth = _panel.rect.width;
@@ -239,6 +240,7 @@ namespace CatHotel.UI
         {
             if (!_isOpen) return;
             _isOpen = false;
+            UISoundManager.Instance?.PlayCloseSection();
             _slideTween?.Kill();
             if (_animCoroutine != null)
             {

@@ -18,5 +18,9 @@ namespace CatHotel.Audio
 
         [Header("Tap Negative")]
         public AudioClip tapNegativeClip;
+
+        [Header("Panel Open/Close")]
+        public AudioClip openSectionClip;
+        public AudioClip closeSectionClip;
     }
 }

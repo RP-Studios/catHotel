@@ -3,6 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Hotel;
 using CatHotel.Cats;
 
@@ -242,6 +243,8 @@ namespace CatHotel.UI
 
             RefreshValues();
 
+            UISoundManager.Instance?.PlayOpenSection();
+
             // Activate + position offscreen before slide
             _panelObj.SetActive(true);
             var p = _panel.anchoredPosition;
@@ -256,6 +259,7 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
 
+            UISoundManager.Instance?.PlayCloseSection();
             _isOpen = false;
             _currentCat = null;
 

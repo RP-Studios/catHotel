@@ -9,6 +9,8 @@ namespace CatHotel.Audio
         TapPositive,
         TapNeutral,
         TapNegative,
+        OpenSection,
+        CloseSection,
     }
 
     /// <summary>
@@ -23,6 +25,8 @@ namespace CatHotel.Audio
         private AudioClip[] _tapPositiveClips;
         private AudioClip _tapNeutralClip;
         private AudioClip _tapNegativeClip;
+        private AudioClip _openSectionClip;
+        private AudioClip _closeSectionClip;
 
         private AudioSource _source;
 
@@ -51,6 +55,8 @@ namespace CatHotel.Audio
                 _tapPositiveClips = bank.tapPositiveClips;
                 _tapNeutralClip = bank.tapNeutralClip;
                 _tapNegativeClip = bank.tapNegativeClip;
+                _openSectionClip = bank.openSectionClip;
+                _closeSectionClip = bank.closeSectionClip;
                 return;
             }
 
@@ -64,6 +70,10 @@ namespace CatHotel.Audio
                 "Assets/_Project/Audio/SFX/UI/UI_TapNeutral.ogg");
             _tapNegativeClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                 "Assets/_Project/Audio/SFX/UI/UI_TapNegative.ogg");
+            _openSectionClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/UI/UI_OpenSection.ogg");
+            _closeSectionClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/UI/UI_CloseSection.ogg");
 #else
             Debug.LogError("[UISoundManager] UISoundBank not found in Resources/. " +
                 "Create one via Assets > Create > Cat Hotel > UI Sound Bank and place it in Resources/.");
@@ -84,6 +94,8 @@ namespace CatHotel.Audio
         public void PlayTapPositive() => Play(UISoundType.TapPositive);
         public void PlayTapNeutral() => Play(UISoundType.TapNeutral);
         public void PlayTapNegative() => Play(UISoundType.TapNegative);
+        public void PlayOpenSection() => Play(UISoundType.OpenSection);
+        public void PlayCloseSection() => Play(UISoundType.CloseSection);
 
         private AudioClip GetClip(UISoundType type)
         {
@@ -96,6 +108,10 @@ namespace CatHotel.Audio
                     return _tapNeutralClip;
                 case UISoundType.TapNegative:
                     return _tapNegativeClip;
+                case UISoundType.OpenSection:
+                    return _openSectionClip;
+                case UISoundType.CloseSection:
+                    return _closeSectionClip;
                 default:
                     return null;
             }

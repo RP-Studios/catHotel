@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Services;
 
 namespace CatHotel.UI
@@ -449,6 +450,7 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = true;
+            UISoundManager.Instance?.PlayOpenSection();
             _panelObj.SetActive(true);
             var p = _panel.anchoredPosition;
             p.x = _panelWidth;
@@ -463,6 +465,7 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = false;
+            UISoundManager.Instance?.PlayCloseSection();
             _isDraggingMusic = false;
             _isDraggingEffects = false;
             _slideTween?.Kill();
