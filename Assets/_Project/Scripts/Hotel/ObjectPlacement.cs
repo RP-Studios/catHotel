@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using CatHotel.Audio;
 using CatHotel.Core;
 using CatHotel.Grid;
 using CatHotel.Economy;
@@ -165,7 +166,10 @@ namespace CatHotel.Hotel
                 float dist = Vector2.Distance(worldPos, _readyBtnObj.transform.position);
                 if (dist < ReadySize * 0.6f)
                 {
-                    if (_isValid) ConfirmPlacement();
+                    if (_isValid)
+                        ConfirmPlacement();
+                    else
+                        UISoundManager.Instance?.PlayTapNegative();
                     return;
                 }
             }
@@ -284,9 +288,12 @@ namespace CatHotel.Hotel
             // Debit coins
             if (!_economy.TrySpend(_currentData.cost))
             {
+                UISoundManager.Instance?.PlayTapNegative();
                 Debug.LogWarning("[Placement] Not enough coins");
                 return;
             }
+
+            UISoundManager.Instance?.PlayTapPositive();
 
             // Create the real HotelObject
             var go = new GameObject($"Obj_{_currentData.displayName}");
@@ -376,6 +383,7 @@ namespace CatHotel.Hotel
 
         public void CancelPlacement()
         {
+            UISoundManager.Instance?.PlayTapNeutral();
             CleanupPlacement();
         }
 

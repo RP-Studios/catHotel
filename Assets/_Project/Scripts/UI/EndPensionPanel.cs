@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Services;
 
 namespace CatHotel.UI
@@ -152,6 +153,7 @@ namespace CatHotel.UI
             if (_byeRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_byeRect, screenPos, null))
             {
+                UISoundManager.Instance?.PlayTapPositive();
                 Close();
                 return;
             }

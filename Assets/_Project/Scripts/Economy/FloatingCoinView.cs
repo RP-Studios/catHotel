@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Cats;
 using CatHotel.UI;
 
@@ -231,6 +232,7 @@ namespace CatHotel.Economy
             {
                 CollectCoin(catCoin);
                 PlayCoinCollectSfx();
+                UISoundManager.Instance?.PlayTapPositive();
             }
             else if (_catInfoPanel != null)
             {

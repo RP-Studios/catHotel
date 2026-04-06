@@ -67,6 +67,7 @@ namespace CatHotel.Boot
         private void OnDestroy()
         {
             Core.LocalizedStrings.OnLanguageChanged -= ApplySoundState;
+            if (_logoRect != null) _logoRect.DOKill();
         }
 
         private void Update()

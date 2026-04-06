@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using CatHotel.Audio;
 using CatHotel.Services;
 using CatHotel.UI;
 
@@ -28,6 +29,13 @@ namespace CatHotel.Boot
             {
                 var lsGo = new GameObject("[LoadingScreen]");
                 lsGo.AddComponent<LoadingScreen>();
+            }
+
+            // Create persistent UI sound manager (once, survives scene changes)
+            if (UISoundManager.Instance == null)
+            {
+                var sfxGo = new GameObject("[UISoundManager]");
+                sfxGo.AddComponent<UISoundManager>();
             }
 
             // Warmup shaders to avoid first-frame compilation stutter

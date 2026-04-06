@@ -1,18 +1,21 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using DG.Tweening;
+using CatHotel.Audio;
 
 namespace CatHotel.UI
 {
     /// <summary>
     /// Adds satisfying tap feedback to any UI element.
     /// Squash-and-stretch on press + subtle wobble on release.
+    /// Optionally plays a UI sound via UISoundManager.
     /// </summary>
     public class ButtonJuice : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         [SerializeField] private float _punchScale = 0.15f;
         [SerializeField] private float _pressDuration = 0.1f;
         [SerializeField] private float _releaseDuration = 0.3f;
+        [SerializeField] private UISoundType _soundType = UISoundType.TapNeutral;
 
         private RectTransform _rt;
         private Tween _tween;
@@ -25,6 +28,11 @@ namespace CatHotel.UI
         public void OnPointerDown(PointerEventData eventData)
         {
             if (_rt == null) return;
+
+            // Play UI sound
+            if (_soundType != UISoundType.None && UISoundManager.Instance != null)
+                UISoundManager.Instance.Play(_soundType);
+
             _tween?.Kill();
             _rt.localScale = Vector3.one;
 
