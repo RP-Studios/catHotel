@@ -16,7 +16,7 @@ namespace CatHotel.Services
         public float effectsVolume;      // 0-1
         public bool pushNotifications;
         public bool batterySaving;
-        public int saveVersion = 1;
+        public int saveVersion;          // 0 = never saved, 1+ = saved
     }
 
     [Serializable]
@@ -27,7 +27,7 @@ namespace CatHotel.Services
         public List<PlacedObjectSaveData> placedObjects = new();
         public List<CatCloudSaveData> cats = new();
         public string lastSaveTime;      // ISO 8601
-        public int saveVersion = 1;
+        public int saveVersion;          // 0 = never played, 1+ = has save
     }
 
     [Serializable]

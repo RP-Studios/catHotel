@@ -237,6 +237,8 @@ namespace CatHotel.Core
             // --- Scene Labels (static text in scene hierarchy) ---
             // Boot scene
             { "ui.play", "Jouer" },
+            { "ui.continue", "Continuer partie" },
+            { "ui.new_game", "Nouvelle partie" },
             { "ui.credits", "Crédits" },
             { "ui.parameters", "Paramètres" },
 
@@ -461,6 +463,8 @@ namespace CatHotel.Core
             // --- Scene Labels ---
             // Boot scene
             { "ui.play", "Play" },
+            { "ui.continue", "Continue" },
+            { "ui.new_game", "New game" },
             { "ui.credits", "Credits" },
             { "ui.parameters", "Settings" },
 

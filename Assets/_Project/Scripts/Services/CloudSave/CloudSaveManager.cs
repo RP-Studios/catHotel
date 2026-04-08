@@ -196,6 +196,7 @@ namespace CatHotel.Services
         /// </summary>
         public async void SaveProgression()
         {
+            if (Progression.saveVersion < 1) Progression.saveVersion = 1;
             Progression.lastSaveTime = DateTime.UtcNow.ToString("o");
 
             // Async local write (serialization on main thread, I/O on background)
@@ -226,8 +227,36 @@ namespace CatHotel.Services
         /// </summary>
         public void SaveProgressionImmediate()
         {
+            if (Progression.saveVersion < 1) Progression.saveVersion = 1;
             Progression.lastSaveTime = DateTime.UtcNow.ToString("o");
             LocalSaveProvider.SaveProgression(Progression);
+        }
+
+        /// <summary>
+        /// Reset all progression data (new game). Keeps settings intact.
+        /// Clears local + cloud.
+        /// </summary>
+        public async void ResetAllData()
+        {
+            Progression = new ProgressionSaveData();
+            LocalSaveProvider.SaveProgression(Progression);
+            LocalSaveProvider.ClearPendingSync();
+            HasPendingSync = false;
+            _progressionDirty = false;
+
+            if (IsCloudAvailable)
+            {
+                try
+                {
+                    await CloudSaveProvider.SaveAsync(ProgressionKey, Progression);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning($"[CloudSaveManager] Cloud reset failed: {e.Message}");
+                }
+            }
+
+            Debug.Log("[CloudSaveManager] Progression reset (new game)");
         }
 
         private void MarkPendingSync(bool settingsDirty = false, bool progressionDirty = false)
