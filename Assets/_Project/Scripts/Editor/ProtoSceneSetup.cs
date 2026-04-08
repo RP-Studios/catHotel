@@ -1905,10 +1905,8 @@ namespace CatHotel.Editor
             soHotel.FindProperty("_reputation").objectReferenceValue = repMgr;
             soHotel.FindProperty("_catSpawner").objectReferenceValue = spawner;
 
-            var breedsProp = soHotel.FindProperty("_availableBreeds");
-            breedsProp.arraySize = breedAssets.Length;
-            for (int i = 0; i < breedAssets.Length; i++)
-                breedsProp.GetArrayElementAtIndex(i).objectReferenceValue = breedAssets[i];
+            // Breeds are now lazy-loaded from Resources/Breeds/ via BreedRegistry.
+            // No need to assign them here — _breedEntries is configured in code.
             soHotel.ApplyModifiedProperties();
 
             // --- HudManager ---

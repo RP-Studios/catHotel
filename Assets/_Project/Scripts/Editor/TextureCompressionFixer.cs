@@ -101,5 +101,101 @@ namespace CatHotel.Editor
             Debug.Log($"[TextureCompression] Done. Optimized {changed}/{total} textures. " +
                       "(ASTC 6x6, maxSize 4096, crunched ON)");
         }
+
+        /// <summary>
+        /// Fix sprite import settings for 2D mobile:
+        /// - Disable mipmaps on sprites (causes blur in 2D ortho view)
+        /// - Disable mipmap streaming (not useful without mipmaps)
+        /// - Cap UI textures to 2048 (phones don't need 4096)
+        /// - Set Point filtering on small pixel-art sprites
+        /// </summary>
+        [MenuItem("Cat Hotel/Optimize Textures for Mobile (Fix Sprites + Size Caps)")]
+        public static void OptimizeForMobile()
+        {
+            // Cat + SpecialCats sprites: disable mipmaps (they cause blur in 2D)
+            string[] spriteGuids = AssetDatabase.FindAssets("t:Texture2D", new[]
+            {
+                "Assets/_Project/Art/Cats",
+                "Assets/_Project/Art/SpecialCats",
+                "Assets/_Project/Art/Objects",
+                "Assets/_Project/Art/Environment"
+            });
+
+            int changed = 0;
+            foreach (string guid in spriteGuids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer == null) continue;
+
+                bool dirty = false;
+
+                // Disable mipmaps — 2D ortho sprites are always viewed at native size
+                if (importer.mipmapEnabled)
+                {
+                    importer.mipmapEnabled = false;
+                    dirty = true;
+                }
+                if (importer.streamingMipmaps)
+                {
+                    importer.streamingMipmaps = false;
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    importer.SaveAndReimport();
+                    changed++;
+                }
+            }
+
+            // UI textures: cap to 2048, disable mipmaps
+            string[] uiGuids = AssetDatabase.FindAssets("t:Texture2D", new[]
+            {
+                "Assets/_Project/Art/UI"
+            });
+
+            int uiChanged = 0;
+            foreach (string guid in uiGuids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (importer == null) continue;
+
+                bool dirty = false;
+
+                if (importer.mipmapEnabled)
+                {
+                    importer.mipmapEnabled = false;
+                    dirty = true;
+                }
+                if (importer.streamingMipmaps)
+                {
+                    importer.streamingMipmaps = false;
+                    dirty = true;
+                }
+                if (importer.maxTextureSize > 2048)
+                {
+                    importer.maxTextureSize = 2048;
+
+                    var android = importer.GetPlatformTextureSettings("Android");
+                    if (android.overridden && android.maxTextureSize > 2048)
+                    {
+                        android.maxTextureSize = 2048;
+                        importer.SetPlatformTextureSettings(android);
+                    }
+                    dirty = true;
+                }
+
+                if (dirty)
+                {
+                    importer.SaveAndReimport();
+                    uiChanged++;
+                }
+            }
+
+            Debug.Log($"[MobileOptim] Sprites: {changed} fixed (mipmaps OFF). " +
+                      $"UI textures: {uiChanged} fixed (mipmaps OFF, capped 2048).");
+        }
     }
 }

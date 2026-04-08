@@ -21,7 +21,22 @@ namespace CatHotel.Hotel
         [Header("Config")]
         [SerializeField] private GameConfig _config;
         [SerializeField] private CatPersonalityConfig _personalityConfig;
-        [SerializeField] private CatBreedData[] _availableBreeds;
+
+        [Header("Breed Registry (lazy-loaded from Resources/Breeds/)")]
+        [SerializeField] private BreedRegistry.BreedEntry[] _breedEntries = new[]
+        {
+            new BreedRegistry.BreedEntry { assetName = "Breed_Europeen", minReputation = 0 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_Europeen2", minReputation = 0 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_Europeen3", minReputation = 0 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_SiberienBlack", minReputation = 0 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_SiberienWhite", minReputation = 0 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_Ragdoll", minReputation = 1 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_Ragdoll2", minReputation = 1 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_Siamois", minReputation = 2 },
+            new BreedRegistry.BreedEntry { assetName = "Breed_Chartreux", minReputation = 8 },
+        };
+
+        private BreedRegistry _breedRegistry;
 
         [Header("References")]
         [SerializeField] private GridRenderer _gridRenderer;
@@ -68,6 +83,7 @@ namespace CatHotel.Hotel
         private void OnDestroy()
         {
             LocalizedStrings.OnLanguageChanged -= RefreshDescriptions;
+            _breedRegistry?.UnloadAll();
         }
 
         private void RefreshDescriptions()
@@ -82,12 +98,17 @@ namespace CatHotel.Hotel
 
         private IEnumerator Start()
         {
+            // Initialize breed registry (lazy-loads breeds via Addressables)
+            _breedRegistry = new BreedRegistry(_breedEntries);
+
             LocalizedStrings.OnLanguageChanged += RefreshDescriptions;
             // Auth/Ads init is now handled by BootManager.
             // If running Proto directly (editor), fallback to local init.
             if (AuthManager.Instance == null)
             {
                 Debug.Log("[Hotel] No BootManager — running standalone init");
+                // Init Addressables if Boot didn't run
+                yield return UnityEngine.AddressableAssets.Addressables.InitializeAsync();
                 // Create a temporary AuthManager for editor testing
                 var authGo = new GameObject("[AuthManager]");
                 var auth = authGo.AddComponent<AuthManager>();
@@ -137,6 +158,10 @@ namespace CatHotel.Hotel
 
             // Load progression from cloud save (after grid is built)
             LoadProgression();
+
+            // Preload only the breeds the player has unlocked (async, spread across frames)
+            int currentRep = _reputation != null ? _reputation.Level : 0;
+            yield return _breedRegistry.PreloadUnlockedAsync(currentRep);
 
             // Spawn first cat only if no cats were restored from save
             if (_cats.Count == 0)
@@ -328,11 +353,11 @@ namespace CatHotel.Hotel
             var affinityRng = new System.Random(catName.GetHashCode() + 7919);
             CatBreedData likedBreed = null;
             CatBreedData dislikedBreed = null;
-            if (_availableBreeds.Length > 1)
+            if (_breedRegistry.Count > 1)
             {
-                // Build list of other breeds
+                // Build list of other breeds (from currently loaded breeds)
                 var otherBreeds = new System.Collections.Generic.List<CatBreedData>();
-                foreach (var b in _availableBreeds)
+                foreach (var b in _breedRegistry.LoadedBreeds)
                     if (b.breedName != breed.breedName) otherBreeds.Add(b);
 
                 if (otherBreeds.Count > 0 && affinityRng.NextDouble() < _config.likedBreedChance)
@@ -411,12 +436,8 @@ namespace CatHotel.Hotel
 
         private CatBreedData PickRandomBreed()
         {
-            _unlockedBuffer.Clear();
-            foreach (var breed in _availableBreeds)
-            {
-                if (_reputation.IsBreedUnlocked(breed.minReputation))
-                    _unlockedBuffer.Add(breed);
-            }
+            int currentRep = _reputation != null ? _reputation.Level : 0;
+            _breedRegistry.GetUnlocked(currentRep, _unlockedBuffer);
             if (_unlockedBuffer.Count == 0) return null;
             return _unlockedBuffer[UnityEngine.Random.Range(0, _unlockedBuffer.Count)];
         }
@@ -733,16 +754,8 @@ namespace CatHotel.Hotel
 
             foreach (var saved in savedCats)
             {
-                // Find breed
-                CatBreedData breed = null;
-                foreach (var b in _availableBreeds)
-                {
-                    if (b.breedName == saved.breedName)
-                    {
-                        breed = b;
-                        break;
-                    }
-                }
+                // Find breed (lazy-loads from Resources if not cached)
+                CatBreedData breed = _breedRegistry.FindByName(saved.breedName);
                 if (breed == null)
                 {
                     Debug.LogWarning($"[Hotel] Breed '{saved.breedName}' not found, skipping cat");
@@ -826,10 +839,10 @@ namespace CatHotel.Hotel
                 var affinityRng = new System.Random(saved.catName.GetHashCode() + 7919);
                 CatBreedData likedBreed = null;
                 CatBreedData dislikedBreed = null;
-                if (_availableBreeds.Length > 1)
+                if (_breedRegistry.Count > 1)
                 {
                     var otherBreeds = new List<CatBreedData>();
-                    foreach (var b in _availableBreeds)
+                    foreach (var b in _breedRegistry.LoadedBreeds)
                         if (b.breedName != breed.breedName) otherBreeds.Add(b);
 
                     if (otherBreeds.Count > 0 && affinityRng.NextDouble() < _config.likedBreedChance)
