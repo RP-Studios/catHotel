@@ -203,7 +203,7 @@ namespace CatHotel.Hotel
             float cx = _currentGridPos.x + _currentData.size.x * 0.5f;
             float cy;
             if (_currentData.wallMount)
-                cy = _currentGridPos.y + 0.65f; // centered on wall tile
+                cy = _currentGridPos.y + 0.45f; // centered on wall tile
             else
                 cy = _currentGridPos.y + 0.25f;
             _previewObj.transform.position = new Vector3(cx, cy, 0f);
@@ -299,7 +299,7 @@ namespace CatHotel.Hotel
             var go = new GameObject($"Obj_{_currentData.displayName}");
             float posY;
             if (_currentData.wallMount)
-                posY = _currentGridPos.y + 0.65f;
+                posY = _currentGridPos.y + 0.45f;
             else
                 posY = _currentGridPos.y + 0.25f;
             go.transform.position = new Vector3(
@@ -456,6 +456,8 @@ namespace CatHotel.Hotel
                 _cancelSr.sprite = _cancelFrames[_animFrame % _cancelFrames.Length];
         }
 
+        private const float WallMountScaleFactor = 0.75f;
+
         private static void ScaleToFit(GameObject go, SpriteRenderer sr, HotelObjectData data)
         {
             if (sr.sprite == null) return;
@@ -466,6 +468,7 @@ namespace CatHotel.Hotel
             float targetW = data.size.x;
             float targetH = data.size.y;
             float scale = Mathf.Min(targetW / spriteW, targetH / spriteH) * data.visualScale;
+            if (data.wallMount) scale *= WallMountScaleFactor;
             go.transform.localScale = new Vector3(scale, scale, 1f);
         }
 

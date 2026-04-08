@@ -1998,9 +1998,32 @@ namespace CatHotel.Editor
             var objectSelector = mgrObj.GetComponent<ObjectSelector>();
             if (objectSelector == null)
                 objectSelector = mgrObj.AddComponent<ObjectSelector>();
+            // --- ObjectMover ---
+            var objectMover = mgrObj.GetComponent<ObjectMover>();
+            if (objectMover == null)
+                objectMover = mgrObj.AddComponent<ObjectMover>();
+            var soMover = new SerializedObject(objectMover);
+            soMover.FindProperty("_selector").objectReferenceValue = objectSelector;
+            soMover.FindProperty("_placement").objectReferenceValue = objectPlacement;
+            soMover.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+            soMover.FindProperty("_economy").objectReferenceValue = economyMgr;
+
+            soMover.FindProperty("_cameraController").objectReferenceValue = camCtrl;
+            var readyArr = soMover.FindProperty("_readyFrames");
+            readyArr.arraySize = readySprites.Length;
+            for (int i = 0; i < readySprites.Length; i++)
+                readyArr.GetArrayElementAtIndex(i).objectReferenceValue = readySprites[i];
+            var cancelArr = soMover.FindProperty("_cancelFrames");
+            cancelArr.arraySize = cancelSprites.Length;
+            for (int i = 0; i < cancelSprites.Length; i++)
+                cancelArr.GetArrayElementAtIndex(i).objectReferenceValue = cancelSprites[i];
+            soMover.ApplyModifiedProperties();
+
+            // Wire ObjectMover to ObjectSelector
             var soSelector = new SerializedObject(objectSelector);
             soSelector.FindProperty("_catSpawner").objectReferenceValue = spawner;
             soSelector.FindProperty("_objectPlacement").objectReferenceValue = objectPlacement;
+            soSelector.FindProperty("_objectMover").objectReferenceValue = objectMover;
             soSelector.ApplyModifiedProperties();
 
             // --- ShopPanel ---
