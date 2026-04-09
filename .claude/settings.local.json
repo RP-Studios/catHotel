@@ -97,7 +97,11 @@
       "Bash(grep -v \"Editor/\\\\|Debug\\\\.\\\\|Log\\(\\\\|\\\\.text = \\\\$\\\\\"{[a-z]\\\\|format\\(\")",
       "Bash(grep -v \"^[0-9]\\\\|^$\\\\|^v\\\\.\\\\|^--\")",
       "Bash(grep -iv \"^[0-9]\\\\|^$\\\\|^--\\\\|^v\\\\.\\\\|Category name\\\\|Nom du chat\\\\|Mina\\\\|RDC\")",
-      "Bash(grep -l \"save\\\\|Save\\\\|SAVE\\\\|cloud\\\\|Cloud\\\\|persistence\\\\|data\" \"/d/Unity/catHotel_github/docs/\"*.md)"
+      "Bash(grep -l \"save\\\\|Save\\\\|SAVE\\\\|cloud\\\\|Cloud\\\\|persistence\\\\|data\" \"/d/Unity/catHotel_github/docs/\"*.md)",
+      "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\"*.asset \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\")",
+      "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\"*.meta \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\")",
+      "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\"*.asset \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\")",
+      "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\"*.meta \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\")"
     ]
   }
 }

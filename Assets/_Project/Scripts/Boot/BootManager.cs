@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 using CatHotel.Audio;
 using CatHotel.Core;
 using CatHotel.Services;
@@ -47,8 +48,8 @@ namespace CatHotel.Boot
                 csGo.AddComponent<CloudSaveManager>();
             }
 
-            // Warmup shaders to avoid first-frame compilation stutter
-            yield return WarmupShaders();
+            // Initialize Addressables (loads catalog, required before any breed loading)
+            yield return Addressables.InitializeAsync();
 
             // Initialize Auth (non-blocking, with timeout)
             if (AuthManager.Instance != null)
@@ -159,11 +160,5 @@ namespace CatHotel.Boot
             }
         }
 
-        private IEnumerator WarmupShaders()
-        {
-            // Force Unity to precompile all shader variants used in the project
-            Shader.WarmupAllShaders();
-            yield return null; // let the frame flush
-        }
     }
 }
