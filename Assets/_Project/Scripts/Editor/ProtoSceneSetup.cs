@@ -1112,7 +1112,7 @@ namespace CatHotel.Editor
             ("Walk Sad/ragdoll_orion_walk_sad_right.png", "ori_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
-        [MenuItem("Cat Hotel/Setup Proto Scene")]
+        [MenuItem("Cat Hotel/Scene/Setup Proto Scene", false, 1)]
         public static void SetupScene()
         {
             ConfigureSpriteImports();

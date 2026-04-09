@@ -34,11 +34,16 @@ namespace CatHotel.Boot
                 lsGo.AddComponent<LoadingScreen>();
             }
 
-            // Create persistent UI sound manager (once, survives scene changes)
+            // Create persistent sound managers (once, survive scene changes)
             if (UISoundManager.Instance == null)
             {
                 var sfxGo = new GameObject("[UISoundManager]");
                 sfxGo.AddComponent<UISoundManager>();
+            }
+            if (CatSoundManager.Instance == null)
+            {
+                var catSfxGo = new GameObject("[CatSoundManager]");
+                catSfxGo.AddComponent<CatSoundManager>();
             }
 
             // Create persistent cloud save manager (once, survives scene changes)

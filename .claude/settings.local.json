@@ -101,7 +101,8 @@
       "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\"*.asset \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\")",
       "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\"*.meta \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\")",
       "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\"*.asset \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\")",
-      "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\"*.meta \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\")"
+      "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\"*.meta \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\")",
+      "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Scripts\" -name \"*.cs\" -type f -exec grep -l \"AnimationEvent\\\\|OnAnimationEvent\\\\|CatSound\\\\|AudioSource\" {} \\\\;)"
     ]
   }
 }

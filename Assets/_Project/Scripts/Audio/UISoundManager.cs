@@ -23,7 +23,7 @@ namespace CatHotel.Audio
         public static UISoundManager Instance { get; private set; }
 
         private AudioClip[] _tapPositiveClips;
-        private AudioClip _tapNeutralClip;
+        private AudioClip[] _tapNeutralClips;
         private AudioClip _tapNegativeClip;
         private AudioClip _openSectionClip;
         private AudioClip _closeSectionClip;
@@ -53,7 +53,7 @@ namespace CatHotel.Audio
             if (bank != null)
             {
                 _tapPositiveClips = bank.tapPositiveClips;
-                _tapNeutralClip = bank.tapNeutralClip;
+                _tapNeutralClips = bank.tapNeutralClips;
                 _tapNegativeClip = bank.tapNegativeClip;
                 _openSectionClip = bank.openSectionClip;
                 _closeSectionClip = bank.closeSectionClip;
@@ -66,8 +66,14 @@ namespace CatHotel.Audio
             for (int i = 0; i < 6; i++)
                 _tapPositiveClips[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                     $"Assets/_Project/Audio/SFX/UI/UI_TapPositive-{(i + 1):D3}.ogg");
-            _tapNeutralClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+
+            _tapNeutralClips = new AudioClip[5];
+            _tapNeutralClips[0] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                 "Assets/_Project/Audio/SFX/UI/UI_TapNeutral.ogg");
+            for (int i = 1; i <= 4; i++)
+                _tapNeutralClips[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/UI/UI_TapNeutral-{i:D3}.ogg");
+
             _tapNegativeClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
                 "Assets/_Project/Audio/SFX/UI/UI_TapNegative.ogg");
             _openSectionClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
@@ -102,10 +108,9 @@ namespace CatHotel.Audio
             switch (type)
             {
                 case UISoundType.TapPositive:
-                    if (_tapPositiveClips == null || _tapPositiveClips.Length == 0) return null;
-                    return _tapPositiveClips[Random.Range(0, _tapPositiveClips.Length)];
+                    return PickRandom(_tapPositiveClips);
                 case UISoundType.TapNeutral:
-                    return _tapNeutralClip;
+                    return PickRandom(_tapNeutralClips);
                 case UISoundType.TapNegative:
                     return _tapNegativeClip;
                 case UISoundType.OpenSection:
@@ -115,6 +120,12 @@ namespace CatHotel.Audio
                 default:
                     return null;
             }
+        }
+
+        private static AudioClip PickRandom(AudioClip[] clips)
+        {
+            if (clips == null || clips.Length == 0) return null;
+            return clips[Random.Range(0, clips.Length)];
         }
     }
 }

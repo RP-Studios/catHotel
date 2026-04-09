@@ -67,7 +67,7 @@ namespace CatHotel.Editor
             public bool Loop;
         }
 
-        [MenuItem("Cat Hotel/Sound Tester", false, 20)]
+        [MenuItem("Cat Hotel/Audio/Sound Tester", false, 1)]
         public static void ShowWindow()
         {
             var window = GetWindow<SoundTesterWindow>("Sound Tester");

@@ -16,7 +16,7 @@ namespace CatHotel.Editor
     /// </summary>
     public static class AddressablesSetup
     {
-        [MenuItem("Cat Hotel/Setup Addressables")]
+        [MenuItem("Cat Hotel/Build/Setup Addressables", false, 1)]
         public static void Setup()
         {
             var settings = AddressableAssetSettingsDefaultObject.Settings;
@@ -70,7 +70,7 @@ namespace CatHotel.Editor
         /// Verify that no individual sprites are marked as addressable (causes duplication).
         /// Run if build size seems too large.
         /// </summary>
-        [MenuItem("Cat Hotel/Addressables - Check for Duplicates")]
+        [MenuItem("Cat Hotel/Build/Check Addressables Duplicates", false, 2)]
         public static void CheckDuplicates()
         {
             var settings = AddressableAssetSettingsDefaultObject.Settings;

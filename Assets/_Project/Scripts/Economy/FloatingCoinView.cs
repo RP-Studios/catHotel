@@ -236,6 +236,7 @@ namespace CatHotel.Economy
             }
             else if (_catInfoPanel != null)
             {
+                CatSoundManager.Instance?.PlayMeow();
                 var instance = _catInfoPanel.FindCatInstance(tappedCat);
                 if (instance != null)
                     _catInfoPanel.Show(instance);

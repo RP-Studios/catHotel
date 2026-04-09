@@ -13,8 +13,8 @@ namespace CatHotel.Audio
         [Header("Tap Positive (random variant)")]
         public AudioClip[] tapPositiveClips;
 
-        [Header("Tap Neutral")]
-        public AudioClip tapNeutralClip;
+        [Header("Tap Neutral (random variant)")]
+        public AudioClip[] tapNeutralClips;
 
         [Header("Tap Negative")]
         public AudioClip tapNegativeClip;

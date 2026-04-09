@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Action = System.Action;
 using UnityEngine;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Grid;
 using CatHotel.Core;
 using CatHotel.Hotel;
@@ -463,6 +464,12 @@ namespace CatHotel.Cats
 
             _chosenRestState = DirectionalState(animPrefix, _currentDir);
             PlayAnimState(_chosenRestState);
+
+            // Play action SFX
+            if (need == NeedType.Hunger)
+                CatSoundManager.Instance?.PlayEat();
+            else if (need == NeedType.Thirst)
+                CatSoundManager.Instance?.PlayDrink();
 
             float duration = _targetObject.Data.useDuration;
             float ratePerSec = _targetObject.SatisfactionRate;

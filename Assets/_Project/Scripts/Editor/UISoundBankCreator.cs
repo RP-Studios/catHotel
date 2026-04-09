@@ -6,7 +6,7 @@ namespace CatHotel.Editor
 {
     public static class UISoundBankCreator
     {
-        [MenuItem("Cat Hotel/Create UI Sound Bank", false, 30)]
+        [MenuItem("Cat Hotel/Audio/Create UI Sound Bank", false, 2)]
         public static void CreateBank()
         {
             const string assetPath = "Assets/_Project/Resources/UISoundBank.asset";
@@ -42,8 +42,12 @@ namespace CatHotel.Editor
                 bank.tapPositiveClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
                     $"Assets/_Project/Audio/SFX/UI/UI_TapPositive-{(i + 1):D3}.ogg");
 
-            bank.tapNeutralClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
+            bank.tapNeutralClips = new AudioClip[5];
+            bank.tapNeutralClips[0] = AssetDatabase.LoadAssetAtPath<AudioClip>(
                 "Assets/_Project/Audio/SFX/UI/UI_TapNeutral.ogg");
+            for (int i = 1; i <= 4; i++)
+                bank.tapNeutralClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/UI/UI_TapNeutral-{i:D3}.ogg");
             bank.tapNegativeClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
                 "Assets/_Project/Audio/SFX/UI/UI_TapNegative.ogg");
             bank.openSectionClip = AssetDatabase.LoadAssetAtPath<AudioClip>(
