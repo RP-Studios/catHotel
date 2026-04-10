@@ -102,7 +102,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -128,7 +128,7 @@ TextureImporter:
     textureFormat: -1
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 0
+    crunchedCompression: 1
     allowsAlphaSplitting: 0
     overridden: 0
     ignorePlatformSupport: 0
@@ -149,14 +149,14 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 50
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 0
+    crunchedCompression: 1
     allowsAlphaSplitting: 0
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -164,397 +164,133 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_0
+      name: ori_unhappy_right_0
       rect:
         serializedVersion: 2
-        x: 43
-        y: 114
-        width: 318
-        height: 238
+        x: 0
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c8a33dc2cdac6f5e0800000000000000
-      internalID: -1876089147759576436
+      spriteID: 89adc4e786051c448be36a1490886dac
+      internalID: -2099222783
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_1
+      name: ori_unhappy_right_1
       rect:
         serializedVersion: 2
-        x: 142
-        y: 346
-        width: 95
-        height: 80
+        x: 512
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 167ff0b40cfdc6770800000000000000
-      internalID: 8605499004984227681
+      spriteID: 341ca44822a20424ea61eaad48c05e96
+      internalID: -1393198745
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_2
+      name: ori_unhappy_right_2
       rect:
         serializedVersion: 2
-        x: 345
-        y: 320
-        width: 31
-        height: 28
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8c646e489cd78ebb0800000000000000
-      internalID: -4906533489548572984
+      spriteID: f45c240f9bf9a8b4188f49798a8d6cea
+      internalID: -1481303041
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_3
+      name: ori_unhappy_right_3
       rect:
         serializedVersion: 2
-        x: 555
-        y: 114
-        width: 319
-        height: 236
+        x: 1536
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b130d4f77e3674e50800000000000000
-      internalID: 6793508408836031259
+      spriteID: 48f527fece961aa48918feac8dc368ac
+      internalID: -485815624
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_4
+      name: ori_unhappy_right_4
       rect:
         serializedVersion: 2
-        x: 654
-        y: 344
-        width: 95
-        height: 79
+        x: 2048
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 66659fe75b8b2bc60800000000000000
-      internalID: 7832525791609575014
+      spriteID: 41fea2be4c114ab448d69a9e3f2177ea
+      internalID: -1341751161
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_5
+      name: ori_unhappy_right_5
       rect:
         serializedVersion: 2
-        x: 858
-        y: 318
-        width: 31
-        height: 28
+        x: 2560
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 6f5ef554913f97930800000000000000
-      internalID: 4141608622207526390
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_6
-      rect:
-        serializedVersion: 2
-        x: 1067
-        y: 114
-        width: 320
-        height: 234
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f654827d705777ea0800000000000000
-      internalID: -5875098512346561169
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_7
-      rect:
-        serializedVersion: 2
-        x: 1176
-        y: 344
-        width: 86
-        height: 84
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ebb45632487764a50800000000000000
-      internalID: 6505018121196489662
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_8
-      rect:
-        serializedVersion: 2
-        x: 1579
-        y: 114
-        width: 320
-        height: 234
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: f4b889824ae24d8a0800000000000000
-      internalID: -6281344297684399281
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_9
-      rect:
-        serializedVersion: 2
-        x: 1688
-        y: 345
-        width: 86
-        height: 80
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 643fb87e3a9211930800000000000000
-      internalID: 4112113718707090246
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_10
-      rect:
-        serializedVersion: 2
-        x: 2091
-        y: 114
-        width: 319
-        height: 236
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 29e6fd02011a4e9d0800000000000000
-      internalID: -2745892782146097518
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_11
-      rect:
-        serializedVersion: 2
-        x: 2197
-        y: 344
-        width: 88
-        height: 89
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9b9d6ec474f282470800000000000000
-      internalID: 8369991890747447737
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_12
-      rect:
-        serializedVersion: 2
-        x: 2394
-        y: 318
-        width: 31
-        height: 28
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: ce29ded7d87366020800000000000000
-      internalID: 2334614537680818924
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_13
-      rect:
-        serializedVersion: 2
-        x: 2603
-        y: 114
-        width: 318
-        height: 238
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: c8fcf9a8614f96d20800000000000000
-      internalID: 3272414981913563020
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_14
-      rect:
-        serializedVersion: 2
-        x: 2712
-        y: 342
-        width: 88
-        height: 84
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: de4f7e6e6e676b260800000000000000
-      internalID: 7113003395566793965
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_15
-      rect:
-        serializedVersion: 2
-        x: 2905
-        y: 320
-        width: 31
-        height: 28
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 0fb6a45d38f446660800000000000000
-      internalID: 7378109517177449456
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_16
-      rect:
-        serializedVersion: 2
-        x: 1372
-        y: 316
-        width: 31
-        height: 28
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d7c50585cce5cf860800000000000000
-      internalID: 7565025705823591549
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragdoll_orion_unhappy_right_17
-      rect:
-        serializedVersion: 2
-        x: 1884
-        y: 316
-        width: 31
-        height: 28
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 4f2be8ec4464eee40800000000000000
-      internalID: 5687560640752694004
+      spriteID: 2eb52b29a65c95a42abd7a1edcc58d7c
+      internalID: -64322809
       vertices: []
       indices: 
       edges: []
@@ -563,7 +299,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 76d826d8c05189f4daec1511af5a7163
     internalID: 0
     vertices: []
     indices: 
@@ -573,6 +309,12 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      ori_unhappy_right_0: -2099222783
+      ori_unhappy_right_1: -1393198745
+      ori_unhappy_right_2: -1481303041
+      ori_unhappy_right_3: -485815624
+      ori_unhappy_right_4: -1341751161
+      ori_unhappy_right_5: -64322809
       ragdoll_orion_unhappy_right_0: -1876089147759576436
       ragdoll_orion_unhappy_right_1: 8605499004984227681
       ragdoll_orion_unhappy_right_10: -2745892782146097518

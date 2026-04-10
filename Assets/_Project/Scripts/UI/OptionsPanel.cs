@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
+using CatHotel.Audio;
 
 namespace CatHotel.UI
 {
@@ -109,11 +111,11 @@ namespace CatHotel.UI
                 return;
             }
 
-            // MainMenu => not available yet
+            // MainMenu => return to Boot scene
             if (_mainMenuRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_mainMenuRect, screenPos, null))
             {
-                // TODO: return to main menu
+                ReturnToMainMenu();
                 return;
             }
         }
@@ -122,14 +124,15 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = true;
+            UISoundManager.Instance?.PlayOpenSection();
             _panelObj.SetActive(true);
             var p = _panel.anchoredPosition;
             p.x = _panelWidth;
             _panel.anchoredPosition = p;
             Time.timeScale = 0f;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
-                .SetEase(Ease.OutBack)
+            _slideTween = _panel.DOAnchorPosX(0f, 0.7f)
+                .SetEase(Ease.OutCubic)
                 .SetUpdate(true);
         }
 
@@ -137,8 +140,9 @@ namespace CatHotel.UI
         {
             if (_panel == null) return;
             _isOpen = false;
+            UISoundManager.Instance?.PlayCloseSection();
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .SetUpdate(true)
                 .OnComplete(() =>
@@ -148,12 +152,30 @@ namespace CatHotel.UI
                 });
         }
 
+        /// <summary>Close panel visually without unpausing (used when navigating to sub-panels).</summary>
+        private void CloseKeepPaused()
+        {
+            if (_panel == null) return;
+            _isOpen = false;
+            _slideTween?.Kill();
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
+                .SetEase(Ease.InCubic)
+                .SetUpdate(true)
+                .OnComplete(() => _panelObj.SetActive(false));
+        }
+
+        private void ReturnToMainMenu()
+        {
+            _isOpen = false;
+            LoadingScreen.TransitionTo("Boot", () => Time.timeScale = 1f);
+        }
+
         private void OpenParameters()
         {
             if (_parametersPanel == null) return;
-            Close();
+            CloseKeepPaused();
             _parametersPanel.Open();
-            _parametersPanel.OnClosed = Open; // Return to OptionsPanel when ParametersPanel closes
+            _parametersPanel.OnClosed = Open; // Return to OptionsPanel when ParametersPanel closes (still paused)
         }
 
         private static void AddJuice(RectTransform rt)

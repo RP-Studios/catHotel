@@ -14,17 +14,17 @@ namespace CatHotel.Hotel
         private static readonly ReputationLevel[] Levels = new[]
         {
             //                                              cats  happiness  cost   maxCats  xpThreshold
-            new ReputationLevel(0,  "Débutant",          0,  0,    0,    5,    0),
-            new ReputationLevel(1,  "Amateur",           3,  60,   100,  10,   50),
-            new ReputationLevel(2,  "Compétent",         5,  65,   200,  15,   150),
-            new ReputationLevel(3,  "Professionnel",     7,  70,   350,  20,   350),
-            new ReputationLevel(4,  "Expert",            10, 72,   500,  25,   700),
-            new ReputationLevel(5,  "Renommé",           12, 75,   750,  30,   1200),
-            new ReputationLevel(6,  "Célèbre",           14, 77,   1000, 35,   1950),
-            new ReputationLevel(7,  "Prestigieux",       16, 80,   1500, 40,   3000),
-            new ReputationLevel(8,  "Élite",             18, 82,   2000, 45,   4500),
-            new ReputationLevel(9,  "Légendaire",        20, 85,   3000, 50,   6500),
-            new ReputationLevel(10, "Maître des Chats",  25, 88,   5000, 55,   10000),
+            new ReputationLevel(0,  "rep.0",   0,  0,    0,    5,    0),
+            new ReputationLevel(1,  "rep.1",   3,  60,   100,  10,   50),
+            new ReputationLevel(2,  "rep.2",   5,  65,   200,  15,   150),
+            new ReputationLevel(3,  "rep.3",   7,  70,   350,  20,   350),
+            new ReputationLevel(4,  "rep.4",   10, 72,   500,  25,   700),
+            new ReputationLevel(5,  "rep.5",   12, 75,   750,  30,   1200),
+            new ReputationLevel(6,  "rep.6",   14, 77,   1000, 35,   1950),
+            new ReputationLevel(7,  "rep.7",   16, 80,   1500, 40,   3000),
+            new ReputationLevel(8,  "rep.8",   18, 82,   2000, 45,   4500),
+            new ReputationLevel(9,  "rep.9",   20, 85,   3000, 50,   6500),
+            new ReputationLevel(10, "rep.10",  25, 88,   5000, 55,   10000),
         };
 
         // XP rewards

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using CatHotel.Core;
 using CatHotel.Hotel;
 using CatHotel.Economy;
 using CatHotel.Services;
@@ -68,6 +69,8 @@ namespace CatHotel.UI
 
         private void Start()
         {
+            LocalizedStrings.OnLanguageChanged += OnLanguageChanged;
+
             // Disable BuildAction for now
             var buildObj = GameObject.Find("BuildAction");
             if (buildObj != null) buildObj.SetActive(false);
@@ -146,6 +149,20 @@ namespace CatHotel.UI
                 RefreshCoinsDisplay();
                 UpdatePurrls(_economy.Gems);
             }
+        }
+
+        private void OnDestroy()
+        {
+            LocalizedStrings.OnLanguageChanged -= OnLanguageChanged;
+        }
+
+        private void OnLanguageChanged()
+        {
+            // Reset dirty flags to force all labels to refresh
+            _prevLevel = -1;
+            _prevXp = -1;
+            _prevTimerSec = -1;
+            if (_floorText != null) _floorText.text = "";
         }
 
         private void Update()
@@ -233,8 +250,8 @@ namespace CatHotel.UI
         private void UpdateFloor()
         {
             // Static value — set once then skip
-            if (_floorText == null || _floorText.text == "RDC") return;
-            _floorText.text = "RDC";
+            if (_floorText == null || _floorText.text == Core.LocalizedStrings.Get("hud.floor.ground")) return;
+            _floorText.text = Core.LocalizedStrings.Get("hud.floor.ground");
         }
 
         private void UpdateTimer()
@@ -292,9 +309,9 @@ namespace CatHotel.UI
 
             // Current level
             if (_currentLvlValue != null)
-                _currentLvlValue.text = $"Niveau {level}";
+                _currentLvlValue.text = LocalizedStrings.Get("hud.level", level);
             if (_currentLvlDesc != null)
-                _currentLvlDesc.text = current.Name;
+                _currentLvlDesc.text = LocalizedStrings.Get(current.Name);
 
             if (next.HasValue)
             {
@@ -307,11 +324,11 @@ namespace CatHotel.UI
                 }
 
                 if (_nextLvlValue != null)
-                    _nextLvlValue.text = $"Niveau {next.Value.Index}";
+                    _nextLvlValue.text = LocalizedStrings.Get("hud.level", next.Value.Index);
                 if (_nextLvlDesc != null)
-                    _nextLvlDesc.text = next.Value.Name;
+                    _nextLvlDesc.text = LocalizedStrings.Get(next.Value.Name);
                 if (_nextLevelObjective != null)
-                    _nextLevelObjective.text = $"{qualifiedCats}/{next.Value.CatsRequired} chats à +{next.Value.MinHappiness:0}% de bonheur";
+                    _nextLevelObjective.text = LocalizedStrings.Get("hud.level.objective", qualifiedCats, next.Value.CatsRequired, next.Value.MinHappiness);
 
                 // XP bar based on accumulated XP progress
                 if (_pexImage != null)
@@ -326,11 +343,11 @@ namespace CatHotel.UI
             else
             {
                 if (_nextLvlValue != null)
-                    _nextLvlValue.text = "MAX";
+                    _nextLvlValue.text = LocalizedStrings.Get("hud.level.max");
                 if (_nextLvlDesc != null)
                     _nextLvlDesc.text = "";
                 if (_nextLevelObjective != null)
-                    _nextLevelObjective.text = "Niveau maximum atteint !";
+                    _nextLevelObjective.text = LocalizedStrings.Get("hud.level.max.reached");
                 if (_pexImage != null)
                 {
                     var offset = _pexImage.offsetMax;
@@ -391,7 +408,7 @@ namespace CatHotel.UI
                 if (boosted && _x2BoostActiveText != null)
                 {
                     int sec = Mathf.CeilToInt(boost.BoostTimeRemaining);
-                    _x2BoostActiveText.text = $"Boost x2 collecte de cat coins actif ! {sec}s";
+                    _x2BoostActiveText.text = LocalizedStrings.Get("hud.boost.active", sec);
                 }
             }
 

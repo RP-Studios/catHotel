@@ -72,7 +72,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -98,7 +98,7 @@ TextureImporter:
     textureFormat: -1
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 0
+    crunchedCompression: 1
     allowsAlphaSplitting: 0
     overridden: 0
     ignorePlatformSupport: 0
@@ -121,12 +121,12 @@ TextureImporter:
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 50
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 0
+    crunchedCompression: 1
     allowsAlphaSplitting: 0
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -134,177 +134,177 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_0
+      name: ori_walk_right_0
       rect:
         serializedVersion: 2
-        x: 14
+        x: 0
         y: 0
-        width: 241
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3852b5ec390211ce0800000000000000
-      internalID: -1436330986960116349
+      spriteID: 9d42e1ef4de412146a4af5b5c3a08497
+      internalID: -1929899965
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_1
+      name: ori_walk_right_1
       rect:
         serializedVersion: 2
-        x: 263
+        x: 256
         y: 0
-        width: 248
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2a695db3d2fc3a130800000000000000
-      internalID: 3576930322246637218
+      spriteID: 24c0c568ab706c149b75e0c7577d27f5
+      internalID: 2145863920
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_2
+      name: ori_walk_right_2
       rect:
         serializedVersion: 2
-        x: 520
+        x: 512
         y: 0
-        width: 248
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2f3ee866df6c12020800000000000000
-      internalID: 2315350475094811634
+      spriteID: cce4e891a36c8e646a545736962b2f3a
+      internalID: 1758355329
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_3
+      name: ori_walk_right_3
       rect:
         serializedVersion: 2
-        x: 783
+        x: 768
         y: 0
-        width: 241
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 8c28e2949b1fe3c50800000000000000
-      internalID: 6647015878144459464
+      spriteID: 0a25a30addccb1d4da98fd90f16ecb17
+      internalID: -396246149
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_4
+      name: ori_walk_right_4
       rect:
         serializedVersion: 2
-        x: 1038
+        x: 1024
         y: 0
-        width: 242
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7d5b5704fd90b79b0800000000000000
-      internalID: -5081456900093659689
+      spriteID: 7b654095d911a6f4ea6938a41a670097
+      internalID: 345564561
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_5
+      name: ori_walk_right_5
       rect:
         serializedVersion: 2
-        x: 1285
-        y: 1
-        width: 250
-        height: 254
+        x: 1280
+        y: 0
+        width: 256
+        height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4b8d9ee67a384d6f0800000000000000
-      internalID: -660758490173024076
+      spriteID: 41304bc1ae0568f49a14b0fdf75c31b2
+      internalID: -950346932
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_6
+      name: ori_walk_right_6
       rect:
         serializedVersion: 2
-        x: 1545
+        x: 1536
         y: 0
-        width: 246
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 344b39403065dc720800000000000000
-      internalID: 2868043108666553411
+      spriteID: e5f564fa3af551246b3c3a893f644c33
+      internalID: -672277160
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragdoll_orion_walk_right_7
+      name: ori_walk_right_7
       rect:
         serializedVersion: 2
-        x: 1805
+        x: 1792
         y: 0
-        width: 242
+        width: 256
         height: 256
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: a708379b79dbdb0e0800000000000000
-      internalID: -2252435779266314118
+      spriteID: f5030c011ca32ae4ca76df1821c8cec2
+      internalID: 1069899548
       vertices: []
       indices: 
       edges: []
@@ -313,7 +313,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 644f8c46943746447a9e4a9c75644d0b
     internalID: 0
     vertices: []
     indices: 
@@ -323,6 +323,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      ori_walk_right_0: -1929899965
+      ori_walk_right_1: 2145863920
+      ori_walk_right_2: 1758355329
+      ori_walk_right_3: -396246149
+      ori_walk_right_4: 345564561
+      ori_walk_right_5: -950346932
+      ori_walk_right_6: -672277160
+      ori_walk_right_7: 1069899548
       ragdoll_orion_walk_right_0: -1436330986960116349
       ragdoll_orion_walk_right_1: 3576930322246637218
       ragdoll_orion_walk_right_2: 2315350475094811634

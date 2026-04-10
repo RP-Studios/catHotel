@@ -90,7 +90,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 200
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -116,7 +116,7 @@ TextureImporter:
     textureFormat: -1
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 0
+    crunchedCompression: 1
     allowsAlphaSplitting: 0
     overridden: 0
     ignorePlatformSupport: 0
@@ -137,14 +137,14 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 50
     textureCompression: 1
     compressionQuality: 50
-    crunchedCompression: 0
+    crunchedCompression: 1
     allowsAlphaSplitting: 0
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -152,309 +152,265 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_0
+      name: ori_eating_right_0
       rect:
         serializedVersion: 2
-        x: 115
-        y: 100
-        width: 300
-        height: 266
+        x: 0
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 76bbfa9b490761cd0800000000000000
-      internalID: -2587757151804998809
+      spriteID: 5373cf9cc12f9d94b9a36ed20f8987c9
+      internalID: 1388392922
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_1
+      name: ori_eating_right_1
       rect:
         serializedVersion: 2
-        x: 622
-        y: 100
-        width: 305
-        height: 266
+        x: 512
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 784cd6972b34ef890800000000000000
-      internalID: -7422420702039522169
+      spriteID: ba66df5abb907564299713c62f2e1aa1
+      internalID: -1744826644
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_2
+      name: ori_eating_right_2
       rect:
         serializedVersion: 2
-        x: 1125
-        y: 100
-        width: 312
-        height: 263
+        x: 1024
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 0397ff0b3901ffe00800000000000000
-      internalID: 1080600662107978032
+      spriteID: 5f7c25d0e4a496d4796444e62cfcff30
+      internalID: -2057525354
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_3
+      name: ori_eating_right_3
       rect:
         serializedVersion: 2
-        x: 1411
-        y: 241
-        width: 31
-        height: 30
+        x: 1536
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: b7b60283af2d3ba70800000000000000
-      internalID: 8841642465583721339
+      spriteID: d957b6989206e2f4787988c16dc2599a
+      internalID: -1583134211
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_4
+      name: ori_eating_right_4
       rect:
         serializedVersion: 2
-        x: 1631
-        y: 100
-        width: 318
-        height: 267
+        x: 2048
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: fb7f6e19bab9cada0800000000000000
-      internalID: -5932195447964239937
+      spriteID: f9b2649be59c32a4d8a62e6dd65a6903
+      internalID: -1434355847
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_5
+      name: ori_eating_right_5
       rect:
         serializedVersion: 2
-        x: 1923
-        y: 241
-        width: 31
-        height: 30
+        x: 2560
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 0fdec9cadc909bd10800000000000000
-      internalID: 2141753876760292848
+      spriteID: d857d1f897e928346ac91a9c8d912d53
+      internalID: -166031514
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_6
+      name: ori_eating_right_6
       rect:
         serializedVersion: 2
-        x: 2140
-        y: 100
-        width: 323
-        height: 270
+        x: 3072
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3d3029f9b82f44830800000000000000
-      internalID: 4054632246031811539
+      spriteID: 0936a768cbafa1a4581be298e0f8e51f
+      internalID: -1383789397
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_7
+      name: ori_eating_right_7
       rect:
         serializedVersion: 2
-        x: 2661
-        y: 100
-        width: 314
-        height: 277
+        x: 3584
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 53b1b38cdaaf40300800000000000000
-      internalID: 217574306316229429
+      spriteID: 919bcc2288c06984fb28859741f25b60
+      internalID: -634719030
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_8
+      name: ori_eating_right_8
       rect:
         serializedVersion: 2
-        x: 3181
-        y: 100
-        width: 306
-        height: 268
+        x: 4096
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 4f8d501bbdb9e1250800000000000000
-      internalID: 5917338328281503988
+      spriteID: dec5b3220f7dcfc4e9cdf472b98b09a8
+      internalID: -1211460892
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_9
+      name: ori_eating_right_9
       rect:
         serializedVersion: 2
-        x: 3694
-        y: 100
-        width: 305
-        height: 266
+        x: 4608
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 25804b06ba7480330800000000000000
-      internalID: 3677267897135401042
+      spriteID: 162761eb3e5fca947b7f8e54e4fc56ab
+      internalID: -208480957
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_10
+      name: ori_eating_right_10
       rect:
         serializedVersion: 2
-        x: 4206
-        y: 100
-        width: 305
-        height: 266
+        x: 5120
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 29ca90d252993b100800000000000000
-      internalID: 122609999817583762
+      spriteID: 52e37025baef8b6459680027bd0932a0
+      internalID: -622805584
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: ragodoll_orion_eating_right_11
+      name: ori_eating_right_11
       rect:
         serializedVersion: 2
-        x: 4718
-        y: 100
-        width: 305
-        height: 266
+        x: 5632
+        y: 0
+        width: 512
+        height: 512
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c62924b241355a120800000000000000
-      internalID: 2424435320499114604
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragodoll_orion_eating_right_12
-      rect:
-        serializedVersion: 2
-        x: 5230
-        y: 100
-        width: 305
-        height: 266
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: d0b0e3585a697c2f0800000000000000
-      internalID: -952627158516364531
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: ragodoll_orion_eating_right_13
-      rect:
-        serializedVersion: 2
-        x: 5742
-        y: 100
-        width: 305
-        height: 266
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 29954b2a8b3507a40800000000000000
-      internalID: 5363879208667077010
+      spriteID: 9bf7c952a9882d6418c5f2bf71dd11b3
+      internalID: 761289949
       vertices: []
       indices: 
       edges: []
@@ -463,7 +419,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 99c434ac2e6e8c54f96b233bf48f4378
     internalID: 0
     vertices: []
     indices: 
@@ -473,6 +429,18 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
+      ori_eating_right_0: 1388392922
+      ori_eating_right_1: -1744826644
+      ori_eating_right_10: -622805584
+      ori_eating_right_11: 761289949
+      ori_eating_right_2: -2057525354
+      ori_eating_right_3: -1583134211
+      ori_eating_right_4: -1434355847
+      ori_eating_right_5: -166031514
+      ori_eating_right_6: -1383789397
+      ori_eating_right_7: -634719030
+      ori_eating_right_8: -1211460892
+      ori_eating_right_9: -208480957
       ragodoll_orion_eating_right_0: -2587757151804998809
       ragodoll_orion_eating_right_1: -7422420702039522169
       ragodoll_orion_eating_right_10: 122609999817583762

@@ -7,6 +7,8 @@ namespace CatHotel.Core
     {
         [Header("Identity")]
         public string breedName;
+        [Tooltip("Plural form for localization (e.g. 'Européens', 'Siamois')")]
+        public string breedNamePlural;
         public int minReputation;
         public bool isAggressive;
 

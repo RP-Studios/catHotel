@@ -6,6 +6,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Services;
 
 namespace CatHotel.UI
@@ -22,19 +23,23 @@ namespace CatHotel.UI
 
     /// <summary>
     /// End-of-pension recap panel. Does NOT pause the game.
-    /// Shows cat stats, animates numbers, auto-collects coins immediately,
-    /// then offers 15s window for x2 rewarded ad.
-    /// Queues multiple pension ends so they play one after another.
+    /// - Shows cat stats, animates numbers, auto-collects coins instantly
+    /// - ByeAction closes immediately at any time
+    /// - Auto-closes after 15s of inactivity
+    /// - If ad was triggered, closes on return
+    /// - Queues multiple pension ends
     /// </summary>
     public class EndPensionPanel : MonoBehaviour
     {
         private GameObject _panelObj;
         private RectTransform _panel;
         private float _panelWidth;
+        private float _panelRestX; // target X after slide-in (anchored position)
         private Tween _slideTween;
         private bool _isOpen;
         private bool _initialized;
         private bool _collected;
+        private bool _adInProgress;
 
         // UI elements
         private Image _catImage;
@@ -55,14 +60,14 @@ namespace CatHotel.UI
         // Current session
         private Action<int> _onCollect;
         private PensionEndData _data;
-        private int _bonusCoins; // extra coins from x2 ad (same amount again)
+        private int _bonusCoins;
         private Coroutine _animCoroutine;
         private Coroutine _autoCloseCoroutine;
 
         // Queue for multiple pension ends
         private readonly Queue<(PensionEndData data, Action<int> onCollect)> _pendingQueue = new();
 
-        private const float DoubleWindowDuration = 15f;
+        private const float AutoCloseDuration = 15f;
 
         // SFX
         [SerializeField] private AudioClip _collectSfx;
@@ -129,26 +134,32 @@ namespace CatHotel.UI
                 }
             }
 
+            // Store the rest position (where panel should sit after slide-in)
+            _panelRestX = _panel.anchoredPosition.x;
+
             _panelObj.SetActive(false);
             _initialized = true;
         }
 
         private void Update()
         {
-            if (!_isOpen || !_collected) return;
+            if (!_isOpen) return;
 
             var pointer = Pointer.current;
             if (pointer == null || !pointer.press.wasPressedThisFrame) return;
             Vector2 screenPos = pointer.position.ReadValue();
 
+            // ByeAction — always available, closes immediately
             if (_byeRect != null &&
                 RectTransformUtility.RectangleContainsScreenPoint(_byeRect, screenPos, null))
             {
+                UISoundManager.Instance?.PlayTapPositive();
                 Close();
                 return;
             }
 
-            if (_doubleRect != null && _doubleRect.gameObject.activeSelf &&
+            // Double gains via rewarded ad (only after coins collected)
+            if (_collected && _doubleRect != null && _doubleRect.gameObject.activeSelf &&
                 RectTransformUtility.RectangleContainsScreenPoint(_doubleRect, screenPos, null))
             {
                 TryDoubleGains();
@@ -160,7 +171,6 @@ namespace CatHotel.UI
             CacheReferences();
             if (_panel == null) return;
 
-            // If already showing a panel, queue this one
             if (_isOpen)
             {
                 _pendingQueue.Enqueue((data, onCollect));
@@ -176,14 +186,17 @@ namespace CatHotel.UI
             _onCollect = onCollect;
             _collected = false;
             _bonusCoins = 0;
+            _adInProgress = false;
 
+            UISoundManager.Instance?.PlayOpenSection();
             _panelObj.SetActive(true);
             Canvas.ForceUpdateCanvases();
             _panelWidth = _panel.rect.width;
             if (_panelWidth <= 0f) _panelWidth = 800f;
 
+            // Start offscreen to the right
             var pos = _panel.anchoredPosition;
-            pos.x = _panelWidth;
+            pos.x = _panelRestX + _panelWidth;
             _panel.anchoredPosition = pos;
 
             if (_catImage != null && data.CatSprite != null)
@@ -197,39 +210,46 @@ namespace CatHotel.UI
             if (_totalValue != null) _totalValue.text = "0";
 
             if (_byeLabel != null)
-                _byeLabel.text = $"Au revoir {data.CatName} !";
+                _byeLabel.text = Core.LocalizedStrings.Get("pension.bye", data.CatName);
 
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(true);
 
             _isOpen = true;
+
+            // Slide in to rest position
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
-                .SetEase(Ease.OutBack)
+            _slideTween = _panel.DOAnchorPosX(_panelRestX, 0.7f)
+                .SetEase(Ease.OutCubic)
                 .OnComplete(() =>
                 {
+                    // Snap to exact rest position
+                    var p = _panel.anchoredPosition;
+                    p.x = _panelRestX;
+                    _panel.anchoredPosition = p;
+
                     if (_animCoroutine != null) StopCoroutine(_animCoroutine);
                     _animCoroutine = StartCoroutine(AnimateNumbersThenCollect());
                 });
+
+            // Start auto-close timer from panel open (covers entire display)
+            StartAutoCloseTimer();
         }
 
         private void Close()
         {
             if (!_isOpen) return;
             _isOpen = false;
+            UISoundManager.Instance?.PlayCloseSection();
             _slideTween?.Kill();
             if (_animCoroutine != null)
             {
                 StopCoroutine(_animCoroutine);
                 _animCoroutine = null;
             }
-            if (_autoCloseCoroutine != null)
-            {
-                StopCoroutine(_autoCloseCoroutine);
-                _autoCloseCoroutine = null;
-            }
+            StopAutoCloseTimer();
 
-            // If coins weren't collected yet (e.g. early close), collect now
+            // Ensure coins are collected even on early close
             if (!_collected)
             {
                 _collected = true;
@@ -237,13 +257,8 @@ namespace CatHotel.UI
                 _onCollect = null;
             }
 
-            // Add bonus coins from x2 ad if any
-            if (_bonusCoins > 0)
-            {
-                _onCollect = null; // already invoked
-            }
-
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            // Slide out to the right
+            _slideTween = _panel.DOAnchorPosX(_panelRestX + _panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .OnComplete(() =>
                 {
@@ -251,6 +266,21 @@ namespace CatHotel.UI
                     _onCollect = null;
                     ShowNextInQueue();
                 });
+        }
+
+        private void StartAutoCloseTimer()
+        {
+            StopAutoCloseTimer();
+            _autoCloseCoroutine = StartCoroutine(AutoCloseAfterDelay());
+        }
+
+        private void StopAutoCloseTimer()
+        {
+            if (_autoCloseCoroutine != null)
+            {
+                StopCoroutine(_autoCloseCoroutine);
+                _autoCloseCoroutine = null;
+            }
         }
 
         private void ShowNextInQueue()
@@ -306,27 +336,22 @@ namespace CatHotel.UI
             if (_collected) return;
             _collected = true;
 
-            // Add coins immediately
             _onCollect?.Invoke(_data.TotalCoins);
             _onCollect = null;
 
-            // SFX
             if (_sfxSource != null && _collectSfx != null)
                 _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
 
-            // Coin fly animation
             int coinCount = Mathf.Clamp(_data.TotalCoins / 10, 3, 8);
             StartCoroutine(CoinFlyFromTotal(coinCount));
-
-            // Start auto-close timer for x2 window
-            _autoCloseCoroutine = StartCoroutine(AutoCloseAfterDelay());
         }
 
         private IEnumerator AutoCloseAfterDelay()
         {
-            yield return new WaitForSeconds(DoubleWindowDuration);
+            yield return new WaitForSeconds(AutoCloseDuration);
             _autoCloseCoroutine = null;
-            Close();
+            if (_isOpen && !_adInProgress)
+                Close();
         }
 
         private IEnumerator AnimateValue(TMP_Text text, float from, float to, float duration,
@@ -358,6 +383,9 @@ namespace CatHotel.UI
                 return;
             }
 
+            _adInProgress = true;
+            StopAutoCloseTimer(); // don't close while ad is playing
+
             ads.OnPensionAdCompleted += OnPensionAdSuccess;
             ads.OnPensionAdFailed += OnPensionAdFail;
             ads.ShowPensionAd();
@@ -366,8 +394,8 @@ namespace CatHotel.UI
         private void OnPensionAdSuccess()
         {
             UnsubPensionAd();
+            _adInProgress = false;
 
-            // Bonus = same amount as original total (not double — total was already collected)
             _bonusCoins = _data.TotalCoins;
             int newTotal = _data.TotalCoins + _bonusCoins;
 
@@ -383,17 +411,13 @@ namespace CatHotel.UI
                 }
             }
 
-            // Disable the double button after use
             if (_doubleRect != null)
                 _doubleRect.gameObject.SetActive(false);
 
-            // Add bonus coins immediately
-            // Use _economy via the same callback pattern — find EconomyManager
             var economy = GetComponent<CatHotel.Economy.EconomyManager>();
             if (economy != null)
                 economy.AddCoins(_bonusCoins);
 
-            // SFX + coin fly for the bonus
             if (_sfxSource != null && _collectSfx != null)
                 _sfxSource.PlayOneShot(_collectSfx, ParametersPanel.EffectsVolume);
 
@@ -402,15 +426,18 @@ namespace CatHotel.UI
 
             Debug.Log($"[Pension] x2 bonus: +{_bonusCoins} coins (total shown: {newTotal})");
 
-            // Reset auto-close timer
-            if (_autoCloseCoroutine != null) StopCoroutine(_autoCloseCoroutine);
-            _autoCloseCoroutine = StartCoroutine(AutoCloseAfterDelay());
+            // Close immediately after ad return
+            Close();
         }
 
         private void OnPensionAdFail()
         {
             UnsubPensionAd();
+            _adInProgress = false;
             Debug.LogWarning("[Pension] Ad failed");
+
+            // Close on ad failure too
+            Close();
         }
 
         private void UnsubPensionAd()

@@ -1,46 +1,46 @@
 using System.Collections.Generic;
 using UnityEngine;
+using CatHotel.Core;
 
 namespace CatHotel.Cats
 {
     /// <summary>
-    /// Pool of French cat names from the GDD.
+    /// Pool of cat names from localization.
     /// Tracks used names to avoid duplicates.
     /// </summary>
     public static class CatNames
     {
-        private static readonly string[] Names =
-        {
-            "Minou", "Felix", "Caramel", "Luna", "Tigrou", "Noisette",
-            "Moustache", "Pacha", "Cannelle", "Gribouille", "Minette", "Câlin",
-            "Filou", "Chipie", "Réglisse", "Perle", "Simba", "Plume",
-            "Biscuit", "Cookie", "Praline", "Nougat", "Macaron", "Brioche",
-            "Muffin", "Crumble", "Tiramisu", "Meringue", "Brownie", "Fudge",
-            "Cosmos", "Lune", "Étoile", "Comète", "Nova", "Nebula",
-            "Soleil", "Aurore", "Eclipse", "Galaxie", "Astro", "Pluton",
-            "Rubis", "Saphir", "Émeraude", "Jade", "Opale", "Ambre",
-            "Topaze", "Diamant", "Cristal", "Onyx", "Ivoire", "Corail",
-            "Ninja", "Pixel", "Wifi", "Sushi", "Tofu", "Wasabi",
-            "Mozart", "Picasso", "Darwin", "Merlin", "Zorro", "Gatsby",
-            "Chouette", "Papillon", "Colibri", "Hibou", "Renard", "Loutre"
-        };
-
+        private static string[] _names;
         private static readonly HashSet<string> UsedNames = new();
         private static int _duplicateCounter;
 
+        private static string[] Names
+        {
+            get
+            {
+                if (_names == null)
+                {
+                    string pool = LocalizedStrings.Get("names.pool");
+                    _names = pool.Split(',');
+                    for (int i = 0; i < _names.Length; i++)
+                        _names[i] = _names[i].Trim();
+                }
+                return _names;
+            }
+        }
+
         public static string GetRandomName()
         {
-            // Try to find an unused name
-            for (int attempt = 0; attempt < Names.Length; attempt++)
+            var names = Names;
+            for (int attempt = 0; attempt < names.Length; attempt++)
             {
-                string name = Names[Random.Range(0, Names.Length)];
+                string name = names[Random.Range(0, names.Length)];
                 if (UsedNames.Add(name))
                     return name;
             }
 
-            // All names used — generate numbered variant
             _duplicateCounter++;
-            string baseName = Names[Random.Range(0, Names.Length)];
+            string baseName = names[Random.Range(0, names.Length)];
             string numbered = $"{baseName} {_duplicateCounter + 1}";
             UsedNames.Add(numbered);
             return numbered;
@@ -55,6 +55,7 @@ namespace CatHotel.Cats
         {
             UsedNames.Clear();
             _duplicateCounter = 0;
+            _names = null; // re-read from localization on next access
         }
     }
 }

@@ -3,35 +3,36 @@ using UnityEngine;
 namespace CatHotel.Core
 {
     /// <summary>
-    /// Dynamically sets SpriteRenderer.sortingOrder based on Y position.
-    /// Lower Y (closer to camera) = higher sortingOrder.
-    /// Uses the bottom edge of the sprite for correct overlap.
+    /// Sets SpriteRenderer.sortingOrder based on Y position within its sorting layer.
+    /// Lower Y = higher sortingOrder = rendered in front.
+    /// X position is used as tie-breaker to prevent z-fighting.
+    ///
+    /// Sorting layers (back to front):
+    ///   Default  → tilemap decor (floor, walls)
+    ///   Carpets  → carpet objects
+    ///   Objects  → furniture, bowls, beds, etc.
+    ///   Cats     → all cats
+    ///   Bubbles  → mood/need bubbles, coins, fight clouds
     /// </summary>
     public class SortByY : MonoBehaviour
     {
-        /// <summary>Extra bias added to sortingOrder (e.g. +1 for on-table objects).</summary>
-        public int OrderBias;
-
-        /// <summary>Override Y used for sorting (e.g. use table's Y for on-table objects).</summary>
-        public float? SortYOverride;
-
         private SpriteRenderer _sr;
-        private float _bottomOffset;
-
-        private void Awake()
-        {
-            _sr = GetComponent<SpriteRenderer>();
-            if (_sr != null && _sr.sprite != null)
-            {
-                _bottomOffset = _sr.sprite.bounds.min.y * transform.localScale.y;
-            }
-        }
 
         private void LateUpdate()
         {
-            if (_sr == null) return;
-            float sortY = SortYOverride ?? (transform.position.y + _bottomOffset);
-            _sr.sortingOrder = Mathf.RoundToInt(-sortY * 100f) + 10000 + OrderBias;
+            if (_sr == null)
+            {
+                _sr = GetComponent<SpriteRenderer>();
+                if (_sr == null) return;
+            }
+
+            // Lower Y = higher order = rendered in front
+            int yOrder = Mathf.RoundToInt(-transform.position.y * 100f);
+
+            // X tie-breaker to prevent z-fighting at same Y
+            int xTieBreaker = Mathf.RoundToInt(transform.position.x);
+
+            _sr.sortingOrder = yOrder + xTieBreaker;
         }
     }
 }

@@ -53,6 +53,25 @@ namespace CatHotel.Grid
 
         public List<Vector2Int> Entrances { get; private set; } = new();
         public List<Vector2Int> Exits { get; private set; } = new();
+
+        /// <summary>Top-left entrance (pension cats arrive here).</summary>
+        public Vector2Int PensionEntrance { get; private set; }
+        /// <summary>Bottom-left entrance (refuge cats arrive here).</summary>
+        public Vector2Int RefugeEntrance { get; private set; }
+        /// <summary>Single right exit (unhappy cats leave here).</summary>
+        public Vector2Int UnhappyExit { get; private set; }
+
+        /// <summary>Animated doors at each entrance/exit. Key = grid position of the door wall cell.</summary>
+        public CatHotel.Hotel.AnimatedDoor PensionDoor { get; private set; }
+        public CatHotel.Hotel.AnimatedDoor RefugeDoor { get; private set; }
+        public CatHotel.Hotel.AnimatedDoor ExitDoor { get; private set; }
+
+        [Header("Doors")]
+        [SerializeField] private Sprite[] _doorFrames;
+
+        [Header("Entrance Logos")]
+        [SerializeField] private Sprite _pensionLogoSprite;
+        [SerializeField] private Sprite _refugeLogoSprite;
         public List<Vector2Int> CentralRoomFloorCells { get; private set; } = new();
 
         // Rotation matrices for T-shape corners
@@ -96,25 +115,40 @@ namespace CatHotel.Grid
 
             // --- Left entrances (2-wide corridors, cats arrive here) ---
             int wallXL = centralRect.xMin;                 // x=2 (left wall)
-            int entrance1Y = centralRect.yMin + 8;         // y=10
-            int entrance2Y = centralRect.yMax - 10;        // y=20
+            int entranceBottomY = centralRect.yMin + 8;    // y=10 (refuge)
+            int entranceTopY = centralRect.yMax - 10;      // y=20 (pension)
 
-            PunchCorridor(wallXL, entrance1Y, -1); // corridor going left
-            PunchCorridor(wallXL, entrance2Y, -1);
+            PunchCorridor(wallXL, entranceBottomY, -1);
+            PunchCorridor(wallXL, entranceTopY, -1);
 
-            Entrances.Add(new Vector2Int(wallXL - 2, entrance1Y));
-            Entrances.Add(new Vector2Int(wallXL - 2, entrance2Y));
+            var refuseEntr = new Vector2Int(wallXL - 2, entranceBottomY);
+            var pensionEntr = new Vector2Int(wallXL - 2, entranceTopY);
+            Entrances.Add(refuseEntr);
+            Entrances.Add(pensionEntr);
+            RefugeEntrance = refuseEntr;
+            PensionEntrance = pensionEntr;
 
-            // --- Right exits (2-wide corridors, unhappy cats leave here) ---
-            int wallXR = centralRect.xMax - 1;             // right wall
-            int exit1Y = entrance1Y;
-            int exit2Y = entrance2Y;
+            // --- Right exit (single bottom corridor, unhappy cats leave here) ---
+            int wallXR = centralRect.xMax - 1;
+            int exitY = entranceBottomY;                   // y=10 (bottom only)
 
-            PunchCorridor(wallXR, exit1Y, +1); // corridor going right
-            PunchCorridor(wallXR, exit2Y, +1);
+            PunchCorridor(wallXR, exitY, +1);
 
-            Exits.Add(new Vector2Int(wallXR + 2, exit1Y));
-            Exits.Add(new Vector2Int(wallXR + 2, exit2Y));
+            var unhappyExit = new Vector2Int(wallXR + 2, exitY);
+            Exits.Add(unhappyExit);
+            UnhappyExit = unhappyExit;
+
+            // --- Animated doors (temporarily disabled) ---
+            // if (_doorFrames != null && _doorFrames.Length > 0)
+            // {
+            //     PensionDoor = CreateDoor("DoorPension", wallXL, entranceTopY);
+            //     RefugeDoor = CreateDoor("DoorRefuge", wallXL, entranceBottomY);
+            //     ExitDoor = CreateDoor("DoorExit", wallXR, exitY);
+            // }
+
+            // --- Entrance logos (on the wall above each corridor) ---
+            CreateEntranceLogo("LogoPension", wallXL, entranceTopY + 1, _pensionLogoSprite);
+            CreateEntranceLogo("LogoRefuge", wallXL, entranceBottomY + 1, _refugeLogoSprite);
         }
 
         /// <summary>
@@ -124,20 +158,63 @@ namespace CatHotel.Grid
         /// Creates: 2 Door cells through the wall, 2 Door cells in the gap, 2 Door cells outside.
         /// Also sets Wall cells above and below the corridor for proper framing.
         /// </summary>
+        private CatHotel.Hotel.AnimatedDoor CreateDoor(string name, int wallX, int baseY)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform);
+            // Position at bottom-left of the door cell
+            go.transform.position = new Vector3(wallX, baseY, 0f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sortingLayerName = "Objects";
+            sr.sortingOrder = 500;
+
+            var door = go.AddComponent<CatHotel.Hotel.AnimatedDoor>();
+            door.Init(_doorFrames);
+            return door;
+        }
+
+        private void CreateEntranceLogo(string name, int wallX, int wallY, Sprite sprite)
+        {
+            if (sprite == null) return;
+
+            var go = new GameObject(name);
+            go.transform.SetParent(transform);
+            // Center on the wall cell above the corridor entrance
+            go.transform.position = new Vector3(wallX + 0.5f, wallY + 0.5f, 0f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            sr.sortingLayerName = "Objects";
+            sr.sortingOrder = 100; // above wall tiles
+
+            // Scale to fit within 1 tile width
+            float spriteW = sprite.bounds.size.x;
+            float spriteH = sprite.bounds.size.y;
+            if (spriteW > 0f && spriteH > 0f)
+            {
+                float scale = Mathf.Min(1f / spriteW, 1f / spriteH);
+                go.transform.localScale = new Vector3(scale, scale, 1f);
+            }
+        }
+
+        /// <summary>
+        /// Punch a 1-high corridor through a wall.
+        /// wallX = the wall cell X, baseY = Y of the opening.
+        /// dir = -1 for left, +1 for right.
+        /// Creates 3 Door cells (wall, gap, outside) and frames with walls above and below.
+        /// </summary>
         private void PunchCorridor(int wallX, int baseY, int dir)
         {
-            int y0 = baseY;
-            int y1 = baseY + 1;
-            int wallAbove = baseY + 2;
+            int wallAbove = baseY + 1;
             int wallBelow = baseY - 1;
 
             // 3 columns: wall, gap, outside
             for (int step = 0; step <= 2; step++)
             {
                 int x = wallX + dir * step;
-                if (!_gridData.InBounds(x, y0)) continue;
-                _gridData.SetCell(x, y0, CellType.Door);
-                _gridData.SetCell(x, y1, CellType.Door);
+                if (!_gridData.InBounds(x, baseY)) continue;
+                _gridData.SetCell(x, baseY, CellType.Door);
 
                 // Frame the corridor with walls above and below
                 if (_gridData.InBounds(x, wallAbove) && !_gridData.IsWalkable(x, wallAbove))

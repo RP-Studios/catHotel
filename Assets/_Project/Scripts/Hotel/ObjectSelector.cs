@@ -14,6 +14,7 @@ namespace CatHotel.Hotel
     {
         [SerializeField] private CatSpawner _catSpawner;
         [SerializeField] private ObjectPlacement _objectPlacement;
+        [SerializeField] private ObjectMover _objectMover;
 
         private Camera _cam;
         private HotelObject _selected;
@@ -30,13 +31,15 @@ namespace CatHotel.Hotel
             var pointer = Pointer.current;
             if (pointer == null || !pointer.press.wasPressedThisFrame) return;
 
-            // Don't interfere with placement mode
+            // Don't interfere with placement or move mode
             if (_objectPlacement != null && _objectPlacement.IsPlacing) return;
+            if (_objectMover != null && _objectMover.IsMoving) return;
 
             // Don't select when tapping UI
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
             Vector2 screenPos = pointer.position.ReadValue();
+            if (float.IsNaN(screenPos.x) || float.IsNaN(screenPos.y)) return;
             Vector3 worldPos = _cam.ScreenToWorldPoint(screenPos);
 
             // Cat has priority — check if a cat is near the tap

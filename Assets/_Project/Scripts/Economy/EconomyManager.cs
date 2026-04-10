@@ -31,7 +31,6 @@ namespace CatHotel.Economy
         public IReadOnlyDictionary<Transform, FloatingCoin> FloatingCoins => _floatingCoins;
         public event Action<FloatingCoin> OnCoinSpawned;
         public event Action<FloatingCoin> OnCoinStacked;
-        public event Action<FloatingCoin> OnCoinCollected;
 
         public void Init(GameConfig config, int coins, int gems)
         {
@@ -81,35 +80,29 @@ namespace CatHotel.Economy
         /// </summary>
         public void ProcessRevenueTick(CatHappiness happiness, CatBreedData breed, Transform catTransform, bool isSpecial)
         {
-            Debug.Log($"[Economy] ProcessRevenueTick: unhappy={happiness.IsUnhappy}, coinsPerUse={_config.coinsPerServiceUse}, catTransform={catTransform != null}");
             if (happiness.IsUnhappy) return;
 
             int baseRevenue = _config.coinsPerServiceUse;
             float mult = breed.revenueMultiplier;
             if (isSpecial) mult *= breed.specialRevenueMult;
 
-            // Apply ad boost multiplier
             if (RevenueBoostManager.Instance != null)
                 mult *= RevenueBoostManager.Instance.BoostMultiplier;
 
             int amount = Mathf.RoundToInt(baseRevenue * mult);
             if (amount <= 0) return;
 
-            // Check if this cat already has a floating coin
             if (_floatingCoins.TryGetValue(catTransform, out var existing))
             {
-                // Stack if under max
                 if (existing.Stacks < MaxStacks)
                 {
                     existing.Stacks++;
                     existing.Amount += amount;
                     OnCoinStacked?.Invoke(existing);
                 }
-                // At max stacks — no more revenue until collected
                 return;
             }
 
-            // Spawn new coin for this cat
             var coin = new FloatingCoin
             {
                 Amount = amount,
@@ -124,28 +117,13 @@ namespace CatHotel.Economy
         }
 
         /// <summary>
-        /// Start collecting a coin: removes from dict and fires event.
-        /// Coins are NOT added yet — call DepositCoins() after animation.
+        /// Remove a coin from tracking. Called by FloatingCoinView before animating.
+        /// Does NOT add coins — call DepositCoins() after animation completes.
         /// </summary>
-        public bool StartCollect(FloatingCoin coin)
+        public void StartCollect(FloatingCoin coin)
         {
             if (coin.CatTransform != null)
                 _floatingCoins.Remove(coin.CatTransform);
-            OnCoinCollected?.Invoke(coin);
-            return true;
-        }
-
-        /// <summary>
-        /// Start collecting ALL coins: removes from dict and fires events.
-        /// Returns the list of coins to animate. Call DepositCoins() after each animation.
-        /// </summary>
-        public List<FloatingCoin> StartCollectAll()
-        {
-            var coins = new List<FloatingCoin>(_floatingCoins.Values);
-            foreach (var coin in coins)
-                OnCoinCollected?.Invoke(coin);
-            _floatingCoins.Clear();
-            return coins;
         }
 
         /// <summary>Called by the view when a coin fly animation finishes.</summary>
@@ -155,21 +133,10 @@ namespace CatHotel.Economy
             OnCoinsChanged?.Invoke(_coins);
         }
 
-        /// <summary>Auto-collect coin for a departing cat (deposits amount immediately).</summary>
-        public void CollectCoinForCat(Transform catTransform)
+        /// <summary>Check if a cat has a pending floating coin.</summary>
+        public bool HasCoinForCat(Transform catTransform)
         {
-            if (!_floatingCoins.TryGetValue(catTransform, out var coin)) return;
-            _floatingCoins.Remove(catTransform);
-            OnCoinCollected?.Invoke(coin);
-            DepositCoins(coin.Amount);
-        }
-
-        /// <summary>Remove coin for a cat without collecting (unhappy departure).</summary>
-        public void RemoveCoinForCat(Transform catTransform)
-        {
-            if (!_floatingCoins.TryGetValue(catTransform, out var coin)) return;
-            _floatingCoins.Remove(catTransform);
-            OnCoinCollected?.Invoke(coin); // triggers view cleanup
+            return _floatingCoins.ContainsKey(catTransform);
         }
     }
 

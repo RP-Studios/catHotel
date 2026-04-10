@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using CatHotel.Audio;
 using CatHotel.Core;
 using CatHotel.Grid;
 using CatHotel.Economy;
@@ -165,7 +166,10 @@ namespace CatHotel.Hotel
                 float dist = Vector2.Distance(worldPos, _readyBtnObj.transform.position);
                 if (dist < ReadySize * 0.6f)
                 {
-                    if (_isValid) ConfirmPlacement();
+                    if (_isValid)
+                        ConfirmPlacement();
+                    else
+                        UISoundManager.Instance?.PlayTapNegative();
                     return;
                 }
             }
@@ -199,7 +203,7 @@ namespace CatHotel.Hotel
             float cx = _currentGridPos.x + _currentData.size.x * 0.5f;
             float cy;
             if (_currentData.wallMount)
-                cy = _currentGridPos.y + 0.65f; // centered on wall tile
+                cy = _currentGridPos.y + 0.45f; // centered on wall tile
             else
                 cy = _currentGridPos.y + 0.25f;
             _previewObj.transform.position = new Vector3(cx, cy, 0f);
@@ -284,15 +288,18 @@ namespace CatHotel.Hotel
             // Debit coins
             if (!_economy.TrySpend(_currentData.cost))
             {
+                UISoundManager.Instance?.PlayTapNegative();
                 Debug.LogWarning("[Placement] Not enough coins");
                 return;
             }
+
+            UISoundManager.Instance?.PlayTapPositive();
 
             // Create the real HotelObject
             var go = new GameObject($"Obj_{_currentData.displayName}");
             float posY;
             if (_currentData.wallMount)
-                posY = _currentGridPos.y + 0.65f;
+                posY = _currentGridPos.y + 0.45f;
             else
                 posY = _currentGridPos.y + 0.25f;
             go.transform.position = new Vector3(
@@ -301,13 +308,26 @@ namespace CatHotel.Hotel
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _currentData.worldSprite != null ? _currentData.worldSprite : _currentData.icon;
 
-            if (_currentData.wallMount)
+            // Assign sorting layer based on object type
+            bool isCarpet = _currentData.category == ObjectCategory.Carpet
+                         || _currentData.category == ObjectCategory.Decoration
+                            && _currentData.displayName != null
+                            && _currentData.displayName.Contains("Tapis");
+
+            if (isCarpet)
             {
-                sr.sortingOrder = 7;
+                sr.sortingLayerName = "Carpets";
+                go.AddComponent<Core.SortByY>();
+            }
+            else if (_currentData.wallMount)
+            {
+                sr.sortingLayerName = "Objects";
+                sr.sortingOrder = 0; // wall objects don't Y-sort
             }
             else if (_currentData.requiresTable)
             {
-                // On-table objects: find the table and always stay 1 above its sortingOrder
+                sr.sortingLayerName = "Objects";
+                // On-table objects: follow table's sortingOrder + 1
                 SpriteRenderer tableSr = null;
                 var tableCell = new Vector2Int(_currentGridPos.x, _currentGridPos.y - 1);
                 foreach (var obj in ObjectRegistry.Objects)
@@ -326,17 +346,14 @@ namespace CatHotel.Hotel
                 }
                 else
                 {
-                    // Fallback
                     go.AddComponent<Core.SortByY>();
                 }
             }
             else
             {
-                // Floor objects: dynamic Y-sorting
-                // Tables use higher base (20000) so cats walk behind them
-                var sortByY = go.AddComponent<Core.SortByY>();
-                if (_currentData.isTable)
-                    sortByY.OrderBias = 10000;
+                // Floor objects (beds, bowls, litter, trees, tables...)
+                sr.sortingLayerName = "Objects";
+                go.AddComponent<Core.SortByY>();
             }
 
             // Scale to fit
@@ -362,10 +379,15 @@ namespace CatHotel.Hotel
             Vector2Int placedPos = _currentGridPos;
             CleanupPlacement();
             Debug.Log($"[Placement] Placed {placedName} at {placedPos}");
+
+            // Auto-save after placing object
+            var hotel = GetComponent<HotelManager>() ?? FindAnyObjectByType<HotelManager>();
+            if (hotel != null) hotel.SaveProgression();
         }
 
         public void CancelPlacement()
         {
+            UISoundManager.Instance?.PlayTapNeutral();
             CleanupPlacement();
         }
 
@@ -434,6 +456,8 @@ namespace CatHotel.Hotel
                 _cancelSr.sprite = _cancelFrames[_animFrame % _cancelFrames.Length];
         }
 
+        private const float WallMountScaleFactor = 0.75f;
+
         private static void ScaleToFit(GameObject go, SpriteRenderer sr, HotelObjectData data)
         {
             if (sr.sprite == null) return;
@@ -444,6 +468,7 @@ namespace CatHotel.Hotel
             float targetW = data.size.x;
             float targetH = data.size.y;
             float scale = Mathf.Min(targetW / spriteW, targetH / spriteH) * data.visualScale;
+            if (data.wallMount) scale *= WallMountScaleFactor;
             go.transform.localScale = new Vector3(scale, scale, 1f);
         }
 

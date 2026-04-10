@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Core;
 using CatHotel.Hotel;
 using CatHotel.Economy;
@@ -307,6 +308,7 @@ namespace CatHotel.UI
         public void Open()
         {
             if (_panel == null) return;
+            UISoundManager.Instance?.PlayOpenSection();
             _isOpen = true;
             _isCategoryOpen = false;
 
@@ -319,8 +321,8 @@ namespace CatHotel.UI
             pos.x = _panelWidth;
             _panel.anchoredPosition = pos;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.35f)
-                .SetEase(Ease.OutBack)
+            _slideTween = _panel.DOAnchorPosX(0f, 0.7f)
+                .SetEase(Ease.OutCubic)
                 .SetUpdate(true);
         }
 
@@ -331,30 +333,31 @@ namespace CatHotel.UI
             if (_isCategoryOpen)
                 CloseCategoryImmediate();
 
+            UISoundManager.Instance?.PlayCloseSection();
             _isOpen = false;
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.25f)
+            _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)
                 .SetEase(Ease.InCubic)
                 .SetUpdate(true)
                 .OnComplete(() => _panelObj.SetActive(false));
         }
 
-        private static readonly Dictionary<ShopCategory, string> CategoryLabels = new()
+        private static readonly Dictionary<ShopCategory, string> CategoryLabelKeys = new()
         {
-            { ShopCategory.Beds, "Lits" },
-            { ShopCategory.Pillows, "Coussins" },
-            { ShopCategory.Croquettes, "Croquettes" },
-            { ShopCategory.Water, "Eau" },
-            { ShopCategory.Balls, "Balles" },
-            { ShopCategory.Scratchers, "Griffoirs" },
-            { ShopCategory.Litters, "Litières" },
-            { ShopCategory.Frames, "Cadres" },
-            { ShopCategory.Lamps, "Lampes" },
-            { ShopCategory.Tables, "Tables" },
-            { ShopCategory.Plants, "Plantes" },
-            { ShopCategory.Shelves, "Étagères" },
-            { ShopCategory.Aquariums, "Aquariums" },
-            { ShopCategory.Carpets, "Tapis" },
+            { ShopCategory.Beds, "shop.beds" },
+            { ShopCategory.Pillows, "shop.pillows" },
+            { ShopCategory.Croquettes, "shop.croquettes" },
+            { ShopCategory.Water, "shop.water" },
+            { ShopCategory.Balls, "shop.balls" },
+            { ShopCategory.Scratchers, "shop.scratchers" },
+            { ShopCategory.Litters, "shop.litters" },
+            { ShopCategory.Frames, "shop.frames" },
+            { ShopCategory.Lamps, "shop.lamps" },
+            { ShopCategory.Tables, "shop.tables" },
+            { ShopCategory.Plants, "shop.plants" },
+            { ShopCategory.Shelves, "shop.shelves" },
+            { ShopCategory.Aquariums, "shop.aquariums" },
+            { ShopCategory.Carpets, "shop.carpets" },
         };
 
         private void OpenCategory(ShopCategory category)
@@ -368,8 +371,8 @@ namespace CatHotel.UI
             // Set category name
             if (_categoryNameText != null)
             {
-                _categoryNameText.text = CategoryLabels.TryGetValue(category, out var label)
-                    ? label : category.ToString();
+                _categoryNameText.text = CategoryLabelKeys.TryGetValue(category, out var key)
+                    ? Core.LocalizedStrings.Get(key) : category.ToString();
             }
 
             // Swap views
@@ -405,7 +408,13 @@ namespace CatHotel.UI
                 if (nameT != null)
                 {
                     var tmp = nameT.GetComponent<TMP_Text>();
-                    if (tmp != null) tmp.text = objData.displayName;
+                    if (tmp != null)
+                    {
+                        string key = LocalizeObjectName(objData.displayName);
+                        tmp.text = key != objData.displayName
+                            ? Core.LocalizedStrings.Get(key)
+                            : objData.displayName;
+                    }
                 }
 
                 // ItemSpaceLabel
@@ -515,6 +524,30 @@ namespace CatHotel.UI
         {
             var t = FindInChildren(root.transform, childName);
             return t != null ? t.GetComponent<RectTransform>() : null;
+        }
+
+        // Map French displayName → localization key. Falls back to the original name if no key found.
+        private static readonly Dictionary<string, string> ObjNameToKey = new()
+        {
+            { "Lit", "obj.bed" }, { "Lit de luxe", "obj.luxury_bed" }, { "Coussin", "obj.pillow" },
+            { "Gamelle", "obj.food_bowl" }, { "Gamelle var. 2", "obj.food_bowl_v2" },
+            { "Gamelle var. 3", "obj.food_bowl_v3" }, { "Gamelle var. 4", "obj.food_bowl_v4" },
+            { "Bol d'eau", "obj.water_bowl" }, { "Bol d'eau moderne", "obj.water_bowl_04" },
+            { "Bol d'eau var. 2", "obj.water_bowl_v2" }, { "Bol d'eau var. 3", "obj.water_bowl_v3" },
+            { "Balle de laine", "obj.wool_ball" }, { "Arbre à chat", "obj.cat_tree" },
+            { "Griffoir", "obj.scratcher" }, { "Litière", "obj.litter" }, { "Litière var.", "obj.litter_v1" },
+            { "Cadre 1", "obj.frame_1" }, { "Cadre 2", "obj.frame_2" }, { "Cadre 3", "obj.frame_3" },
+            { "Peinture", "obj.painting" }, { "Grande lampe", "obj.lamp" },
+            { "Table basse", "obj.coffee_table" }, { "Commode", "obj.drawer" },
+            { "Grande plante", "obj.plant_big" }, { "Petite plante", "obj.plant_small" },
+            { "Étagère", "obj.shelf" }, { "Étagère var.", "obj.shelf_v1" },
+            { "Aquarium", "obj.aquarium" }, { "Tapis Confort", "obj.carpet_confort" },
+            { "Tapis Jeu", "obj.carpet_play" }, { "Tapis Cosmique", "obj.carpet_cosmic" },
+        };
+
+        private static string LocalizeObjectName(string frenchName)
+        {
+            return ObjNameToKey.TryGetValue(frenchName, out var key) ? key : frenchName;
         }
 
         private static Transform FindInChildren(Transform parent, string name)

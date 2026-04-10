@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using CatHotel.Audio;
 using CatHotel.Grid;
 using CatHotel.Hotel;
 
@@ -92,6 +93,7 @@ namespace CatHotel.Cats
             if (nearest != null)
             {
                 nearest.PlayPetting(_handPetController);
+                CatSoundManager.Instance?.PlayMeowForCat(nearest);
 
                 // Also trigger happiness boost
                 var happiness = nearest.GetComponent<CatHappiness>();

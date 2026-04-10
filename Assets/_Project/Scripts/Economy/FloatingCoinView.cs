@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using DG.Tweening;
+using CatHotel.Audio;
 using CatHotel.Cats;
 using CatHotel.UI;
 
@@ -32,16 +33,15 @@ namespace CatHotel.Economy
         [SerializeField] private float _collectAllCoinCost = 5;
 
         [Header("SFX")]
-        [SerializeField] private AudioClip[] _coinCollectClips;   // Coin-001..005
-        [SerializeField] private AudioClip _fullPickUpClip;       // FullPickUp
+        [SerializeField] private AudioClip[] _coinCollectClips;
+        [SerializeField] private AudioClip _fullPickUpClip;
 
         private readonly Dictionary<FloatingCoin, GameObject> _coinViews = new();
-        private readonly HashSet<FloatingCoin> _collecting = new();
-        private readonly List<FloatingCoin> _toRemove = new(); // reusable list
+        private readonly List<FloatingCoin> _toRemove = new();
         private Camera _cam;
         private AudioSource _sfxSource;
         private Canvas _overlayCanvas;
-        private RectTransform _coinTarget; // CatCoinsImage
+        private RectTransform _coinTarget;
         private Button _collectAllBtn;
         private RectTransform _collectAllRt;
         private Tween _collectAllPulse;
@@ -51,16 +51,14 @@ namespace CatHotel.Economy
         {
             _cam = Camera.main;
 
-            // SFX source
             _sfxSource = GetComponent<AudioSource>();
             if (_sfxSource == null)
             {
                 _sfxSource = gameObject.AddComponent<AudioSource>();
                 _sfxSource.playOnAwake = false;
-                _sfxSource.spatialBlend = 0f; // 2D
+                _sfxSource.spatialBlend = 0f;
             }
 
-            // Find overlay canvas
             foreach (var c in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
             {
                 if (c.renderMode == RenderMode.ScreenSpaceOverlay)
@@ -70,12 +68,10 @@ namespace CatHotel.Economy
                 }
             }
 
-            // Find CatCoinsImage for fly target
             var targetObj = GameObject.Find("CatCoinsImage");
             if (targetObj != null)
                 _coinTarget = targetObj.GetComponent<RectTransform>();
 
-            // Find CollectAllAction button and wire it
             var collectAllObj = GameObject.Find("CollectAllAction");
             if (collectAllObj != null)
             {
@@ -85,20 +81,17 @@ namespace CatHotel.Economy
                 _collectAllBtn.onClick.AddListener(OnCollectAllPressed);
                 _collectAllRt = collectAllObj.GetComponent<RectTransform>();
 
-                // Find "Pig" child icon
                 var pigTransform = collectAllObj.transform.Find("Pig");
                 if (pigTransform != null)
                     _pigIcon = pigTransform.GetComponent<Image>();
 
-                // Tap juice
-                if (collectAllObj.GetComponent<CatHotel.UI.ButtonJuice>() == null)
-                    collectAllObj.AddComponent<CatHotel.UI.ButtonJuice>();
+                if (collectAllObj.GetComponent<ButtonJuice>() == null)
+                    collectAllObj.AddComponent<ButtonJuice>();
             }
 
             if (_economy == null) return;
             _economy.OnCoinSpawned += HandleCoinSpawned;
             _economy.OnCoinStacked += HandleCoinStacked;
-            _economy.OnCoinCollected += HandleCoinCollected;
         }
 
         private void OnDestroy()
@@ -107,7 +100,6 @@ namespace CatHotel.Economy
             if (_economy == null) return;
             _economy.OnCoinSpawned -= HandleCoinSpawned;
             _economy.OnCoinStacked -= HandleCoinStacked;
-            _economy.OnCoinCollected -= HandleCoinCollected;
         }
 
         private void HandleCoinSpawned(FloatingCoin coin)
@@ -119,14 +111,14 @@ namespace CatHotel.Economy
 
             var sr = go.AddComponent<SpriteRenderer>();
             sr.sprite = _coinSprite;
-            sr.sortingOrder = 20;
+            sr.sortingLayerName = "Bubbles";
+            sr.sortingOrder = 0;
 
             if (_coinAnimController != null)
             {
                 var anim = go.AddComponent<Animator>();
                 anim.runtimeAnimatorController = _coinAnimController;
                 anim.Play("CoinSpawn");
-                // Transition to idle spin after spawn anim (24 frames @ 24fps = 1s)
                 StartCoroutine(TransitionToSpin(anim, 1f));
             }
 
@@ -141,17 +133,11 @@ namespace CatHotel.Economy
 
         private void HandleCoinStacked(FloatingCoin coin)
         {
-            // Punch the coin to show stacking feedback
             if (_coinViews.TryGetValue(coin, out var go) && go != null)
             {
                 go.transform.DOKill();
                 go.transform.DOPunchScale(Vector3.one * 0.3f, 0.2f, 6, 0.5f);
             }
-        }
-
-        private void HandleCoinCollected(FloatingCoin coin)
-        {
-            _collecting.Add(coin);
         }
 
         private void Update()
@@ -170,8 +156,14 @@ namespace CatHotel.Economy
                 var go = kvp.Value;
                 if (go == null) { _toRemove.Add(coin); continue; }
 
-                // Skip coins that are being collected (flying to UI)
-                if (_collecting.Contains(coin)) continue;
+                // Orphan cleanup: cat was destroyed but coin view remains
+                if (coin.CatTransform == null)
+                {
+                    Destroy(go);
+                    _economy.DepositCoins(coin.Amount);
+                    _toRemove.Add(coin);
+                    continue;
+                }
 
                 // Follow cat transform
                 Vector3 basePos;
@@ -185,12 +177,10 @@ namespace CatHotel.Economy
                     basePos = coin.WorldPosition;
                 }
 
-                // Bob: PingPong is cheaper than Sin
                 float bobT = Mathf.PingPong(Time.time * _bobSpeed + coin.SpawnTime, 1f);
                 float bob = (bobT * 2f - 1f) * _bobAmplitude;
                 go.transform.position = basePos + Vector3.up * bob;
 
-                // Scale based on stacks: 1.0 at 1 stack → 1.5 at 5 stacks
                 float stackScale = 1f + (coin.Stacks - 1) * 0.125f;
                 go.transform.localScale = Vector3.one * stackScale;
             }
@@ -205,10 +195,8 @@ namespace CatHotel.Economy
             var pointer = Pointer.current;
             if (pointer == null || !pointer.press.wasPressedThisFrame) return;
 
-            // Don't process world taps when pointer is over UI
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-            // If info panel is open, any world tap closes it
             if (_catInfoPanel != null && _catInfoPanel.IsOpen)
             {
                 _catInfoPanel.Close();
@@ -216,10 +204,10 @@ namespace CatHotel.Economy
             }
 
             Vector2 screenPos = pointer.position.ReadValue();
+            if (float.IsNaN(screenPos.x) || float.IsNaN(screenPos.y)) return;
             Vector3 worldPos = _cam.ScreenToWorldPoint(screenPos);
             worldPos.z = 0f;
 
-            // Find closest cat within tap radius
             CatEntity tappedCat = null;
             float bestDist = _catTapRadius;
 
@@ -239,17 +227,16 @@ namespace CatHotel.Economy
 
             if (tappedCat == null) return;
 
-            // Check if this cat has a floating coin
             FloatingCoin catCoin = FindCoinForCat(tappedCat.transform);
             if (catCoin != null)
             {
-                _economy.StartCollect(catCoin);
-                AnimateCollect(catCoin);
+                CollectCoin(catCoin);
                 PlayCoinCollectSfx();
+                UISoundManager.Instance?.PlayTapPositive();
             }
             else if (_catInfoPanel != null)
             {
-                // No coin — show info panel
+                CatSoundManager.Instance?.PlayMeowForCat(tappedCat);
                 var instance = _catInfoPanel.FindCatInstance(tappedCat);
                 if (instance != null)
                     _catInfoPanel.Show(instance);
@@ -260,11 +247,19 @@ namespace CatHotel.Economy
         {
             foreach (var kvp in _coinViews)
             {
-                var coin = kvp.Key;
-                if (_collecting.Contains(coin)) continue;
-                if (coin.CatTransform == catTransform) return coin;
+                if (kvp.Value == null) continue;
+                if (kvp.Key.CatTransform == catTransform) return kvp.Key;
             }
             return null;
+        }
+
+        /// <summary>Collect a single coin: remove from economy, animate fly, deposit on complete.</summary>
+        private void CollectCoin(FloatingCoin coin)
+        {
+            // Remove from economy tracking immediately
+            _economy.StartCollect(coin);
+            // Animate and deposit on completion
+            AnimateCollect(coin);
         }
 
         /// <summary>Pulse the CollectAll button when floating coins exist.</summary>
@@ -272,7 +267,7 @@ namespace CatHotel.Economy
         {
             if (_collectAllRt == null) return;
 
-            bool hasCoins = _coinViews.Count > _collecting.Count;
+            bool hasCoins = _coinViews.Count > 0;
 
             if (hasCoins && _collectAllPulse == null)
             {
@@ -293,15 +288,15 @@ namespace CatHotel.Economy
         {
             if (_economy == null) return;
 
-            var pendingCoins = _economy.StartCollectAll();
-            if (pendingCoins.Count == 0) return;
+            // Snapshot all current coins
+            var coins = new List<FloatingCoin>(_coinViews.Keys);
+            if (coins.Count == 0) return;
 
-            // Cost: 5 coins
             int cost = Mathf.RoundToInt(_collectAllCoinCost);
             if (cost > 0 && !_economy.TrySpend(cost))
                 return;
 
-            // Button burst effect: punch + pig spin
+            // Button burst effect
             if (_collectAllPulse != null)
             {
                 _collectAllPulse.Kill();
@@ -319,51 +314,76 @@ namespace CatHotel.Economy
                     .OnComplete(() => _pigIcon.rectTransform.rotation = Quaternion.identity);
             }
 
-            // Play full pickup SFX
             PlayFullPickUpSfx();
 
-            // Stagger coin fly animations
+            // Remove all from economy first, then animate
+            foreach (var coin in coins)
+                _economy.StartCollect(coin);
+
             float delay = 0f;
-            foreach (var coin in pendingCoins)
+            foreach (var coin in coins)
             {
                 float d = delay;
-                DOVirtual.DelayedCall(d, () => AnimateCollect(coin, true));
+                var c = coin; // capture for lambda
+                DOVirtual.DelayedCall(d, () => AnimateCollect(c, true));
                 delay += 0.08f;
             }
         }
 
         private void AnimateCollect(FloatingCoin coin, bool isCollectAll = false)
         {
+            // Get and remove the world view
             if (!_coinViews.TryGetValue(coin, out var worldGo))
             {
-                // No view — just deposit
+                // No view — just deposit directly
                 _economy.DepositCoins(coin.Amount);
                 return;
             }
+            _coinViews.Remove(coin);
 
-            if (_overlayCanvas == null || _coinTarget == null)
+            if (worldGo == null)
             {
-                // No canvas/target — instant collect
-                _coinViews.Remove(coin);
-                _collecting.Remove(coin);
-                if (worldGo != null) Destroy(worldGo);
                 _economy.DepositCoins(coin.Amount);
                 return;
             }
 
-            // Play collect animation on world coin, then fly
-            var anim = worldGo != null ? worldGo.GetComponent<Animator>() : null;
+            if (_overlayCanvas == null || _coinTarget == null || _cam == null)
+            {
+                Destroy(worldGo);
+                _economy.DepositCoins(coin.Amount);
+                return;
+            }
+
+            // Play collect animation on world sprite
+            var anim = worldGo.GetComponent<Animator>();
             if (anim != null)
                 anim.Play(isCollectAll ? "CoinCollectAll" : "CoinCollect");
 
-            // Get screen pos of the world coin
+            // Capture screen position, then destroy world GO and create UI fly
             Vector3 startScreen = _cam.WorldToScreenPoint(worldGo.transform.position);
 
-            // Destroy world-space sprite
-            Destroy(worldGo);
-            _coinViews.Remove(coin);
+            // Delay destruction slightly so collect anim is visible (0.15s)
+            float collectAnimDelay = 0.15f;
+            var capturedGo = worldGo; // capture for lambda
+            var capturedAmount = coin.Amount;
 
-            // Create UI coin on overlay canvas
+            DOVirtual.DelayedCall(collectAnimDelay, () =>
+            {
+                // Re-capture screen pos (coin may have moved with cat)
+                if (capturedGo != null)
+                {
+                    startScreen = _cam.WorldToScreenPoint(capturedGo.transform.position);
+                    Destroy(capturedGo);
+                }
+
+                FlyToTarget(startScreen, capturedAmount, isCollectAll);
+            });
+        }
+
+        private void FlyToTarget(Vector3 startScreen, int amount, bool isCollectAll)
+        {
+            var canvasRt = _overlayCanvas.GetComponent<RectTransform>();
+
             var uiCoin = new GameObject("CoinFly");
             uiCoin.transform.SetParent(_overlayCanvas.transform, false);
 
@@ -371,21 +391,16 @@ namespace CatHotel.Economy
             img.sprite = _coinSprite;
             img.raycastTarget = false;
 
-            // Match the CatCoinsImage icon size exactly
             var rt = uiCoin.GetComponent<RectTransform>();
             Vector2 targetSize = _coinTarget.sizeDelta;
             if (targetSize.x <= 0f || targetSize.y <= 0f) targetSize = new Vector2(32f, 32f);
             rt.sizeDelta = targetSize;
-            var canvasRt = _overlayCanvas.GetComponent<RectTransform>();
 
-            // Convert screen→canvas local coords
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvasRt, startScreen, null, out var startLocal);
             rt.anchoredPosition = startLocal;
-
             rt.localScale = Vector3.one;
 
-            // Target position
             Vector3[] corners = new Vector3[4];
             _coinTarget.GetWorldCorners(corners);
             Vector3 targetWorldCenter = (corners[0] + corners[2]) / 2f;
@@ -393,24 +408,15 @@ namespace CatHotel.Economy
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
                 canvasRt, targetScreen, null, out var targetLocal);
 
-            // Fly animation: scale up → arc → scale down at target
             var seq = DOTween.Sequence();
-
-            // Pop up
             seq.Append(rt.DOScale(Vector3.one * 1.2f, 0.1f).SetEase(Ease.OutBack));
-
-            // Fly to target + shrink
             seq.Append(rt.DOAnchorPos(targetLocal, _flyDuration).SetEase(Ease.InQuad));
             seq.Join(rt.DOScale(Vector3.one * 0.5f, _flyDuration).SetEase(Ease.InQuad));
-
-            // On complete: destroy, deposit, punch the target icon
             seq.OnComplete(() =>
             {
                 Destroy(uiCoin);
-                _collecting.Remove(coin);
-                _economy.DepositCoins(coin.Amount);
+                _economy.DepositCoins(amount);
 
-                // Punch the target icon (kill previous to avoid scale drift)
                 if (_coinTarget != null)
                 {
                     _coinTarget.DOKill();
@@ -421,8 +427,8 @@ namespace CatHotel.Economy
         }
 
         /// <summary>
-        /// Auto-collect the floating coin for a specific cat (used on pension departure).
-        /// Triggers the same fly animation as a manual tap.
+        /// Auto-collect coin for a specific cat (pension departure).
+        /// Animates if visible, otherwise deposits instantly.
         /// </summary>
         public void CollectCoinForCat(Transform catTransform)
         {
@@ -432,12 +438,29 @@ namespace CatHotel.Economy
             AnimateCollect(coin);
         }
 
+        /// <summary>
+        /// Instantly remove and deposit coin for a cat without animation (cleanup).
+        /// </summary>
+        public void ForceCollectCoinForCat(Transform catTransform)
+        {
+            var coin = FindCoinForCat(catTransform);
+            if (coin == null) return;
+            _economy.StartCollect(coin);
+
+            if (_coinViews.TryGetValue(coin, out var go))
+            {
+                if (go != null) Destroy(go);
+                _coinViews.Remove(coin);
+            }
+            _economy.DepositCoins(coin.Amount);
+        }
+
         public int PendingCoinCount => _coinViews.Count;
 
         private void PlayCoinCollectSfx()
         {
             if (_sfxSource == null || _coinCollectClips == null || _coinCollectClips.Length == 0) return;
-            var clip = _coinCollectClips[UnityEngine.Random.Range(0, _coinCollectClips.Length)];
+            var clip = _coinCollectClips[Random.Range(0, _coinCollectClips.Length)];
             _sfxSource.PlayOneShot(clip, ParametersPanel.EffectsVolume);
         }
 

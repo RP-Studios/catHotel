@@ -51,9 +51,13 @@ namespace CatHotel.Cats
         private const float TickInterval = 0.3f;
         private float _tickTimer;
 
-        // Offset: need bubble is left of mood bubble and slightly lower
+        // Mood bubble offset to the right, need bubble offset to the left
+        private const float MoodOffsetX = 0.35f;
         private const float NeedOffsetX = -0.35f;
-        private const float NeedOffsetY = -0.08f;
+        private const float NeedOffsetY = -0.1f;
+
+        // Scale: 2x native size
+        private const float BubbleScale = 2f;
 
         // Gentle floating animation
         private const float BobAmplitude = 0.04f;
@@ -83,23 +87,31 @@ namespace CatHotel.Cats
 
             float h = _config.moodBubbleHeight;
 
+            // Compensate parent scale so bubbles are always the same world size
+            float parentScale = transform.localScale.x;
+            float compensated = (parentScale > 0.01f) ? BubbleScale / parentScale : BubbleScale;
+
             _moodBaseY = h;
             _needBaseY = h - 0.25f;
 
             // Mood bubble (right / center)
             _moodObj = new GameObject("MoodBubble");
             _moodObj.transform.SetParent(transform);
-            _moodObj.transform.localPosition = Vector3.up * _moodBaseY;
+            _moodObj.transform.localPosition = new Vector3(MoodOffsetX, _moodBaseY, 0f);
+            _moodObj.transform.localScale = Vector3.one * compensated;
             _moodSr = _moodObj.AddComponent<SpriteRenderer>();
-            _moodSr.sortingOrder = 25;
+            _moodSr.sortingLayerName = "Bubbles";
+            _moodSr.sortingOrder = 0;
             _moodObj.SetActive(false);
 
             // Need bubble (left of mood, slightly lower)
             _needObj = new GameObject("NeedBubble");
             _needObj.transform.SetParent(transform);
             _needObj.transform.localPosition = new Vector3(NeedOffsetX, _needBaseY, 0f);
+            _needObj.transform.localScale = Vector3.one * compensated;
             _needSr = _needObj.AddComponent<SpriteRenderer>();
-            _needSr.sortingOrder = 25;
+            _needSr.sortingLayerName = "Bubbles";
+            _needSr.sortingOrder = 0;
             _needObj.SetActive(false);
         }
 

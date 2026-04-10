@@ -8,9 +8,11 @@ using CatHotel.Hotel;
 namespace CatHotel.Core
 {
     /// <summary>
-    /// Local JSON save/load. Stores economy, reputation, and cat states.
-    /// Will be replaced by Cloud Save later.
+    /// [DEPRECATED] Legacy local JSON save/load.
+    /// Kept only for migration to CloudSaveManager.
+    /// New code should use CloudSaveManager instead.
     /// </summary>
+    [System.Obsolete("Use CloudSaveManager instead. This class is kept only for migration.")]
     public class SaveManager : MonoBehaviour
     {
         private const string FileName = "cathotel_save.json";

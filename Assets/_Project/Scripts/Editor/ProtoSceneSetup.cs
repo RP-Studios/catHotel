@@ -57,6 +57,22 @@ namespace CatHotel.Editor
         private const string SibWhiteAnimRoot = SibWhiteSpritesRoot;
         private const string SibWhiteControllerPath = SibWhiteSpritesRoot + "/CatSiberienWhite.controller";
 
+        private const string Ragdoll2SpritesRoot = "Assets/_Project/Art/Cats/Ragdoll2";
+        private const string Ragdoll2AnimRoot = Ragdoll2SpritesRoot;
+        private const string Ragdoll2ControllerPath = Ragdoll2SpritesRoot + "/CatRagdoll2.controller";
+
+        private const string ChartrSpritesRoot = "Assets/_Project/Art/Cats/Chartreux";
+        private const string ChartrAnimRoot = ChartrSpritesRoot + "/Animations";
+        private const string ChartrControllerPath = ChartrAnimRoot + "/CatChartreux.controller";
+
+        private const string NapoleonSpritesRoot = "Assets/_Project/Art/SpecialCats/Napoleon";
+        private const string NapoleonAnimRoot = NapoleonSpritesRoot;
+        private const string NapoleonControllerPath = NapoleonSpritesRoot + "/CatNapoleon.controller";
+
+        private const string OrionSpritesRoot = "Assets/_Project/Art/SpecialCats/Orion";
+        private const string OrionAnimRoot = OrionSpritesRoot + "/Animations";
+        private const string OrionControllerPath = OrionSpritesRoot + "/CatOrion.controller";
+
         private const string CloudRoot = "Assets/_Project/Art/Effects/Combat";
         private const string CloudControllerPath = CloudRoot + "/FightCloud.controller";
 
@@ -75,12 +91,6 @@ namespace CatHotel.Editor
             ("Coin_Collect.png", "coin_collect", "CoinCollect", 24, 24f),
             ("Coin_Collect_all.png", "coin_collect_all", "CoinCollectAll", 24, 24f),
         };
-
-        private const string AquariumAnimRoot = "Assets/_Project/Art/Objects/Deco";
-        private const string AquariumControllerPath = AquariumAnimRoot + "/Aquarium.controller";
-
-        private static readonly (string file, string prefix, string state, int frames, float fps)[] AquariumAnimConfigs =
-            System.Array.Empty<(string, string, string, int, float)>();
 
         private const string CarpetCosmicAnimRoot = "Assets/_Project/Art/Objects/Carpets";
         private const string CarpetCosmicControllerPath = CarpetCosmicAnimRoot + "/CarpetCosmic.controller";
@@ -544,6 +554,61 @@ namespace CatHotel.Editor
             ("Walk Sad/ragdoll_base_walk_sad_right.png", "rd_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
+        // ==================== RAGDOLL 2 ====================
+        // Same frame pattern as Ragdoll 1 (cleaning 13/12/12, eating 12, petting 12) + Scratch
+        // Note typos: ragodoll_2 for drinking/eating left/right
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] Ragdoll2AnimConfigs =
+        {
+            ("Walk/ragdoll_2_walk_face.png",  "rd2_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/ragdoll_2_walk_back.png",  "rd2_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/ragdoll_2_walk_left.png",  "rd2_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/ragdoll_2_walk_right.png", "rd2_walk_right", "Walk_Right", 8, 12f),
+            ("Idle 1/ragdoll_2_idle1_face.png",  "rd2_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/ragdoll_2_idle1_back.png",  "rd2_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/ragdoll_2_idle1_left.png",  "rd2_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/ragdoll_2_idle1_right.png", "rd2_idle1_right", "Idle1_Right", 6, 6f),
+            ("Idle 2/ragdoll_2_idle2_face.png",  "rd2_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/ragdoll_2_idle2_left.png",  "rd2_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/ragdoll_2_idle2_right.png", "rd2_idle2_right", "Idle2_Right", 6, 6f),
+            ("Idle 3/ragdoll_2_idle3_face.png",  "rd2_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/ragdoll_2_idle3_back.png",  "rd2_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/ragdoll_2_idle3_left.png",  "rd2_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/ragdoll_2_idle3_right.png", "rd2_idle3_right", "Idle3_Right", 8, 8f),
+            ("Sleep/ragdoll_2_sleeping_face.png",  "rd2_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/ragdoll_2_sleeping_left.png",  "rd2_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/ragdoll_2_sleeping_right.png", "rd2_sleeping_right", "Sleep_Right", 9, 4.5f),
+            ("Eating/ragdoll_2_eating_face.png",   "rd2_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/ragodoll_2_eating_left.png",  "rd2_eating_left",  "Eat_Left",  12, 6f),
+            ("Eating/ragodoll_2_eating_right.png", "rd2_eating_right", "Eat_Right", 12, 6f),
+            ("Drinking/ragdoll_2_drinking_face.png",   "rd2_drinking_face",  "Drink_Front", 8, 4f),
+            ("Drinking/ragodoll_2_drinking_left.png",  "rd2_drinking_left",  "Drink_Left",  8, 4f),
+            ("Drinking/ragodoll_2_drinking_right.png", "rd2_drinking_right", "Drink_Right", 8, 4f),
+            ("Cleaning/ragdoll_2_cleaning_face.png",  "rd2_cleaning_face",  "Clean_Front", 13, 6.5f),
+            ("Cleaning/ragdoll_2_cleaning_left.png",  "rd2_cleaning_left",  "Clean_Left",  12, 6f),
+            ("Cleaning/ragdoll_2_cleaning_right.png", "rd2_cleaning_right", "Clean_Right", 12, 6f),
+            ("Playing/ragdoll_2_playing_face.png",  "rd2_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/ragdoll_2_playing_left.png",  "rd2_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/ragdoll_2_playing_right.png", "rd2_playing_right", "Play_Right", 23, 11.5f),
+            ("Happy/ragdoll_2_happy_face.png",  "rd2_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/ragdoll_2_happy_left.png",  "rd2_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/ragdoll_2_happy_right.png", "rd2_happy_right", "Happy_Right", 20, 10f),
+            ("Unhappy/ragdoll_2_unhappy_face.png",  "rd2_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/ragdoll_2_unhappy_left.png",  "rd2_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/ragdoll_2_unhappy_right.png", "rd2_unhappy_right", "Unhappy_Right", 6, 6f),
+            ("Petting/ragdoll_2_petting_face.png", "rd2_petting_face", "Pet_Front", 12, 6f),
+            ("Fighting/ragdoll_2_fighting_in_left.png",  "rd2_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/ragdoll_2_fighting_in_right.png", "rd2_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+            ("Fighting/ragdoll_2_fighting_out_left.png",  "rd2_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/ragdoll_2_fighting_out_right.png", "rd2_fighting_out_right", "Fight_Out_Right", 8, 8f),
+            ("Walk Sad/ragdoll_2_walk_sad_right.png", "rd2_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Scratch/In/Ragdoll_2_Scratch_In_Left.png",  "rd2_scratch_in_left",  "Scratch_In_Left",  7, 14f),
+            ("Scratch/In/Ragdoll_2_Scratch_In_Right.png", "rd2_scratch_in_right", "Scratch_In_Right", 7, 14f),
+            ("Scratch/Boucle/Ragdoll_2_Scratch_Left.png",  "rd2_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
+            ("Scratch/Boucle/Ragdoll_2_Scratch_Right.png", "rd2_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
+            ("Scratch/Out/Ragdoll_2_Scratch_Out_Left.png",  "rd2_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
+            ("Scratch/Out/Ragdoll_2_Scratch_Out_Right.png", "rd2_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+        };
+
         // ==================== SIBERIAN BLACK ====================
         // Note: Siberian has richer animations (more frames) than other breeds
         // Also has Scratch animation (unique to this breed)
@@ -891,7 +956,163 @@ namespace CatHotel.Editor
             ("SadWalk/europeen_aristote_walk_sad_right.png", "ari_sadwalk_right", "SadWalk_Right", 8, 12f),
         };
 
-        [MenuItem("Cat Hotel/Setup Proto Scene")]
+        // ==================== CHARTREUX ====================
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] ChartrAnimConfigs =
+        {
+            ("Walk/chartreu_base_walk_face.png",  "chr_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/chartreu_base_walk_back.png",  "chr_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/chartreu_base_walk_left.png",  "chr_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/chartreu_base_walk_right.png", "chr_walk_right", "Walk_Right", 8, 12f),
+            ("Idle 1/chartreu_base_idle1_face.png",  "chr_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/chartreu_base_idle1_back.png",  "chr_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/chartreu_base_idle1_left.png",  "chr_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/chartreu_base_idle1_right.png", "chr_idle1_right", "Idle1_Right", 6, 6f),
+            ("Idle 2/chartreu_base_idle2_face.png",  "chr_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/chartreu_base_idle2_left.png",  "chr_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/chartreu_base_idle2_right.png", "chr_idle2_right", "Idle2_Right", 6, 6f),
+            ("Idle 3/chartreu_base_idle3_face.png",  "chr_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/chartreu_base_idle3_back.png",  "chr_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/chartreu_base_idle3_left.png",  "chr_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/chartreu_base_idle3_right.png", "chr_idle3_right", "Idle3_Right", 8, 8f),
+            ("Sleep/chartreu_base_sleeping_face.png",  "chr_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/chartreu_base_sleeping_left.png",  "chr_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/chartreu_base_sleeping_right.png", "chr_sleeping_right", "Sleep_Right", 9, 4.5f),
+            ("Eating/chartreu_base_eating_face.png",  "chr_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/chartreu_base_eating_left.png",  "chr_eating_left",  "Eat_Left",  10, 5f),
+            ("Eating/chartreu_base_eating_right.png", "chr_eating_right", "Eat_Right", 10, 5f),
+            ("Drunking/chartreu_base_drunking_face.png",  "chr_drunking_face",  "Drink_Front", 8, 4f),
+            ("Drunking/chartreu_base_drunking_left.png",  "chr_drunking_left",  "Drink_Left",  8, 4f),
+            ("Drunking/chartreu_base_drunking_right.png", "chr_drunking_right", "Drink_Right", 8, 4f),
+            ("Cleaning/chartreu_base_cleaning_face.png",  "chr_cleaning_face",  "Clean_Front", 11, 5.5f),
+            ("Cleaning/chartreu_base_cleaning_left.png",  "chr_cleaning_left",  "Clean_Left",  11, 5.5f),
+            ("Cleaning/chartreu_base_cleaning_right.png", "chr_cleaning_right", "Clean_Right", 11, 5.5f),
+            ("Playing/chartreu_base_playing_face.png",  "chr_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/chartreu_base_playing_left.png",  "chr_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/chartreu_base_playing_right.png", "chr_playing_right", "Play_Right", 23, 11.5f),
+            ("Happy/chartreu_base_happy_face.png",  "chr_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/chartreu_base_happy_left.png",  "chr_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/chartreu_base_happy_right.png", "chr_happy_right", "Happy_Right", 20, 10f),
+            ("Unhappy/chartreu_base_unhappy_face.png",  "chr_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/chartreu_base_unhappy_left.png",  "chr_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/chartreu_base_unhappy_right.png", "chr_unhappy_right", "Unhappy_Right", 6, 6f),
+            ("Petting/chartreu_base_petting_face.png", "chr_petting_face", "Pet_Front", 13, 6.5f),
+            ("Fighting/chartreu_fighting_in_left.png",  "chr_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/chartreu_fighting_in_right.png", "chr_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+            ("Fighting/chartreu_fighting_out_left.png",  "chr_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/chartreu_fighting_out_right.png", "chr_fighting_out_right", "Fight_Out_Right", 8, 8f),
+            ("Walk Sad/chartreu_base_walk_sad_right.png", "chr_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Scratch/In/chartreu_Base_Scratch_In_Left.png",  "chr_scratch_in_left",  "Scratch_In_Left",  7, 14f),
+            ("Scratch/In/chartreu_Base_Scratch_In_Right.png", "chr_scratch_in_right", "Scratch_In_Right", 7, 14f),
+            ("Scratch/Boucle/chartreu_Base_Scratch_Left.png",  "chr_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
+            ("Scratch/Boucle/chartreu_Base_Scratch_Right.png", "chr_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
+            ("Scratch/Out/chartreu_Base_Scratch_out_Left.png",  "chr_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
+            ("Scratch/Out/chartreu_Base_Scratch_out_Right.png", "chr_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+        };
+
+        // ==================== NAPOLEON (Special - Chartreux) ====================
+        // Note: some filenames have typos (chartreu_base_idle1_left, chartreu_nepoleon)
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] NapoleonAnimConfigs =
+        {
+            ("Walk/chartreu_napoleon_walk_face.png",  "nap_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/chartreu_napoleon_walk_back.png",  "nap_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/chartreu_napoleon_walk_left.png",  "nap_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/chartreu_napoleon_walk_right.png", "nap_walk_right", "Walk_Right", 8, 12f),
+            ("Idle 1/chartreu_napoleon_idle1_face.png",  "nap_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/chartreu_napoleon_idle1_back.png",  "nap_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/chartreu_base_idle1_left.png",      "nap_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/chartreu_napoleon_idle1_right.png", "nap_idle1_right", "Idle1_Right", 6, 6f),
+            ("Idle 2/chartreu_napoleon_idle2_face.png",  "nap_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/chartreu_napoleon_idle2_left.png",  "nap_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/chartreu_napoleon_idle2_right.png", "nap_idle2_right", "Idle2_Right", 6, 6f),
+            ("Idle 3/chartreu_napoleon_idle3_face.png",    "nap_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/chartreu_napoleon_idle3_back.png",    "nap_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/chartreu_nepoleon_idle3_left.png",    "nap_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/chartreu_nepoleon_idle3_right.png",   "nap_idle3_right", "Idle3_Right", 8, 8f),
+            ("Sleep/chartreu_napoleon_sleeping_face.png",  "nap_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/chartreu_napoleon_sleeping_left.png",  "nap_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/chartreu_napoleon_sleeping_right.png", "nap_sleeping_right", "Sleep_Right", 9, 4.5f),
+            ("Eating/chartreu_napoleon_eating_face.png",  "nap_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/chartreu_napoleon_eating_left.png",  "nap_eating_left",  "Eat_Left",  10, 5f),
+            ("Eating/chartreu_napoleon_eating_right.png", "nap_eating_right", "Eat_Right", 10, 5f),
+            ("Drunking/chartreu_napoleon_drunking_face.png",  "nap_drunking_face",  "Drink_Front", 8, 4f),
+            ("Drunking/chartreu_napoleon_drunking_left.png",  "nap_drunking_left",  "Drink_Left",  8, 4f),
+            ("Drunking/chartreu_napoleon_drunking_right.png", "nap_drunking_right", "Drink_Right", 8, 4f),
+            ("Cleaning/chartreu_napoleon_cleaning_face.png",  "nap_cleaning_face",  "Clean_Front", 11, 5.5f),
+            ("Cleaning/chartreu_napoleon_cleaning_left.png",  "nap_cleaning_left",  "Clean_Left",  11, 5.5f),
+            ("Cleaning/chartreu_napoleon_cleaning_right.png", "nap_cleaning_right", "Clean_Right", 11, 5.5f),
+            ("Playing/chartreu_napoleon_playing_face.png",  "nap_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/chartreu_napoleon_playing_left.png",  "nap_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/chartreu_napoleon_playing_right.png", "nap_playing_right", "Play_Right", 23, 11.5f),
+            ("Happy/chartreu_napoleon_happy_face.png",  "nap_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/chartreu_napoleon_happy_left.png",  "nap_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/chartreu_napoleon_happy_right.png", "nap_happy_right", "Happy_Right", 20, 10f),
+            ("Unhappy/chartreu_napoleon_unhappy_face.png",  "nap_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/chartreu_napoleon_unhappy_left.png",  "nap_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/chartreu_napoleon_unhappy_right.png", "nap_unhappy_right", "Unhappy_Right", 6, 6f),
+            ("Petting/chartreu_napoleon_petting_face.png", "nap_petting_face", "Pet_Front", 13, 6.5f),
+            ("Fighting/chartreu_napoleon_fighting_in_left.png",  "nap_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/chartreu_napoleon_fighting_in_right.png", "nap_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+            ("Fighting/chartreu_fighting_out_left.png",          "nap_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/chartreu_napoleon_fighting_out_right.png","nap_fighting_out_right", "Fight_Out_Right", 8, 8f),
+            ("Walk Sad/chartreu_napoleon_walk_sad_right.png", "nap_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Scratch/In/chartreu_napoleon_Scratch_In_Left.png",  "nap_scratch_in_left",  "Scratch_In_Left",  7, 14f),
+            ("Scratch/In/chartreu_napoleon_Scratch_In_Right.png", "nap_scratch_in_right", "Scratch_In_Right", 7, 14f),
+            ("Scratch/Boucle/chartreu_napoleon_Scratch_Left.png",  "nap_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
+            ("Scratch/Boucle/chartreu_napoleon_Scratch_Right.png", "nap_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
+            ("Scratch/Out/chartreu_napoleon_Scratch_out_Left.png",  "nap_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
+            ("Scratch/Out/chartreu_napoleon_Scratch_out_Right.png", "nap_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+        };
+
+        // ==================== ORION (Special - Ragdoll) ====================
+        // Note: Orion cleaning face=13f, left/right=12f (like Ragdoll corrected), petting=12f
+        // Eating/Drinking typos: ragodoll
+        private static readonly (string file, string prefix, string state, int frames, float fps)[] OrionAnimConfigs =
+        {
+            ("Walk/ragdoll_orion_walk_face.png",  "ori_walk_face",  "Walk_Front", 8, 12f),
+            ("Walk/ragdoll_orion_walk_back.png",  "ori_walk_back",  "Walk_Back",  8, 12f),
+            ("Walk/ragdoll_orion_walk_left.png",  "ori_walk_left",  "Walk_Left",  8, 12f),
+            ("Walk/ragdoll_orion_walk_right.png", "ori_walk_right", "Walk_Right", 8, 12f),
+            ("Idle 1/ragdoll_orion_idle1_face.png",  "ori_idle1_face",  "Idle1_Front", 6, 6f),
+            ("Idle 1/ragdoll_orion_idle1_back.png",  "ori_idle1_back",  "Idle1_Back",  6, 6f),
+            ("Idle 1/ragdoll_orion_idle1_left.png",  "ori_idle1_left",  "Idle1_Left",  6, 6f),
+            ("Idle 1/ragdoll_orion_idle1_right.png", "ori_idle1_right", "Idle1_Right", 6, 6f),
+            ("Idle 2/ragdoll_orion_idle2_face.png",  "ori_idle2_face",  "Idle2_Front", 6, 6f),
+            ("Idle 2/ragdoll_orion_idle2_left.png",  "ori_idle2_left",  "Idle2_Left",  6, 6f),
+            ("Idle 2/ragdoll_orion_idle2_right.png", "ori_idle2_right", "Idle2_Right", 6, 6f),
+            ("Idle 3/ragdoll_orion_idle3_face.png",  "ori_idle3_face",  "Idle3_Front", 8, 8f),
+            ("Idle 3/ragdoll_orion_idle3_back.png",  "ori_idle3_back",  "Idle3_Back",  8, 8f),
+            ("Idle 3/ragdoll_orion_idle3_left.png",  "ori_idle3_left",  "Idle3_Left",  8, 8f),
+            ("Idle 3/ragdoll_orion_idle3_right.png", "ori_idle3_right", "Idle3_Right", 8, 8f),
+            ("Sleep/ragdoll_orion_sleeping_face.png",  "ori_sleeping_face",  "Sleep_Front", 9, 4.5f),
+            ("Sleep/ragdoll_orion_sleeping_left.png",  "ori_sleeping_left",  "Sleep_Left",  9, 4.5f),
+            ("Sleep/ragdoll_orion_sleeping_right.png", "ori_sleeping_right", "Sleep_Right", 9, 4.5f),
+            ("Eating/ragdoll_orion_eating_face.png",   "ori_eating_face",  "Eat_Front", 12, 6f),
+            ("Eating/ragodoll_orion_eating_left.png",  "ori_eating_left",  "Eat_Left",  12, 6f),
+            ("Eating/ragodoll_orion_eating_right.png", "ori_eating_right", "Eat_Right", 12, 6f),
+            ("Drunking/ragdoll_orion_drinking_face.png",   "ori_drinking_face",  "Drink_Front", 8, 4f),
+            ("Drunking/ragodoll_orion_drinking_left.png",  "ori_drinking_left",  "Drink_Left",  8, 4f),
+            ("Drunking/ragodoll_orion_drinking_right.png", "ori_drinking_right", "Drink_Right", 8, 4f),
+            ("Cleaning/ragdoll_orion_cleaning_face.png",  "ori_cleaning_face",  "Clean_Front", 13, 6.5f),
+            ("Cleaning/ragdoll_orion_cleaning_left.png",  "ori_cleaning_left",  "Clean_Left",  12, 6f),
+            ("Cleaning/ragdoll_orion_cleaning_right.png", "ori_cleaning_right", "Clean_Right", 12, 6f),
+            ("Playing/ragdoll_orion_playing_face.png",  "ori_playing_face",  "Play_Front", 23, 11.5f),
+            ("Playing/ragdoll_orion_playing_left.png",  "ori_playing_left",  "Play_Left",  23, 11.5f),
+            ("Playing/ragdoll_orion_playing_right.png", "ori_playing_right", "Play_Right", 23, 11.5f),
+            ("Happy/ragdoll_orion_happy_face.png",  "ori_happy_face",  "Happy_Front", 20, 10f),
+            ("Happy/ragdoll_orion_happy_left.png",  "ori_happy_left",  "Happy_Left",  20, 10f),
+            ("Happy/ragdoll_orion_happy_right.png", "ori_happy_right", "Happy_Right", 20, 10f),
+            ("Unhappy/ragdoll_orion_unhappy_face.png",  "ori_unhappy_face",  "Unhappy_Front", 6, 6f),
+            ("Unhappy/ragdoll_orion_unhappy_left.png",  "ori_unhappy_left",  "Unhappy_Left",  6, 6f),
+            ("Unhappy/ragdoll_orion_unhappy_right.png", "ori_unhappy_right", "Unhappy_Right", 6, 6f),
+            ("Petting/ragdoll_orion_petting_face.png", "ori_petting_face", "Pet_Front", 12, 6f),
+            ("Fighting/ragdoll_orion_fighting_in_left.png",  "ori_fighting_in_left",  "Fight_In_Left",  15, 7.5f),
+            ("Fighting/ragdoll_orion_fighting_in_right.png", "ori_fighting_in_right", "Fight_In_Right", 15, 7.5f),
+            ("Fighting/ragdoll_orion_fighting_out_left.png",  "ori_fighting_out_left",  "Fight_Out_Left",  8, 8f),
+            ("Fighting/ragdoll_orion_fighting_out_right.png", "ori_fighting_out_right", "Fight_Out_Right", 8, 8f),
+            ("Walk Sad/ragdoll_orion_walk_sad_right.png", "ori_sadwalk_right", "SadWalk_Right", 8, 12f),
+        };
+
+        [MenuItem("Cat Hotel/Scene/Setup Proto Scene", false, 1)]
         public static void SetupScene()
         {
             ConfigureSpriteImports();
@@ -903,14 +1124,17 @@ namespace CatHotel.Editor
             ProcessAnimConfigs(Eur3AnimRoot, Eur3AnimConfigs);
             ProcessAnimConfigs(SiamoisAnimRoot, SiamoisAnimConfigs);
             ProcessAnimConfigs(RagdollAnimRoot, RagdollAnimConfigs);
+            ProcessAnimConfigs(Ragdoll2AnimRoot, Ragdoll2AnimConfigs);
             ProcessAnimConfigs(SibBlackAnimRoot, SibBlackAnimConfigs);
             ProcessAnimConfigs(SibWhiteAnimRoot, SibWhiteAnimConfigs);
             ProcessAnimConfigs(CleoAnimRoot, CleoAnimConfigs);
             ProcessAnimConfigs(AristoteAnimRoot, AristoteAnimConfigs);
+            ProcessAnimConfigs(ChartrAnimRoot, ChartrAnimConfigs);
+            ProcessAnimConfigs(NapoleonAnimRoot, NapoleonAnimConfigs);
+            ProcessAnimConfigs(OrionAnimRoot, OrionAnimConfigs);
             ProcessAnimConfigs(CloudRoot, CloudAnimConfigs);
             ProcessAnimConfigs(PettingRoot, HandPetAnimConfigs);
             ProcessAnimConfigs(CoinSpinRoot, CoinSpinAnimConfigs);
-            ProcessAnimConfigs(AquariumAnimRoot, AquariumAnimConfigs);
             ProcessAnimConfigs(CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
             AssetDatabase.Refresh();
 
@@ -920,20 +1144,24 @@ namespace CatHotel.Editor
             var eur3Controller = CreateAnimController(Eur3ControllerPath, Eur3AnimRoot, Eur3AnimConfigs);
             var siamoisController = CreateAnimController(SiamoisControllerPath, SiamoisAnimRoot, SiamoisAnimConfigs);
             var ragdollController = CreateAnimController(RagdollControllerPath, RagdollAnimRoot, RagdollAnimConfigs);
+            var ragdoll2Controller = CreateAnimController(Ragdoll2ControllerPath, Ragdoll2AnimRoot, Ragdoll2AnimConfigs);
             var sibBlackController = CreateAnimController(SibBlackControllerPath, SibBlackAnimRoot, SibBlackAnimConfigs);
             var sibWhiteController = CreateAnimController(SibWhiteControllerPath, SibWhiteAnimRoot, SibWhiteAnimConfigs);
             var cleoController = CreateAnimController(CleoControllerPath, CleoAnimRoot, CleoAnimConfigs);
             var aristoteController = CreateAnimController(AristoteControllerPath, AristoteAnimRoot, AristoteAnimConfigs);
+            var chartrController = CreateAnimController(ChartrControllerPath, ChartrAnimRoot, ChartrAnimConfigs);
+            var napoleonController = CreateAnimController(NapoleonControllerPath, NapoleonAnimRoot, NapoleonAnimConfigs);
+            var orionController = CreateAnimController(OrionControllerPath, OrionAnimRoot, OrionAnimConfigs);
             var cloudController = CreateAnimController(CloudControllerPath, CloudRoot, CloudAnimConfigs);
             var handPetController = CreateAnimController(HandPetControllerPath, PettingRoot, HandPetAnimConfigs);
             var coinSpinController = CreateAnimController(CoinSpinControllerPath, CoinSpinRoot, CoinSpinAnimConfigs);
-            CreateAnimController(AquariumControllerPath, AquariumAnimRoot, AquariumAnimConfigs);
             CreateAnimController(CarpetCosmicControllerPath, CarpetCosmicAnimRoot, CarpetCosmicAnimConfigs);
-            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, ragdollController, sibBlackController, sibWhiteController, cleoController, aristoteController, cloudController, handPetController, coinSpinController);
+            BuildSceneHierarchy(tiles, eurController, eur2Controller, eur3Controller, siamoisController, ragdollController, ragdoll2Controller, sibBlackController, sibWhiteController, chartrController, cleoController, aristoteController, napoleonController, orionController, cloudController, handPetController, coinSpinController);
             int total = AnimConfigs.Length + Eur2AnimConfigs.Length + Eur3AnimConfigs.Length
-                      + SiamoisAnimConfigs.Length + RagdollAnimConfigs.Length
+                      + SiamoisAnimConfigs.Length + RagdollAnimConfigs.Length + Ragdoll2AnimConfigs.Length
                       + SibBlackAnimConfigs.Length + SibWhiteAnimConfigs.Length
-                      + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + AquariumAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
+                      + ChartrAnimConfigs.Length + NapoleonAnimConfigs.Length + OrionAnimConfigs.Length
+                      + CleoAnimConfigs.Length + AristoteAnimConfigs.Length + CloudAnimConfigs.Length + HandPetAnimConfigs.Length + CoinSpinAnimConfigs.Length + CarpetCosmicAnimConfigs.Length;
             Debug.Log($"Proto scene setup complete. {total} animation clips configured.");
         }
 
@@ -1088,6 +1316,37 @@ namespace CatHotel.Editor
             };
             foreach (var s in bubbleSprites)
                 ConfigureSprite(s, 200, FilterMode.Bilinear);
+
+            // Entrance logos
+            ConfigureSprite("Assets/_Project/Art/UI/Logos/Allies_pension.png", 200, FilterMode.Bilinear);
+            ConfigureSprite("Assets/_Project/Art/UI/Logos/Refuge.png", 200, FilterMode.Bilinear);
+
+            // Door spritesheet (pivot bottom-left so door aligns to cell corner)
+            ConfigureSpritesheet(
+                "Assets/_Project/Art/Environment/Doors/DOOR_Open_Spritesheet.png",
+                "door_open", 9,
+                SpriteAlignment.BottomLeft, new Vector2(0f, 0f));
+        }
+
+        /// <summary>Wire door frames to GridRenderer.</summary>
+        private static void WireDoorFrames(GridRenderer renderer)
+        {
+            string sheetPath = "Assets/_Project/Art/Environment/Doors/DOOR_Open_Spritesheet.png";
+            var allAssets = AssetDatabase.LoadAllAssetsAtPath(sheetPath);
+            var frames = new System.Collections.Generic.List<Sprite>();
+            foreach (var obj in allAssets)
+                if (obj is Sprite s) frames.Add(s);
+            frames.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+
+            if (frames.Count > 0)
+            {
+                var so = new SerializedObject(renderer);
+                var prop = so.FindProperty("_doorFrames");
+                prop.arraySize = frames.Count;
+                for (int i = 0; i < frames.Count; i++)
+                    prop.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+                so.ApplyModifiedProperties();
+            }
         }
 
         private static void ConfigureCatSpriteImports()
@@ -1126,10 +1385,26 @@ namespace CatHotel.Editor
                 $"{SibWhiteSpritesRoot}/CAT_SIB_FRONT.png",
                 $"{SibWhiteSpritesRoot}/CAT_SIB_RIGHT.png",
                 $"{SibWhiteSpritesRoot}/CAT_SIB_BACK.png",
+                // Ragdoll 2
+                $"{Ragdoll2SpritesRoot}/CAT_RD_02_FRONT.png",
+                $"{Ragdoll2SpritesRoot}/CAT_RD_02_RIGHT.png",
+                $"{Ragdoll2SpritesRoot}/CAT_RD_02_BACK.png",
+                // Chartreux
+                $"{ChartrSpritesRoot}/CAT_CHARTREU_FRONT.png",
+                $"{ChartrSpritesRoot}/CAT_CHARTREU_RIGHT.png",
+                $"{ChartrSpritesRoot}/CAT_CHARTREU_BACK.png",
                 // Cleo (Special)
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_FRONT.png",
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_RIGHT.png",
                 $"{CleoSpritesRoot}/CAT_EUR_Cleo_BACK.png",
+                // Napoleon (Special)
+                $"{NapoleonSpritesRoot}/CAT_CHARTREU_Napoléon_FRONT.png",
+                $"{NapoleonSpritesRoot}/CAT_CHARTREU_Napoléon_RIGHT.png",
+                $"{NapoleonSpritesRoot}/CAT_CHARTREU_Napoléon_BACK.png",
+                // Orion (Special)
+                $"{OrionSpritesRoot}/CAT_RD_Orion_FRONT.png",
+                $"{OrionSpritesRoot}/CAT_RD_Orion_RIGHT.png",
+                $"{OrionSpritesRoot}/CAT_RD_Orion_BACK.png",
             };
 
             foreach (string path in paths)
@@ -1140,7 +1415,8 @@ namespace CatHotel.Editor
         private static void SliceSpritesheet(string path, int frames, string prefix)
             => ConfigureSpritesheet(path, prefix, frames);
 
-        private static void ConfigureSpritesheet(string sheetPath, string namePrefix, int frameCount)
+        private static void ConfigureSpritesheet(string sheetPath, string namePrefix, int frameCount,
+            SpriteAlignment alignment = SpriteAlignment.Center, Vector2? customPivot = null)
         {
             var importer = AssetImporter.GetAtPath(sheetPath) as TextureImporter;
             if (importer == null)
@@ -1153,14 +1429,26 @@ namespace CatHotel.Editor
             importer.spriteImportMode = SpriteImportMode.Multiple;
             importer.spritePixelsPerUnit = 200;
             importer.filterMode = FilterMode.Bilinear;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.crunchedCompression = true;
+            importer.compressionQuality = 50;
 
             importer.GetSourceTextureWidthAndHeight(out int texW, out int texH);
 
             int maxSize = 2048;
             while (maxSize < texW)
                 maxSize *= 2;
+            if (maxSize > 4096) maxSize = 4096; // safe for all Android GPUs
             importer.maxTextureSize = maxSize;
+
+            // Android: ASTC 6x6 for best quality/size ratio on 2D sprites
+            var androidSettings = importer.GetPlatformTextureSettings("Android");
+            androidSettings.overridden = true;
+            androidSettings.format = TextureImporterFormat.ASTC_6x6;
+            androidSettings.maxTextureSize = maxSize;
+            androidSettings.crunchedCompression = true;
+            androidSettings.compressionQuality = 50;
+            importer.SetPlatformTextureSettings(androidSettings);
 
             int frameW = texW / frameCount;
 
@@ -1208,8 +1496,8 @@ namespace CatHotel.Editor
                     spriteID = existingById.TryGetValue(spriteName, out var existingId)
                         ? existingId : GUID.Generate(),
                     rect = new Rect(i * frameW, 0, frameW, texH),
-                    alignment = SpriteAlignment.Center,
-                    pivot = new Vector2(0.5f, 0.5f)
+                    alignment = alignment,
+                    pivot = customPivot ?? new Vector2(0.5f, 0.5f)
                 };
             }
             provider.SetSpriteRects(rects);
@@ -1315,7 +1603,18 @@ namespace CatHotel.Editor
             importer.spriteImportMode = SpriteImportMode.Single;
             importer.spritePixelsPerUnit = ppu;
             importer.filterMode = filter;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
+            importer.textureCompression = TextureImporterCompression.Compressed;
+            importer.crunchedCompression = true;
+            importer.compressionQuality = 50;
+
+            // Android: ASTC 6x6, cap 4096
+            var androidSpr = importer.GetPlatformTextureSettings("Android");
+            androidSpr.overridden = true;
+            androidSpr.format = TextureImporterFormat.ASTC_6x6;
+            androidSpr.maxTextureSize = 4096;
+            androidSpr.crunchedCompression = true;
+            androidSpr.compressionQuality = 50;
+            importer.SetPlatformTextureSettings(androidSpr);
 
             if (customPivot.HasValue)
             {
@@ -1422,10 +1721,14 @@ namespace CatHotel.Editor
             RuntimeAnimatorController eur3Controller,
             RuntimeAnimatorController siamoisController,
             RuntimeAnimatorController ragdollController,
+            RuntimeAnimatorController ragdoll2Controller,
             RuntimeAnimatorController sibBlackController,
             RuntimeAnimatorController sibWhiteController,
+            RuntimeAnimatorController chartrController,
             RuntimeAnimatorController cleoController,
             RuntimeAnimatorController aristoteController,
+            RuntimeAnimatorController napoleonController,
+            RuntimeAnimatorController orionController,
             RuntimeAnimatorController cloudController,
             RuntimeAnimatorController handPetController,
             RuntimeAnimatorController coinSpinController)
@@ -1523,6 +1826,17 @@ namespace CatHotel.Editor
             so.FindProperty("_intCornerRT").objectReferenceValue   = tiles.intCornerRT;
             so.ApplyModifiedProperties();
 
+            // Wire door frames to GridRenderer
+            WireDoorFrames(renderer);
+
+            // Wire entrance logos
+            var soRenderer = new SerializedObject(renderer);
+            soRenderer.FindProperty("_pensionLogoSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Logos/Allies_pension.png");
+            soRenderer.FindProperty("_refugeLogoSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Logos/Refuge.png");
+            soRenderer.ApplyModifiedProperties();
+
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
             if (builder == null)
                 builder = mgrObj.AddComponent<RoomBuilderInput>();
@@ -1546,9 +1860,9 @@ namespace CatHotel.Editor
             // --- Create CatBreedData SO assets ---
             var breedAssets = CreateBreedAssets(
                 eurController, eur2Controller, eur3Controller,
-                siamoisController, ragdollController,
-                sibBlackController, sibWhiteController,
-                cleoController, aristoteController);
+                siamoisController, ragdollController, ragdoll2Controller,
+                sibBlackController, sibWhiteController, chartrController,
+                cleoController, aristoteController, napoleonController, orionController);
 
             // --- Create GameConfig SO asset ---
             var gameConfig = CreateOrLoadAsset<GameConfig>("Assets/_Project/Data/GameConfig.asset");
@@ -1559,6 +1873,10 @@ namespace CatHotel.Editor
             // --- AppLifecycleManager (frame rate, pause, accelerometer) ---
             if (mgrObj.GetComponent<CatHotel.Core.AppLifecycleManager>() == null)
                 mgrObj.AddComponent<CatHotel.Core.AppLifecycleManager>();
+
+            // --- SceneTextLocalizer (localize static labels) ---
+            if (mgrObj.GetComponent<CatHotel.UI.SceneTextLocalizer>() == null)
+                mgrObj.AddComponent<CatHotel.UI.SceneTextLocalizer>();
 
             // --- EconomyManager ---
             var economyMgr = mgrObj.GetComponent<EconomyManager>();
@@ -1587,10 +1905,8 @@ namespace CatHotel.Editor
             soHotel.FindProperty("_reputation").objectReferenceValue = repMgr;
             soHotel.FindProperty("_catSpawner").objectReferenceValue = spawner;
 
-            var breedsProp = soHotel.FindProperty("_availableBreeds");
-            breedsProp.arraySize = breedAssets.Length;
-            for (int i = 0; i < breedAssets.Length; i++)
-                breedsProp.GetArrayElementAtIndex(i).objectReferenceValue = breedAssets[i];
+            // Breeds are now lazy-loaded from Resources/Breeds/ via BreedRegistry.
+            // No need to assign them here — _breedEntries is configured in code.
             soHotel.ApplyModifiedProperties();
 
             // --- HudManager ---
@@ -1604,35 +1920,8 @@ namespace CatHotel.Editor
             soHud.FindProperty("_reputation").objectReferenceValue = repMgr;
             soHud.ApplyModifiedProperties();
 
-            // --- AuthManager ---
-            var authObj = FindOrCreate("[AuthManager]");
-            var authMgr = authObj.GetComponent<AuthManager>();
-            if (authMgr == null)
-                authMgr = authObj.AddComponent<AuthManager>();
-
-            var authConfig = AssetDatabase.LoadAssetAtPath<AuthConfig>(
-                "Assets/_Project/Data/AuthConfig.asset");
-            if (authConfig != null)
-            {
-                var soAuth = new SerializedObject(authMgr);
-                soAuth.FindProperty("_config").objectReferenceValue = authConfig;
-                soAuth.ApplyModifiedProperties();
-            }
-
-            // --- AdManager ---
-            var adObj = FindOrCreate("[AdManager]");
-            var adMgr = adObj.GetComponent<AdManager>();
-            if (adMgr == null)
-                adMgr = adObj.AddComponent<AdManager>();
-
-            var adConfig = AssetDatabase.LoadAssetAtPath<AdConfig>(
-                "Assets/_Project/Data/AdConfig.asset");
-            if (adConfig != null)
-            {
-                var soAd = new SerializedObject(adMgr);
-                soAd.FindProperty("_config").objectReferenceValue = adConfig;
-                soAd.ApplyModifiedProperties();
-            }
+            // AuthManager and AdManager are now created in the Boot scene (DontDestroyOnLoad).
+            // When running Proto directly in editor, HotelManager.Start() handles fallback init.
 
             // --- RevenueBoostManager ---
             var boostObj = FindOrCreate("[RevenueBoostManager]");
@@ -1640,10 +1929,12 @@ namespace CatHotel.Editor
             if (boostMgr == null)
                 boostMgr = boostObj.AddComponent<RevenueBoostManager>();
 
-            if (adConfig != null)
+            var boostAdConfig = AssetDatabase.LoadAssetAtPath<AdConfig>(
+                "Assets/_Project/Data/AdConfig.asset");
+            if (boostAdConfig != null)
             {
                 var soBoost = new SerializedObject(boostMgr);
-                soBoost.FindProperty("_config").objectReferenceValue = adConfig;
+                soBoost.FindProperty("_config").objectReferenceValue = boostAdConfig;
                 soBoost.ApplyModifiedProperties();
             }
 
@@ -1705,9 +1996,32 @@ namespace CatHotel.Editor
             var objectSelector = mgrObj.GetComponent<ObjectSelector>();
             if (objectSelector == null)
                 objectSelector = mgrObj.AddComponent<ObjectSelector>();
+            // --- ObjectMover ---
+            var objectMover = mgrObj.GetComponent<ObjectMover>();
+            if (objectMover == null)
+                objectMover = mgrObj.AddComponent<ObjectMover>();
+            var soMover = new SerializedObject(objectMover);
+            soMover.FindProperty("_selector").objectReferenceValue = objectSelector;
+            soMover.FindProperty("_placement").objectReferenceValue = objectPlacement;
+            soMover.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+            soMover.FindProperty("_economy").objectReferenceValue = economyMgr;
+
+            soMover.FindProperty("_cameraController").objectReferenceValue = camCtrl;
+            var readyArr = soMover.FindProperty("_readyFrames");
+            readyArr.arraySize = readySprites.Length;
+            for (int i = 0; i < readySprites.Length; i++)
+                readyArr.GetArrayElementAtIndex(i).objectReferenceValue = readySprites[i];
+            var cancelArr = soMover.FindProperty("_cancelFrames");
+            cancelArr.arraySize = cancelSprites.Length;
+            for (int i = 0; i < cancelSprites.Length; i++)
+                cancelArr.GetArrayElementAtIndex(i).objectReferenceValue = cancelSprites[i];
+            soMover.ApplyModifiedProperties();
+
+            // Wire ObjectMover to ObjectSelector
             var soSelector = new SerializedObject(objectSelector);
             soSelector.FindProperty("_catSpawner").objectReferenceValue = spawner;
             soSelector.FindProperty("_objectPlacement").objectReferenceValue = objectPlacement;
+            soSelector.FindProperty("_objectMover").objectReferenceValue = objectMover;
             soSelector.ApplyModifiedProperties();
 
             // --- ShopPanel ---
@@ -2026,36 +2340,11 @@ namespace CatHotel.Editor
                 spritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01.png", size: new Vector2Int(2, 1), wallMount: true,
                 selectedSpritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01_SELEC.png");
 
-            // --- Decorations: Aquarium (animated via SpriteFrameAnimator) ---
-            // Slice spritesheet_aquarium.png into 40 frames
-            string aqSheetPath = $"{ObjectsRoot}/Deco/spritesheet_aquarium.png";
-            SliceSpritesheet(aqSheetPath, 40, "aquarium");
-
-            var aqAsset = CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
+            // --- Decorations: Aquarium (static sprite only — spritesheet removed) ---
+            CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
                 ObjectCategory.Decoration, 200, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/Aquarium.png", size: Vector2Int.one,
                 visualScale: 2f, requiresTable: true);
-
-            // Load sliced sub-sprites and wire to animFrames
-            var aqAllAssets = AssetDatabase.LoadAllAssetsAtPath(aqSheetPath);
-            var aqFrames = new System.Collections.Generic.List<Sprite>();
-            foreach (var obj in aqAllAssets)
-                if (obj is Sprite s && s.name != "spritesheet_aquarium") aqFrames.Add(s);
-            aqFrames.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
-            if (aqFrames.Count > 0 && aqAsset != null)
-            {
-                var soAq = new SerializedObject(aqAsset);
-                var framesProp = soAq.FindProperty("animFrames");
-                framesProp.arraySize = aqFrames.Count;
-                for (int i = 0; i < aqFrames.Count; i++)
-                    framesProp.GetArrayElementAtIndex(i).objectReferenceValue = aqFrames[i];
-                soAq.FindProperty("animFps").floatValue = 12f;
-                soAq.ApplyModifiedProperties();
-            }
-            else
-            {
-                Debug.LogWarning($"[Setup] Aquarium: found {aqFrames.Count} sub-sprites in {aqSheetPath}");
-            }
 
             // --- Carpets ---
             CreateObjectAsset($"{D}/Obj_CarpetConfort.asset", "Tapis Confort",
@@ -2319,12 +2608,14 @@ namespace CatHotel.Editor
             string spritesRoot, string frontFile, string rightFile, string backFile,
             RuntimeAnimatorController controller,
             float demand = 1f, float hTrait = 1f, float sTrait = 1f, float pTrait = 1f, float cTrait = 1f,
-            float size = 1f, float speed = 1f, int minRep = 0, bool aggressive = false)
+            float size = 1f, float speed = 1f, int minRep = 0, bool aggressive = false,
+            string breedNamePlural = null)
         {
             var breed = CreateOrLoadAsset<CatBreedData>(assetPath);
             var so = new SerializedObject(breed);
 
             so.FindProperty("breedName").stringValue = breedName;
+            so.FindProperty("breedNamePlural").stringValue = breedNamePlural ?? (breedName + "s");
             so.FindProperty("minReputation").intValue = minRep;
             so.FindProperty("isAggressive").boolValue = aggressive;
             so.FindProperty("frontSprite").objectReferenceValue =
@@ -2350,9 +2641,11 @@ namespace CatHotel.Editor
         private static CatBreedData[] CreateBreedAssets(
             RuntimeAnimatorController eurCtrl, RuntimeAnimatorController eur2Ctrl,
             RuntimeAnimatorController eur3Ctrl, RuntimeAnimatorController siamoisCtrl,
-            RuntimeAnimatorController ragdollCtrl,
+            RuntimeAnimatorController ragdollCtrl, RuntimeAnimatorController ragdoll2Ctrl,
             RuntimeAnimatorController sibBlackCtrl, RuntimeAnimatorController sibWhiteCtrl,
-            RuntimeAnimatorController cleoCtrl, RuntimeAnimatorController aristoteCtrl)
+            RuntimeAnimatorController chartrCtrl,
+            RuntimeAnimatorController cleoCtrl, RuntimeAnimatorController aristoteCtrl,
+            RuntimeAnimatorController napoleonCtrl, RuntimeAnimatorController orionCtrl)
         {
             const string D = "Assets/_Project/Data/Breeds";
 
@@ -2369,17 +2662,24 @@ namespace CatHotel.Editor
                 Eur3SpritesRoot, "CAT_EUR_03_FRONT.png", "CAT_EUR_03_RIGHT.png", "CAT_EUR_03_BACK.png",
                 eur3Ctrl);
 
-            // Siamois (minRep 0 for now, plays more, GDD: Play +50%, demand 1.2, speed 1.2, size 0.9)
+            // Siamois (GDD: Play +50%, demand 1.2, speed 1.2, size 0.9, minRep 2)
             var siam = CreateBreedAsset($"{D}/Breed_Siamois.asset", "Siamois",
                 SiamoisSpritesRoot, "CAT_SIAMESE_FRONT.png", "CAT_SIAMESE_RIGHT.png", "CAT_SIAMESE_BACK.png",
                 siamoisCtrl,
-                demand: 1.2f, pTrait: 1.5f, size: 0.9f, speed: 1.2f, minRep: 0);
+                demand: 1.2f, pTrait: 1.5f, size: 0.9f, speed: 1.2f, minRep: 2,
+                breedNamePlural: "Siamois");
 
-            // Ragdoll (minRep 0 for now, calm & sleepy, GDD: Sleep +40%, demand 0.9, speed 0.8, size 1.1)
+            // Ragdoll (GDD: Sleep +30%, demand 1.1, speed 0.8, size 1.1, minRep 1)
             var ragdoll = CreateBreedAsset($"{D}/Breed_Ragdoll.asset", "Ragdoll",
                 RagdollSpritesRoot, "CAT_RD_FRONT.png", "CAT_RD_RIGHT.png", "CAT_RD_BACK.png",
                 ragdollCtrl,
-                demand: 0.9f, sTrait: 1.4f, size: 1.1f, speed: 0.8f, minRep: 0);
+                demand: 1.1f, sTrait: 1.3f, size: 1.1f, speed: 0.8f, minRep: 1);
+
+            // Ragdoll 2 (variant, same breed stats as Ragdoll)
+            var ragdoll2 = CreateBreedAsset($"{D}/Breed_Ragdoll2.asset", "Ragdoll",
+                Ragdoll2SpritesRoot, "CAT_RD_02_FRONT.png", "CAT_RD_02_RIGHT.png", "CAT_RD_02_BACK.png",
+                ragdoll2Ctrl,
+                demand: 1.1f, sTrait: 1.3f, size: 1.1f, speed: 0.8f, minRep: 1);
 
             // Siberian Black (thick fur, sturdy, GDD: Hunger +30%, demand 1.1, speed 0.9, size 1.15)
             var sibBlack = CreateBreedAsset($"{D}/Breed_SiberienBlack.asset", "Sibérien",
@@ -2425,10 +2725,49 @@ namespace CatHotel.Editor
             soSiam.FindProperty("specialController").objectReferenceValue = cleoCtrl;
             soSiam.ApplyModifiedProperties();
 
+            // Chartreux (GDD: Dominant, Équilibré, demand 1.6, size 1.1, speed 1.0, Aggressive, minRep 8)
+            var chartr = CreateBreedAsset($"{D}/Breed_Chartreux.asset", "Chartreux",
+                ChartrSpritesRoot, "CAT_CHARTREU_FRONT.png", "CAT_CHARTREU_RIGHT.png", "CAT_CHARTREU_BACK.png",
+                chartrCtrl,
+                demand: 1.6f, size: 1.1f, speed: 1f, minRep: 8, aggressive: true,
+                breedNamePlural: "Chartreux");
+
+            // Wire Napoleon as special on Chartreux (GDD: 4%, rev 3.2, demand 2.3)
+            var soChartr = new SerializedObject(chartr);
+            soChartr.FindProperty("hasSpecialVariant").boolValue = true;
+            soChartr.FindProperty("specialName").stringValue = "Napoléon";
+            soChartr.FindProperty("specialChance").floatValue = 0.04f;
+            soChartr.FindProperty("specialRevenueMult").floatValue = 3.2f;
+            soChartr.FindProperty("specialDemandMult").floatValue = 2.3f;
+            soChartr.FindProperty("specialFrontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{NapoleonSpritesRoot}/CAT_CHARTREU_Napoléon_FRONT.png");
+            soChartr.FindProperty("specialRightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{NapoleonSpritesRoot}/CAT_CHARTREU_Napoléon_RIGHT.png");
+            soChartr.FindProperty("specialBackSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{NapoleonSpritesRoot}/CAT_CHARTREU_Napoléon_BACK.png");
+            soChartr.FindProperty("specialController").objectReferenceValue = napoleonCtrl;
+            soChartr.ApplyModifiedProperties();
+
+            // Wire Orion as special on Ragdoll (GDD: 10%, rev 2.5, demand 1.8)
+            var soRd = new SerializedObject(ragdoll);
+            soRd.FindProperty("hasSpecialVariant").boolValue = true;
+            soRd.FindProperty("specialName").stringValue = "Orion";
+            soRd.FindProperty("specialChance").floatValue = 0.10f;
+            soRd.FindProperty("specialRevenueMult").floatValue = 2.5f;
+            soRd.FindProperty("specialDemandMult").floatValue = 1.8f;
+            soRd.FindProperty("specialFrontSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{OrionSpritesRoot}/CAT_RD_Orion_FRONT.png");
+            soRd.FindProperty("specialRightSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{OrionSpritesRoot}/CAT_RD_Orion_RIGHT.png");
+            soRd.FindProperty("specialBackSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>($"{OrionSpritesRoot}/CAT_RD_Orion_BACK.png");
+            soRd.FindProperty("specialController").objectReferenceValue = orionCtrl;
+            soRd.ApplyModifiedProperties();
+
             AssetDatabase.SaveAssets();
             Debug.Log("[Setup] Created breed SO assets.");
 
-            return new[] { eur1, eur2, eur3, siam, ragdoll, sibBlack, sibWhite };
+            return new[] { eur1, eur2, eur3, siam, ragdoll, ragdoll2, sibBlack, sibWhite, chartr };
         }
     }
 }

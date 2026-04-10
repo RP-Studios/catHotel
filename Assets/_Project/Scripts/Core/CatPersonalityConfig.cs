@@ -95,19 +95,19 @@ namespace CatHotel.Core
     [CreateAssetMenu(fileName = "CatPersonalityConfig", menuName = "Cat Hotel/Cat Personality Config")]
     public class CatPersonalityConfig : ScriptableObject
     {
-        [Header("Race Trait Labels")]
-        public string traitHunger = "Gourmand";
-        public string traitThirst = "Assoiffé";
-        public string traitSleep = "Dormeur";
-        public string traitPlay = "Joueur";
-        public string traitClean = "Maniaque";
+        [Header("Race Trait Keys (resolved via LocalizedStrings)")]
+        public string traitHunger = "trait.hunger";
+        public string traitThirst = "trait.thirst";
+        public string traitSleep = "trait.sleep";
+        public string traitPlay = "trait.play";
+        public string traitClean = "trait.clean";
 
-        [Header("Physical Trait Labels")]
-        public string traitAggressive = "Bagarreur";
-        public string traitBig = "Imposant";
-        public string traitSmall = "Petit gabarit";
-        public string traitFast = "Rapide";
-        public string traitSlow = "Nonchalant";
+        [Header("Physical Trait Keys")]
+        public string traitAggressive = "trait.aggressive";
+        public string traitBig = "trait.big";
+        public string traitSmall = "trait.small";
+        public string traitFast = "trait.fast";
+        public string traitSlow = "trait.slow";
 
         [Header("Physical Thresholds")]
         public float bigSizeThreshold = 1.1f;
@@ -120,47 +120,47 @@ namespace CatHotel.Core
         [Range(0f, 1f)] public float personalityChance = 0.5f;
         public CatTraitEffect[] personalityPool =
         {
-            new() { traitName = "Câlin",        petBonusMult = 1.4f },
-            new() { traitName = "Indépendant",  petBonusMult = 0.6f },
-            new() { traitName = "Curieux",      speedMult = 1.15f },
-            new() { traitName = "Craintif",     fightPenaltyMult = 1.5f },
-            new() { traitName = "Affectueux",   petBonusMult = 1.5f, happinessOffset = 2f },
-            new() { traitName = "Observateur" },
-            new() { traitName = "Discret" },
-            new() { traitName = "Pot de colle", petBonusMult = 1.6f },
-            new() { traitName = "Aventurier",   speedMult = 1.2f },
-            new() { traitName = "Territorial",  fightPenaltyMult = 0.7f },
-            new() { traitName = "Sociable",     happinessOffset = 3f },
-            new() { traitName = "Solitaire",    happinessOffset = -2f },
-            new() { traitName = "Malin" },
-            new() { traitName = "Paresseux",    speedMult = 0.8f, sleepDecayMult = 1.3f },
-            new() { traitName = "Fidèle",       happinessOffset = 2f },
-            new() { traitName = "Capricieux",   hungerDecayMult = 1.15f, thirstDecayMult = 1.15f,
-                                                 sleepDecayMult = 1.15f, playDecayMult = 1.15f, cleanDecayMult = 1.15f }
+            new() { traitName = "personality.cuddly",       petBonusMult = 1.4f },
+            new() { traitName = "personality.independent",   petBonusMult = 0.6f },
+            new() { traitName = "personality.curious",       speedMult = 1.15f },
+            new() { traitName = "personality.fearful",       fightPenaltyMult = 1.5f },
+            new() { traitName = "personality.affectionate",  petBonusMult = 1.5f, happinessOffset = 2f },
+            new() { traitName = "personality.observer" },
+            new() { traitName = "personality.discreet" },
+            new() { traitName = "personality.clingy",        petBonusMult = 1.6f },
+            new() { traitName = "personality.adventurer",    speedMult = 1.2f },
+            new() { traitName = "personality.territorial",   fightPenaltyMult = 0.7f },
+            new() { traitName = "personality.sociable",      happinessOffset = 3f },
+            new() { traitName = "personality.solitary",      happinessOffset = -2f },
+            new() { traitName = "personality.clever" },
+            new() { traitName = "personality.lazy",          speedMult = 0.8f, sleepDecayMult = 1.3f },
+            new() { traitName = "personality.loyal",         happinessOffset = 2f },
+            new() { traitName = "personality.capricious",    hungerDecayMult = 1.15f, thirstDecayMult = 1.15f,
+                                                              sleepDecayMult = 1.15f, playDecayMult = 1.15f, cleanDecayMult = 1.15f }
         };
 
         [Header("Quirky Traits (pool 3)")]
         [Range(0f, 1f)] public float quirkyChance = 0.33f;
         public CatTraitEffect[] quirkyPool =
         {
-            new() { traitName = "Rancunier",            fightRecoveryMult = 0.4f },
-            new() { traitName = "Susceptible",          fightPenaltyMult = 1.4f, happinessOffset = -2f },
-            new() { traitName = "Idiot",                speedMult = 0.9f },
-            new() { traitName = "Gros mangeur",         hungerDecayMult = 1.4f },
-            new() { traitName = "Soiffard",             thirstDecayMult = 1.4f },
-            new() { traitName = "Voleur de croquettes", hungerDecayMult = 0.7f },
-            new() { traitName = "Ronfleur",             sleepDecayMult = 0.8f },
-            new() { traitName = "Peureux des litières", cleanDecayMult = 1.3f },
-            new() { traitName = "Jaloux",               fightPenaltyMult = 1.3f, happinessOffset = -3f },
-            new() { traitName = "Frimeur",              petBonusMult = 1.3f },
-            new() { traitName = "Drama queen",          fightPenaltyMult = 1.5f, petBonusMult = 1.4f },
-            new() { traitName = "Collectionneur de poils" },
-            new() { traitName = "Grognon",              happinessOffset = -5f },
-            new() { traitName = "Maladroit" },
-            new() { traitName = "Hypocondriaque",       cleanDecayMult = 1.4f },
-            new() { traitName = "Roi du canapé",        sleepDecayMult = 1.3f, speedMult = 0.85f },
-            new() { traitName = "Snob",                 happinessOffset = -3f, petBonusMult = 0.7f },
-            new() { traitName = "Chapardeur",           hungerDecayMult = 0.8f, thirstDecayMult = 0.8f }
+            new() { traitName = "quirk.grudge",          fightRecoveryMult = 0.4f },
+            new() { traitName = "quirk.touchy",          fightPenaltyMult = 1.4f, happinessOffset = -2f },
+            new() { traitName = "quirk.dumb",            speedMult = 0.9f },
+            new() { traitName = "quirk.big_eater",       hungerDecayMult = 1.4f },
+            new() { traitName = "quirk.drinker",         thirstDecayMult = 1.4f },
+            new() { traitName = "quirk.food_thief",      hungerDecayMult = 0.7f },
+            new() { traitName = "quirk.snorer",          sleepDecayMult = 0.8f },
+            new() { traitName = "quirk.litter_fear",     cleanDecayMult = 1.3f },
+            new() { traitName = "quirk.jealous",         fightPenaltyMult = 1.3f, happinessOffset = -3f },
+            new() { traitName = "quirk.show_off",        petBonusMult = 1.3f },
+            new() { traitName = "quirk.drama_queen",     fightPenaltyMult = 1.5f, petBonusMult = 1.4f },
+            new() { traitName = "quirk.hair_collector" },
+            new() { traitName = "quirk.grumpy",          happinessOffset = -5f },
+            new() { traitName = "quirk.clumsy" },
+            new() { traitName = "quirk.hypochondriac",   cleanDecayMult = 1.4f },
+            new() { traitName = "quirk.couch_king",      sleepDecayMult = 1.3f, speedMult = 0.85f },
+            new() { traitName = "quirk.snob",            happinessOffset = -3f, petBonusMult = 0.7f },
+            new() { traitName = "quirk.pilferer",        hungerDecayMult = 0.8f, thirstDecayMult = 0.8f }
         };
 
         public string GetRaceTrait(CatBreedData breed)
@@ -222,6 +222,9 @@ namespace CatHotel.Core
                 }
             }
 
+            // Resolve keys to localized text
+            for (int i = 0; i < parts.Count; i++)
+                parts[i] = ResolveTraitText(parts[i]);
             return (string.Join(", ", parts), mods);
         }
 
@@ -229,6 +232,58 @@ namespace CatHotel.Core
         public string GenerateDescription(CatBreedData breed, int seed)
         {
             return GeneratePersonality(breed, seed).description;
+        }
+
+        // Fallback: maps old French trait values (from un-updated assets) to localization keys
+        private static readonly System.Collections.Generic.Dictionary<string, string> FrenchToKey = new()
+        {
+            // Race traits
+            { "Gourmand", "trait.hunger" }, { "Assoiffé", "trait.thirst" },
+            { "Dormeur", "trait.sleep" }, { "Joueur", "trait.play" },
+            { "Maniaque", "trait.clean" }, { "Bagarreur", "trait.aggressive" },
+            { "Imposant", "trait.big" }, { "Petit gabarit", "trait.small" },
+            { "Rapide", "trait.fast" }, { "Nonchalant", "trait.slow" },
+            // Personality
+            { "Câlin", "personality.cuddly" }, { "Indépendant", "personality.independent" },
+            { "Curieux", "personality.curious" }, { "Craintif", "personality.fearful" },
+            { "Affectueux", "personality.affectionate" }, { "Observateur", "personality.observer" },
+            { "Discret", "personality.discreet" }, { "Pot de colle", "personality.clingy" },
+            { "Aventurier", "personality.adventurer" }, { "Territorial", "personality.territorial" },
+            { "Sociable", "personality.sociable" }, { "Solitaire", "personality.solitary" },
+            { "Malin", "personality.clever" }, { "Paresseux", "personality.lazy" },
+            { "Fidèle", "personality.loyal" }, { "Capricieux", "personality.capricious" },
+            // Quirky
+            { "Rancunier", "quirk.grudge" }, { "Susceptible", "quirk.touchy" },
+            { "Idiot", "quirk.dumb" }, { "Gros mangeur", "quirk.big_eater" },
+            { "Soiffard", "quirk.drinker" }, { "Voleur de croquettes", "quirk.food_thief" },
+            { "Ronfleur", "quirk.snorer" }, { "Peureux des litières", "quirk.litter_fear" },
+            { "Jaloux", "quirk.jealous" }, { "Frimeur", "quirk.show_off" },
+            { "Drama queen", "quirk.drama_queen" }, { "Collectionneur de poils", "quirk.hair_collector" },
+            { "Grognon", "quirk.grumpy" }, { "Maladroit", "quirk.clumsy" },
+            { "Hypocondriaque", "quirk.hypochondriac" }, { "Roi du canapé", "quirk.couch_king" },
+            { "Snob", "quirk.snob" }, { "Chapardeur", "quirk.pilferer" },
+        };
+
+        /// <summary>
+        /// Resolve a trait text: if it's a key (trait.play), localize it.
+        /// If it's a French text from an old asset (Joueur), find the key first then localize.
+        /// </summary>
+        private static string ResolveTraitText(string text)
+        {
+            // Already a proper key? (contains a dot)
+            if (text.Contains("."))
+            {
+                string resolved = LocalizedStrings.Get(text);
+                if (!resolved.StartsWith("["))
+                    return resolved;
+            }
+
+            // Old French value from un-updated asset → find key → localize
+            if (FrenchToKey.TryGetValue(text, out var key))
+                return LocalizedStrings.Get(key);
+
+            // Unknown — return as-is
+            return text;
         }
     }
 }
