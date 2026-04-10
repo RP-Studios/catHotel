@@ -24,6 +24,9 @@ namespace CatHotel.Services
     {
         public int reputationLevel;
         public int reputationXp;
+        public int coins;
+        public int gems;
+        public int floorTileIndex;       // which floor tile visual to use (-1 = not saved)
         public List<PlacedObjectSaveData> placedObjects = new();
         public List<CatCloudSaveData> cats = new();
         public string lastSaveTime;      // ISO 8601

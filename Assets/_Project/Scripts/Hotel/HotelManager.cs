@@ -138,11 +138,26 @@ namespace CatHotel.Hotel
                     CloudSaveManager.Instance.LoadFromLocal();
             }
 
+            // Init economy + reputation from save if available, otherwise defaults
+            var savedProg = CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
+                && CloudSaveManager.Instance.Progression.saveVersion > 0
+                ? CloudSaveManager.Instance.Progression : null;
+
             if (_economy != null && _config != null)
-                _economy.Init(_config);
+            {
+                if (savedProg != null)
+                    _economy.Init(_config, savedProg.coins, savedProg.gems);
+                else
+                    _economy.Init(_config);
+            }
 
             if (_reputation != null)
-                _reputation.Init(0, 0);
+            {
+                if (savedProg != null)
+                    _reputation.Init(savedProg.reputationLevel, savedProg.reputationXp);
+                else
+                    _reputation.Init(0, 0);
+            }
 
             // Hook into ads (already initialized by Boot, or init here as fallback)
             var adManager = AdManager.Instance ?? FindAnyObjectByType<AdManager>();
@@ -595,6 +610,9 @@ namespace CatHotel.Hotel
             {
                 reputationLevel = _reputation.Level,
                 reputationXp = _reputation.Xp,
+                coins = _economy.Coins,
+                gems = _economy.Gems,
+                floorTileIndex = _gridRenderer.FloorTileIndex,
                 placedObjects = new List<PlacedObjectSaveData>(),
                 cats = new List<CatCloudSaveData>()
             };
@@ -655,9 +673,11 @@ namespace CatHotel.Hotel
             var data = CloudSaveManager.Instance.Progression;
             if (data == null || data.saveVersion == 0) return;
 
-            // Restore reputation
-            if (_reputation != null)
-                _reputation.Init(data.reputationLevel, data.reputationXp);
+            // Economy + reputation already initialized from save in Start()
+
+            // Restore floor tile visual
+            if (data.floorTileIndex >= 0)
+                _gridRenderer.SetFloorTileIndex(data.floorTileIndex);
 
             // Restore placed objects
             RestorePlacedObjects(data.placedObjects);
@@ -665,7 +685,7 @@ namespace CatHotel.Hotel
             // Restore cats
             RestoreCats(data.cats);
 
-            Debug.Log($"[Hotel] Loaded progression: rep={data.reputationLevel}, " +
+            Debug.Log($"[Hotel] Loaded progression: rep={data.reputationLevel}, coins={data.coins}, " +
                       $"objects={data.placedObjects?.Count ?? 0}, cats={data.cats?.Count ?? 0}");
         }
 

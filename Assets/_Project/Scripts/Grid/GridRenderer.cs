@@ -47,9 +47,23 @@ namespace CatHotel.Grid
 
         private GridData _gridData;
         private RoomRegistry _roomRegistry;
+        private int _floorTileIndex = -1;
+
+        /// <summary>Index of the floor tile in _floorTiles array. -1 if not yet chosen.</summary>
+        public int FloorTileIndex => _floorTileIndex;
 
         public GridData Data      => _gridData;
         public RoomRegistry Rooms => _roomRegistry;
+
+        /// <summary>Set floor tile from save. Call before Start() renders, or triggers RefreshAll().</summary>
+        public void SetFloorTileIndex(int index)
+        {
+            if (_floorTiles == null || _floorTiles.Length == 0) return;
+            if (index < 0 || index >= _floorTiles.Length) return;
+            _floorTileIndex = index;
+            _floorTile = _floorTiles[index];
+            RefreshAll();
+        }
 
         public List<Vector2Int> Entrances { get; private set; } = new();
         public List<Vector2Int> Exits { get; private set; } = new();
@@ -84,6 +98,14 @@ namespace CatHotel.Grid
         {
             _gridData = new GridData();
             _roomRegistry = new RoomRegistry(_gridData);
+
+            // Pre-load floor tile index from save to avoid visual flash
+            var csm = Services.CloudSaveManager.Instance;
+            if (csm != null && csm.IsLoaded && csm.Progression.saveVersion > 0
+                && csm.Progression.floorTileIndex >= 0)
+            {
+                _floorTileIndex = csm.Progression.floorTileIndex;
+            }
         }
 
         private void Start()
@@ -96,7 +118,11 @@ namespace CatHotel.Grid
             }
 
             if (_floorTiles != null && _floorTiles.Length > 0)
-                _floorTile = _floorTiles[Random.Range(0, _floorTiles.Length)];
+            {
+                if (_floorTileIndex < 0 || _floorTileIndex >= _floorTiles.Length)
+                    _floorTileIndex = Random.Range(0, _floorTiles.Length);
+                _floorTile = _floorTiles[_floorTileIndex];
+            }
 
             DrawBorderWalls();
             BuildInitialLayout();
