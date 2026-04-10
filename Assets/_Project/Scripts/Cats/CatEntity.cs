@@ -470,6 +470,8 @@ namespace CatHotel.Cats
                 CatSoundManager.Instance?.PlayEat();
             else if (need == NeedType.Thirst)
                 CatSoundManager.Instance?.PlayDrink();
+            else if (need == NeedType.Clean)
+                CatSoundManager.Instance?.PlayLitter();
 
             float duration = _targetObject.Data.useDuration;
             float ratePerSec = _targetObject.SatisfactionRate;

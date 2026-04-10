@@ -46,10 +46,20 @@ namespace CatHotel.Editor
                 bank.drinkClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
                     $"Assets/_Project/Audio/SFX/Cats/Cat_Drink ST-{(i + 1):D3}.ogg");
 
+            bank.litterClips = new AudioClip[2];
+            for (int i = 0; i < 2; i++)
+                bank.litterClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Cat_Litter-{(i + 1):D3}.ogg");
+
             bank.meowNeutralClips = new AudioClip[7];
             for (int i = 0; i < 7; i++)
                 bank.meowNeutralClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
                     $"Assets/_Project/Audio/SFX/Cats/Meow_Neutral-{(i + 1):D3}.ogg");
+
+            bank.meowSadClips = new AudioClip[4];
+            for (int i = 0; i < 4; i++)
+                bank.meowSadClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Meow_Sad-{(i + 1):D3}.ogg");
         }
     }
 }

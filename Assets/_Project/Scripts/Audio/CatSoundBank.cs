@@ -16,7 +16,13 @@ namespace CatHotel.Audio
         [Header("Drink (random variant)")]
         public AudioClip[] drinkClips;
 
+        [Header("Litter / Clean (random variant)")]
+        public AudioClip[] litterClips;
+
         [Header("Meow Neutral (random variant)")]
         public AudioClip[] meowNeutralClips;
+
+        [Header("Meow Sad (random variant)")]
+        public AudioClip[] meowSadClips;
     }
 }

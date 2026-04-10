@@ -7,7 +7,7 @@ namespace CatHotel.Audio
 {
     /// <summary>
     /// Centralized cat sound player. Singleton created by BootManager, persists across scenes.
-    /// Handles eat/drink action sounds and ambient + tap meows.
+    /// Handles eat/drink/litter action sounds and ambient + tap meows (neutral and sad).
     /// Respects ParametersPanel.EffectsVolume.
     /// </summary>
     public class CatSoundManager : MonoBehaviour
@@ -16,14 +16,15 @@ namespace CatHotel.Audio
 
         private AudioClip[] _eatClips;
         private AudioClip[] _drinkClips;
-        private AudioClip[] _meowClips;
+        private AudioClip[] _litterClips;
+        private AudioClip[] _meowNeutralClips;
+        private AudioClip[] _meowSadClips;
 
         private AudioSource _source;
 
         // Ambient meow: one random cat meows every _ambientInterval seconds
-        [Header("Ambient Meow")]
-        private float _ambientMinInterval = 20f;
-        private float _ambientMaxInterval = 40f;
+        private const float AmbientMinInterval = 20f;
+        private const float AmbientMaxInterval = 40f;
         private float _ambientTimer;
 
         // Cooldown to prevent meow spam (tap + ambient overlap)
@@ -55,37 +56,40 @@ namespace CatHotel.Audio
             {
                 _eatClips = bank.eatClips;
                 _drinkClips = bank.drinkClips;
-                _meowClips = bank.meowNeutralClips;
+                _litterClips = bank.litterClips;
+                _meowNeutralClips = bank.meowNeutralClips;
+                _meowSadClips = bank.meowSadClips;
                 return;
             }
 
 #if UNITY_EDITOR
-            _eatClips = new AudioClip[5];
-            for (int i = 0; i < 5; i++)
-                _eatClips[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
-                    $"Assets/_Project/Audio/SFX/Cats/Cat_Eat ST-{(i + 1):D3}.ogg");
-
-            _drinkClips = new AudioClip[3];
-            for (int i = 0; i < 3; i++)
-                _drinkClips[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
-                    $"Assets/_Project/Audio/SFX/Cats/Cat_Drink ST-{(i + 1):D3}.ogg");
-
-            _meowClips = new AudioClip[7];
-            for (int i = 0; i < 7; i++)
-                _meowClips[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
-                    $"Assets/_Project/Audio/SFX/Cats/Meow_Neutral-{(i + 1):D3}.ogg");
+            _eatClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Eat ST-{0}.ogg", 5);
+            _drinkClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Drink ST-{0}.ogg", 3);
+            _litterClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Litter-{0}.ogg", 2);
+            _meowNeutralClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Meow_Neutral-{0}.ogg", 7);
+            _meowSadClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Meow_Sad-{0}.ogg", 4);
 #else
             Debug.LogError("[CatSoundManager] CatSoundBank not found in Resources/. " +
                 "Create one via Cat Hotel > Audio > Create Cat Sound Bank.");
 #endif
         }
 
+#if UNITY_EDITOR
+        private static AudioClip[] LoadEditorClips(string pathFormat, int count)
+        {
+            var clips = new AudioClip[count];
+            for (int i = 0; i < count; i++)
+                clips[i] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    string.Format(pathFormat, (i + 1).ToString("D3")));
+            return clips;
+        }
+#endif
+
         private void Update()
         {
             if (_meowCooldown > 0f)
                 _meowCooldown -= Time.deltaTime;
 
-            // Ambient meow timer
             _ambientTimer -= Time.deltaTime;
             if (_ambientTimer <= 0f)
             {
@@ -96,18 +100,17 @@ namespace CatHotel.Audio
 
         private void ResetAmbientTimer()
         {
-            _ambientTimer = Random.Range(_ambientMinInterval, _ambientMaxInterval);
+            _ambientTimer = Random.Range(AmbientMinInterval, AmbientMaxInterval);
         }
 
         private void TryAmbientMeow()
         {
             if (_meowCooldown > 0f) return;
 
-            // Find all cats in scene
             var spawner = FindAnyObjectByType<CatSpawner>();
             if (spawner == null || spawner.AllCats == null || spawner.AllCats.Count == 0) return;
 
-            // Pick a random cat that is idle (not using object / not in combat)
+            // Pick a random idle cat, then play neutral or sad meow based on happiness
             var candidates = new List<CatEntity>();
             foreach (var cat in spawner.AllCats)
             {
@@ -116,27 +119,51 @@ namespace CatHotel.Audio
             }
             if (candidates.Count == 0) return;
 
-            PlayMeow();
+            var chosen = candidates[Random.Range(0, candidates.Count)];
+            var happiness = chosen.GetComponent<CatHappiness>();
+            if (happiness != null && happiness.IsUnhappy)
+                PlayMeowSad();
+            else
+                PlayMeow();
         }
 
         /// <summary>Play a random eat sound.</summary>
-        public void PlayEat()
-        {
-            PlayRandom(_eatClips);
-        }
+        public void PlayEat() => PlayRandom(_eatClips);
 
         /// <summary>Play a random drink sound.</summary>
-        public void PlayDrink()
-        {
-            PlayRandom(_drinkClips);
-        }
+        public void PlayDrink() => PlayRandom(_drinkClips);
 
-        /// <summary>Play a random meow. Respects cooldown to avoid cacophony.</summary>
+        /// <summary>Play a random litter/clean sound.</summary>
+        public void PlayLitter() => PlayRandom(_litterClips);
+
+        /// <summary>Play a random neutral meow. Respects cooldown.</summary>
         public void PlayMeow()
         {
             if (_meowCooldown > 0f) return;
-            PlayRandom(_meowClips);
+            PlayRandom(_meowNeutralClips);
             _meowCooldown = MeowCooldownDuration;
+        }
+
+        /// <summary>Play a random sad meow. Respects cooldown.</summary>
+        public void PlayMeowSad()
+        {
+            if (_meowCooldown > 0f) return;
+            PlayRandom(_meowSadClips);
+            _meowCooldown = MeowCooldownDuration;
+        }
+
+        /// <summary>
+        /// Play the appropriate meow for a cat based on happiness.
+        /// Called on tap — picks sad if unhappy, neutral otherwise.
+        /// </summary>
+        public void PlayMeowForCat(CatEntity cat)
+        {
+            if (cat == null) { PlayMeow(); return; }
+            var happiness = cat.GetComponent<CatHappiness>();
+            if (happiness != null && happiness.IsUnhappy)
+                PlayMeowSad();
+            else
+                PlayMeow();
         }
 
         private void PlayRandom(AudioClip[] clips)
