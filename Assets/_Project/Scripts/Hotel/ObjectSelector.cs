@@ -15,6 +15,7 @@ namespace CatHotel.Hotel
         [SerializeField] private CatSpawner _catSpawner;
         [SerializeField] private ObjectPlacement _objectPlacement;
         [SerializeField] private ObjectMover _objectMover;
+        [SerializeField] private CatHotel.Grid.GridRenderer _gridRenderer;
 
         private Camera _cam;
         private HotelObject _selected;
@@ -49,8 +50,9 @@ namespace CatHotel.Hotel
                 return;
             }
 
-            // Find nearest object under tap
-            HotelObject tapped = FindObjectAtWorld(worldPos);
+            // Find nearest object under tap (current floor only)
+            int floor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+            HotelObject tapped = FindObjectAtWorld(worldPos, floor);
 
             if (tapped == null)
             {
@@ -84,23 +86,25 @@ namespace CatHotel.Hotel
         private bool IsCatUnderPointer(Vector3 worldPos)
         {
             if (_catSpawner == null) return false;
-            // Same radius as CatSpawner.TryPetAtPointer
+            int visible = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
             const float catTapRadius = 1.5f;
             foreach (var cat in _catSpawner.AllCats)
             {
+                if (cat.FloorIndex != visible) continue;
                 if (Vector2.Distance(worldPos, cat.transform.position) < catTapRadius)
                     return true;
             }
             return false;
         }
 
-        private static HotelObject FindObjectAtWorld(Vector3 worldPos)
+        private static HotelObject FindObjectAtWorld(Vector3 worldPos, int floor)
         {
             HotelObject best = null;
             float bestDist = float.MaxValue;
 
-            foreach (var obj in ObjectRegistry.Objects)
+            foreach (var obj in ObjectRegistry.GetFloor(floor))
             {
+                if (obj.Data.isStairs) continue;
                 // Check if tap is within the object's grid footprint
                 var rect = new RectInt(obj.GridPos, obj.Data.size);
                 int px = Mathf.FloorToInt(worldPos.x);

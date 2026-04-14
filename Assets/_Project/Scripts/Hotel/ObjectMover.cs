@@ -231,8 +231,8 @@ namespace CatHotel.Hotel
         {
             if (_movingObject == null) return;
 
-            // Update grid position
-            _movingObject.Init(_movingObject.Data, _currentGridPos);
+            int floor = _gridRenderer != null ? _gridRenderer.CurrentFloor : _movingObject.FloorIndex;
+            _movingObject.Init(_movingObject.Data, _currentGridPos, floor);
             ObjectRegistry.Register(_movingObject);
 
             ExitMoveMode();
@@ -242,9 +242,9 @@ namespace CatHotel.Hotel
         {
             if (_movingObject == null) return;
 
-            // Restore to original position
             _movingObject.transform.position = _originalWorldPos;
-            _movingObject.Init(_movingObject.Data, _originalGridPos);
+            int floor = _movingObject.FloorIndex;
+            _movingObject.Init(_movingObject.Data, _originalGridPos, floor);
             ObjectRegistry.Register(_movingObject);
 
             ExitMoveMode();
@@ -384,7 +384,8 @@ namespace CatHotel.Hotel
                     }
             }
 
-            bool areaFree = ObjectRegistry.IsAreaFree(rect);
+            int floor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+            bool areaFree = ObjectRegistry.IsAreaFree(rect, floor);
             _isValid = cellsOk && areaFree;
 
             _gridRenderer.ShowPreview(rect, _isValid);

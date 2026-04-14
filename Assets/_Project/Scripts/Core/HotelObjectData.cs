@@ -47,6 +47,8 @@ namespace CatHotel.Core
         public bool requiresTable;
         [Tooltip("This object is a table (cats walk behind it)")]
         public bool isTable;
+        [Tooltip("Stairs: blocks pathfinding, cannot be moved/sold, not in shop")]
+        public bool isStairs;
 
         [Header("Carpet bonus (carpet only)")]
         [Tooltip("Which need gets the zone bonus")]

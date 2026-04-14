@@ -119,6 +119,14 @@ namespace CatHotel.Core
 
             // --- Loading ---
             { "ui.loading", "Chargement" },
+            { "loading.tip.0", "Caresse tes chats pour les rendre heureux." },
+            { "loading.tip.1", "Un chat malheureux risque de partir sans te payer." },
+            { "loading.tip.2", "Tape deux fois sur un objet pour le déplacer." },
+            { "loading.tip.3", "Les tapis offrent un bonus de confort à la zone." },
+            { "loading.tip.4", "Certaines races ne s'entendent pas — garde un œil dessus." },
+            { "loading.tip.5", "Plus ton hôtel est réputé, plus les chats sont exigeants." },
+            { "loading.tip.6", "Les escaliers mènent aux étages supérieurs." },
+            { "loading.tip.7", "Collecte tes pièces rapidement avant qu'elles disparaissent." },
 
             // --- Sound ---
             { "sound.on", "Son activé" },
@@ -345,6 +353,14 @@ namespace CatHotel.Core
 
             // --- Loading ---
             { "ui.loading", "Loading" },
+            { "loading.tip.0", "Pet your cats to make them happy." },
+            { "loading.tip.1", "An unhappy cat may leave without paying." },
+            { "loading.tip.2", "Long-press an object to move it." },
+            { "loading.tip.3", "Carpets boost comfort in their area." },
+            { "loading.tip.4", "Some breeds don't get along — keep an eye on them." },
+            { "loading.tip.5", "The better your rep, the pickier the cats." },
+            { "loading.tip.6", "Stairs lead to the upper floors." },
+            { "loading.tip.7", "Grab your coins quickly before they fade away." },
 
             // --- Sound ---
             { "sound.on", "Sound on" },

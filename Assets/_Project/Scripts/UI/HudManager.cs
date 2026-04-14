@@ -240,7 +240,8 @@ namespace CatHotel.UI
             if (_comfortText == null) return;
 
             int max = _hotel.Config != null ? _hotel.Config.maxCats : 20;
-            float comfort = ObjectRegistry.CalculateComfort(_hotel.CatCount, max);
+            int comfortFloor = _hotel != null && _hotel.GridRenderer != null ? _hotel.GridRenderer.CurrentFloor : 0;
+            float comfort = ObjectRegistry.CalculateComfort(_hotel.CatCount, max, comfortFloor);
             int rounded = Mathf.RoundToInt(comfort);
             if (rounded == _prevComfort) return;
             _prevComfort = rounded;
@@ -249,9 +250,12 @@ namespace CatHotel.UI
 
         private void UpdateFloor()
         {
-            // Static value — set once then skip
-            if (_floorText == null || _floorText.text == Core.LocalizedStrings.Get("hud.floor.ground")) return;
-            _floorText.text = Core.LocalizedStrings.Get("hud.floor.ground");
+            if (_floorText == null) return;
+            int f = _hotel != null && _hotel.GridRenderer != null ? _hotel.GridRenderer.CurrentFloor : 0;
+            string txt = f == 0
+                ? Core.LocalizedStrings.Get("hud.floor.ground")
+                : string.Format(Core.LocalizedStrings.Get("hud.floor"), f);
+            if (_floorText.text != txt) _floorText.text = txt;
         }
 
         private void UpdateTimer()

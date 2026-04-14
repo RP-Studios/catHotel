@@ -45,34 +45,51 @@ namespace CatHotel.Grid
         [SerializeField] private Color _validColor   = new(0.2f, 0.8f, 0.2f, 0.5f);
         [SerializeField] private Color _invalidColor = new(0.8f, 0.2f, 0.2f, 0.5f);
 
+        // Per-floor state
+        public const int FloorCount = 2;
+
+        private readonly GridData[] _floorGrids = new GridData[FloorCount];
+        private readonly RoomRegistry[] _floorRegistries = new RoomRegistry[FloorCount];
+        private readonly List<Vector2Int>[] _floorCentralCells = new List<Vector2Int>[FloorCount];
+        private readonly int[] _floorTileIndexPerFloor = new int[FloorCount];
+
+        // Currently active references — all internal methods read/write these.
+        // BuildFloor temporarily points them at each floor during initial layout.
         private GridData _gridData;
         private RoomRegistry _roomRegistry;
         private int _floorTileIndex = -1;
+        private int _currentFloor = 0;
 
-        /// <summary>Index of the floor tile in _floorTiles array. -1 if not yet chosen.</summary>
+        /// <summary>Index of the floor tile for the current floor. -1 if not yet chosen.</summary>
         public int FloorTileIndex => _floorTileIndex;
 
+        /// <summary>Grid data for the currently active floor.</summary>
         public GridData Data      => _gridData;
         public RoomRegistry Rooms => _roomRegistry;
 
-        /// <summary>Set floor tile from save. Call before Start() renders, or triggers RefreshAll().</summary>
+        /// <summary>Grid data for a specific floor (cats use this).</summary>
+        public GridData GetFloorData(int floorIndex)
+        {
+            if (floorIndex < 0 || floorIndex >= FloorCount) return null;
+            return _floorGrids[floorIndex];
+        }
+
+        public int CurrentFloor => _currentFloor;
+
+        /// <summary>Set floor tile from save. RDC is currently locked to FLOOR_01; ignored.</summary>
         public void SetFloorTileIndex(int index)
         {
-            if (_floorTiles == null || _floorTiles.Length == 0) return;
-            if (index < 0 || index >= _floorTiles.Length) return;
-            _floorTileIndex = index;
-            _floorTile = _floorTiles[index];
-            RefreshAll();
+            // Ground floor tile is locked to FLOOR_01 — do not apply saved alternatives.
         }
 
         public List<Vector2Int> Entrances { get; private set; } = new();
         public List<Vector2Int> Exits { get; private set; } = new();
 
-        /// <summary>Top-left entrance (pension cats arrive here).</summary>
+        /// <summary>Top-left entrance (pension cats arrive here). RDC only.</summary>
         public Vector2Int PensionEntrance { get; private set; }
-        /// <summary>Bottom-left entrance (refuge cats arrive here).</summary>
+        /// <summary>Bottom-left entrance (refuge cats arrive here). RDC only.</summary>
         public Vector2Int RefugeEntrance { get; private set; }
-        /// <summary>Single right exit (unhappy cats leave here).</summary>
+        /// <summary>Single right exit (unhappy cats leave here). RDC only.</summary>
         public Vector2Int UnhappyExit { get; private set; }
 
         /// <summary>Animated doors at each entrance/exit. Key = grid position of the door wall cell.</summary>
@@ -86,7 +103,19 @@ namespace CatHotel.Grid
         [Header("Entrance Logos")]
         [SerializeField] private Sprite _pensionLogoSprite;
         [SerializeField] private Sprite _refugeLogoSprite;
-        public List<Vector2Int> CentralRoomFloorCells { get; private set; } = new();
+
+        [Header("Stairs")]
+        [SerializeField] private CatHotel.Core.HotelObjectData _stairsData;
+        [Tooltip("Bottom-left grid position of the 2x2 stairs footprint on RDC")]
+        [SerializeField] private Vector2Int _stairsBottomLeft = new(12, 8);
+        /// <summary>Central room interior floor cells for the currently active floor.</summary>
+        public List<Vector2Int> CentralRoomFloorCells => _floorCentralCells[_currentFloor];
+
+        public List<Vector2Int> GetCentralRoomFloorCells(int floorIndex)
+        {
+            if (floorIndex < 0 || floorIndex >= FloorCount) return null;
+            return _floorCentralCells[floorIndex];
+        }
 
         // Rotation matrices for T-shape corners
         static readonly Matrix4x4 Rot0   = Matrix4x4.identity;
@@ -96,16 +125,16 @@ namespace CatHotel.Grid
 
         private void Awake()
         {
-            _gridData = new GridData();
-            _roomRegistry = new RoomRegistry(_gridData);
-
-            // Pre-load floor tile index from save to avoid visual flash
-            var csm = Services.CloudSaveManager.Instance;
-            if (csm != null && csm.IsLoaded && csm.Progression.saveVersion > 0
-                && csm.Progression.floorTileIndex >= 0)
+            for (int i = 0; i < FloorCount; i++)
             {
-                _floorTileIndex = csm.Progression.floorTileIndex;
+                _floorGrids[i] = new GridData();
+                _floorRegistries[i] = new RoomRegistry(_floorGrids[i]);
+                _floorCentralCells[i] = new List<Vector2Int>();
             }
+
+            _currentFloor = 0;
+            _gridData = _floorGrids[0];
+            _roomRegistry = _floorRegistries[0];
         }
 
         private void Start()
@@ -117,64 +146,154 @@ namespace CatHotel.Grid
                 return;
             }
 
-            if (_floorTiles != null && _floorTiles.Length > 0)
+            if (_floorTiles == null || _floorTiles.Length == 0)
+                return;
+
+            // RDC = FLOOR_01 (index 2), F1 = FLOOR_04 (index 8 in FloorSpriteNames).
+            // "FLOOR_Basic"(0,1), "FLOOR_01"(2,3), "FLOOR_02"(4,5), "FLOOR_03"(6,7), "FLOOR_04"(8,9), ...
+            _floorTileIndexPerFloor[0] = Mathf.Min(2, _floorTiles.Length - 1);
+            if (FloorCount > 1)
+                _floorTileIndexPerFloor[1] = Mathf.Min(8, _floorTiles.Length - 1);
+
+            // Build each floor by temporarily pointing _gridData/_roomRegistry at it
+            for (int i = 0; i < FloorCount; i++)
             {
-                if (_floorTileIndex < 0 || _floorTileIndex >= _floorTiles.Length)
-                    _floorTileIndex = Random.Range(0, _floorTiles.Length);
-                _floorTile = _floorTiles[_floorTileIndex];
+                SetActiveFloorRefs(i);
+                DrawBorderWalls();
+                BuildFloorLayout(i);
             }
 
-            DrawBorderWalls();
-            BuildInitialLayout();
+            // Start on ground floor
+            SetActiveFloorRefs(0);
+            _floorTile = _floorTiles[_floorTileIndex];
             RefreshAll();
         }
 
-        private void BuildInitialLayout()
+        private void SetActiveFloorRefs(int floorIndex)
         {
-            var centralRect = new RectInt(2, 2, 22, 28);
+            _currentFloor = floorIndex;
+            _gridData = _floorGrids[floorIndex];
+            _roomRegistry = _floorRegistries[floorIndex];
+            _floorTileIndex = _floorTileIndexPerFloor[floorIndex];
+        }
+
+        /// <summary>Switch active floor: swap data refs, update floor tile, redraw everything.
+        /// Visibility of objects/cats is handled by FloorManager.</summary>
+        public void SetCurrentFloor(int floorIndex)
+        {
+            if (floorIndex < 0 || floorIndex >= FloorCount) return;
+            if (floorIndex == _currentFloor) return;
+
+            SetActiveFloorRefs(floorIndex);
+            if (_floorTiles != null && _floorTileIndex >= 0 && _floorTileIndex < _floorTiles.Length)
+                _floorTile = _floorTiles[_floorTileIndex];
+            RefreshAll();
+        }
+
+        private void BuildFloorLayout(int floorIndex)
+        {
+            var centralRect = new RectInt(2, 2, 22, 14);
             FillRoom(centralRect);
             _roomRegistry.RegisterRoom(centralRect);
 
+            var cells = _floorCentralCells[floorIndex];
             for (int y = centralRect.yMin + 1; y < centralRect.yMax - 1; y++)
                 for (int x = centralRect.xMin + 1; x < centralRect.xMax - 1; x++)
-                    CentralRoomFloorCells.Add(new Vector2Int(x, y));
+                    cells.Add(new Vector2Int(x, y));
 
-            // --- Left entrances (2-wide corridors, cats arrive here) ---
-            int wallXL = centralRect.xMin;                 // x=2 (left wall)
-            int entranceBottomY = centralRect.yMin + 8;    // y=10 (refuge)
-            int entranceTopY = centralRect.yMax - 10;      // y=20 (pension)
+            // Entrances/exit are RDC only
+            if (floorIndex == 0)
+            {
+                int wallXL = centralRect.xMin;
+                int entranceBottomY = centralRect.yMin + 4; // refuge
+                int entranceTopY = centralRect.yMax - 5;    // pension
 
-            PunchCorridor(wallXL, entranceBottomY, -1);
-            PunchCorridor(wallXL, entranceTopY, -1);
+                PunchCorridor(wallXL, entranceBottomY, -1);
+                PunchCorridor(wallXL, entranceTopY, -1);
 
-            var refuseEntr = new Vector2Int(wallXL - 2, entranceBottomY);
-            var pensionEntr = new Vector2Int(wallXL - 2, entranceTopY);
-            Entrances.Add(refuseEntr);
-            Entrances.Add(pensionEntr);
-            RefugeEntrance = refuseEntr;
-            PensionEntrance = pensionEntr;
+                var refuseEntr = new Vector2Int(wallXL - 2, entranceBottomY);
+                var pensionEntr = new Vector2Int(wallXL - 2, entranceTopY);
+                Entrances.Add(refuseEntr);
+                Entrances.Add(pensionEntr);
+                RefugeEntrance = refuseEntr;
+                PensionEntrance = pensionEntr;
 
-            // --- Right exit (single bottom corridor, unhappy cats leave here) ---
-            int wallXR = centralRect.xMax - 1;
-            int exitY = entranceBottomY;                   // y=10 (bottom only)
+                int wallXR = centralRect.xMax - 1;
+                int exitY = entranceBottomY;
+                PunchCorridor(wallXR, exitY, +1);
 
-            PunchCorridor(wallXR, exitY, +1);
+                var unhappyExit = new Vector2Int(wallXR + 2, exitY);
+                Exits.Add(unhappyExit);
+                UnhappyExit = unhappyExit;
 
-            var unhappyExit = new Vector2Int(wallXR + 2, exitY);
-            Exits.Add(unhappyExit);
-            UnhappyExit = unhappyExit;
+                CreateEntranceLogo("LogoPension", wallXL, entranceTopY + 1, _pensionLogoSprite);
+                CreateEntranceLogo("LogoRefuge", wallXL, entranceBottomY + 1, _refugeLogoSprite);
+            }
 
-            // --- Animated doors (temporarily disabled) ---
-            // if (_doorFrames != null && _doorFrames.Length > 0)
-            // {
-            //     PensionDoor = CreateDoor("DoorPension", wallXL, entranceTopY);
-            //     RefugeDoor = CreateDoor("DoorRefuge", wallXL, entranceBottomY);
-            //     ExitDoor = CreateDoor("DoorExit", wallXR, exitY);
-            // }
+            // Stairs at the same position on every floor
+            SpawnStairs(floorIndex);
+        }
 
-            // --- Entrance logos (on the wall above each corridor) ---
-            CreateEntranceLogo("LogoPension", wallXL, entranceTopY + 1, _pensionLogoSprite);
-            CreateEntranceLogo("LogoRefuge", wallXL, entranceBottomY + 1, _refugeLogoSprite);
+        /// <summary>Stairs bottom-left, public read-only for FloorManager / CatEntity.</summary>
+        public Vector2Int StairsBottomLeft => _stairsBottomLeft;
+        public Vector2Int StairsSize => _stairsData != null ? _stairsData.size : new Vector2Int(2, 2);
+
+        /// <summary>Props visible only on the ground floor (entrance logos, doors, ...).</summary>
+        private readonly List<SpriteRenderer> _groundFloorOnlyProps = new();
+
+        /// <summary>Show/hide ground-floor-only props (entrance logos, doors).
+        /// Called by FloorManager when switching floors.</summary>
+        public void SetGroundFloorPropsVisible(bool visible)
+        {
+            foreach (var sr in _groundFloorOnlyProps)
+                if (sr != null) sr.enabled = visible;
+        }
+
+        private void SpawnStairs(int floorIndex)
+        {
+            if (_stairsData == null) return;
+
+            var size = _stairsData.size;
+            if (size.x <= 0 || size.y <= 0) size = new Vector2Int(2, 2);
+
+            // Mark cells as Stairs (blocks pathfinding; still drawn as floor)
+            for (int dy = 0; dy < size.y; dy++)
+            for (int dx = 0; dx < size.x; dx++)
+            {
+                int x = _stairsBottomLeft.x + dx;
+                int y = _stairsBottomLeft.y + dy;
+                if (!_gridData.InBounds(x, y)) return;
+                _gridData.SetCell(x, y, CellType.Stairs);
+            }
+
+            var go = new GameObject($"Obj_{_stairsData.displayName}_F{floorIndex}");
+            go.transform.SetParent(transform);
+            float cx = _stairsBottomLeft.x + size.x * 0.5f;
+            float cy = _stairsBottomLeft.y + 0.25f;
+            go.transform.position = new Vector3(cx, cy, 0f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = _stairsData.worldSprite != null ? _stairsData.worldSprite : _stairsData.icon;
+            sr.sortingLayerName = "Objects";
+
+            if (sr.sprite != null)
+            {
+                float spriteW = sr.sprite.bounds.size.x;
+                float spriteH = sr.sprite.bounds.size.y;
+                if (spriteW > 0f && spriteH > 0f)
+                {
+                    float scale = Mathf.Min(size.x / spriteW, size.y / spriteH) * _stairsData.visualScale;
+                    go.transform.localScale = new Vector3(scale, scale, 1f);
+                }
+            }
+
+            go.AddComponent<Core.SortByY>();
+
+            var hotelObj = go.AddComponent<CatHotel.Hotel.HotelObject>();
+            hotelObj.Init(_stairsData, _stairsBottomLeft, floorIndex);
+            // Hide stairs on non-ground floors at startup (FloorManager will re-sync)
+            if (floorIndex != 0)
+                sr.enabled = false;
         }
 
         /// <summary>
@@ -213,6 +332,7 @@ namespace CatHotel.Grid
             sr.sprite = sprite;
             sr.sortingLayerName = "Objects";
             sr.sortingOrder = 100; // above wall tiles
+            _groundFloorOnlyProps.Add(sr);
 
             // Scale to fit within 1 tile width
             float spriteW = sprite.bounds.size.x;
@@ -333,13 +453,17 @@ namespace CatHotel.Grid
                     {
                         _floorTilemap.SetTile(pos, _floorTile);
 
-                        bool edgeLeft  = !_gridData.InBounds(x - 1, y) || !_gridData.IsWalkable(x - 1, y);
-                        bool edgeRight = !_gridData.InBounds(x + 1, y) || !_gridData.IsWalkable(x + 1, y);
+                        bool edgeLeft  = !_gridData.InBounds(x - 1, y) || !IsFloorLike(x - 1, y);
+                        bool edgeRight = !_gridData.InBounds(x + 1, y) || !IsFloorLike(x + 1, y);
 
                         if (edgeLeft && !edgeRight)
                             _wallTilemap.SetTile(pos, _wallRightMidTile);
                         else if (edgeRight && !edgeLeft)
                             _wallTilemap.SetTile(pos, _wallLeftMidTile);
+                    }
+                    else if (cell == CellType.Stairs)
+                    {
+                        _floorTilemap.SetTile(pos, _floorTile);
                     }
                     else if (cell == CellType.Wall)
                     {
@@ -485,6 +609,15 @@ namespace CatHotel.Grid
 
             // 0 or 1 neighbor: cross
             return (_intCroix, Rot0);
+        }
+
+        /// <summary>Walkable floor or stairs — used for inner edge wall detection to avoid
+        /// spawning wall-column sprites around stairs cells.</summary>
+        private bool IsFloorLike(int x, int y)
+        {
+            if (!_gridData.InBounds(x, y)) return false;
+            var c = _gridData.GetCell(x, y);
+            return c == CellType.Floor || c == CellType.Door || c == CellType.Stairs;
         }
 
         /// <summary>Returns true for InternalWall only (for corner updates).</summary>

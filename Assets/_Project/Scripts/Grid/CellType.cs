@@ -6,6 +6,7 @@ namespace CatHotel.Grid
         Floor        = 1,
         Wall         = 2,
         Door         = 3,
-        InternalWall = 4
+        InternalWall = 4,
+        Stairs       = 5
     }
 }

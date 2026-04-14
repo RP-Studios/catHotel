@@ -12,18 +12,48 @@ namespace CatHotel.Hotel
     {
         [SerializeField] private HotelObjectData _data;
         [SerializeField] private Vector2Int _gridPos;
+        [SerializeField] private int _floorIndex;
         private readonly HashSet<int> _currentUsers = new(); // instanceIDs of cats using this
 
         public HotelObjectData Data => _data;
         public Vector2Int GridPos => _gridPos;
+        public int FloorIndex => _floorIndex;
         public bool IsFull => _currentUsers.Count >= _data.maxUsers;
         public int UserCount => _currentUsers.Count;
         public bool IsSelected { get; private set; }
 
-        public void Init(HotelObjectData data, Vector2Int gridPos)
+        public void Init(HotelObjectData data, Vector2Int gridPos, int floorIndex = 0)
         {
             _data = data;
             _gridPos = gridPos;
+
+            if (floorIndex < 0) floorIndex = 0;
+
+            // OnEnable already registered us in bucket 0 (default _floorIndex).
+            // Re-bucket if the real floor is different.
+            if (_floorIndex != floorIndex)
+            {
+                ObjectRegistry.Unregister(this);
+                _floorIndex = floorIndex;
+                ObjectRegistry.Register(this);
+            }
+
+            // Sync sprite visibility with whichever floor is currently on screen.
+            var fm = FloorManager.Instance;
+            if (fm != null)
+            {
+                var sr = GetComponent<SpriteRenderer>();
+                if (sr != null) sr.enabled = _floorIndex == fm.CurrentFloor;
+            }
+        }
+
+        /// <summary>Change the floor this object lives on (used when moving).</summary>
+        public void SetFloorIndex(int floorIndex)
+        {
+            if (_floorIndex == floorIndex) return;
+            ObjectRegistry.Unregister(this);
+            _floorIndex = floorIndex;
+            ObjectRegistry.Register(this);
         }
 
         public bool TryReserve(int catInstanceId)

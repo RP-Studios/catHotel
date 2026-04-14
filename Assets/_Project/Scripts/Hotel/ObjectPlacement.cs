@@ -253,17 +253,18 @@ namespace CatHotel.Hotel
             }
 
             // Check placement constraints
+            int floor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
             bool areaFree;
             if (_currentData.requiresTable)
             {
-                // Table must be on the row below
                 var belowRect = new RectInt(_currentGridPos.x, _currentGridPos.y - 1,
                     _currentData.size.x, 1);
-                areaFree = ObjectRegistry.HasTableAt(belowRect) && ObjectRegistry.IsAreaFree(rect);
+                areaFree = ObjectRegistry.HasTableAt(belowRect, floor)
+                        && ObjectRegistry.IsAreaFree(rect, floor);
             }
             else
             {
-                areaFree = ObjectRegistry.IsAreaFree(rect);
+                areaFree = ObjectRegistry.IsAreaFree(rect, floor);
             }
 
             _isValid = cellsOk && areaFree;
@@ -330,7 +331,8 @@ namespace CatHotel.Hotel
                 // On-table objects: follow table's sortingOrder + 1
                 SpriteRenderer tableSr = null;
                 var tableCell = new Vector2Int(_currentGridPos.x, _currentGridPos.y - 1);
-                foreach (var obj in ObjectRegistry.Objects)
+                int searchFloor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+                foreach (var obj in ObjectRegistry.GetFloor(searchFloor))
                 {
                     var objRect = new RectInt(obj.GridPos, obj.Data.size);
                     if (objRect.Contains(tableCell))
@@ -371,8 +373,9 @@ namespace CatHotel.Hotel
                 anim.runtimeAnimatorController = _currentData.worldAnimController;
             }
 
+            int placeFloor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
             var hotelObj = go.AddComponent<HotelObject>();
-            hotelObj.Init(_currentData, _currentGridPos);
+            hotelObj.Init(_currentData, _currentGridPos, placeFloor);
             // HotelObject.OnEnable will call ObjectRegistry.Register automatically
 
             string placedName = _currentData.displayName;
@@ -540,7 +543,8 @@ namespace CatHotel.Hotel
                     int x = cx + dx;
                     if (gridData.InBounds(x, wallY) && gridData.GetCell(x, wallY) == CellType.Wall)
                     {
-                        if (ObjectRegistry.IsAreaFree(new RectInt(x, wallY, _currentData.size.x, 1)))
+                        int floorW = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+                        if (ObjectRegistry.IsAreaFree(new RectInt(x, wallY, _currentData.size.x, 1), floorW))
                             return new Vector2Int(x, wallY);
                     }
                 }

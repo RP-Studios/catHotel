@@ -40,6 +40,7 @@ namespace CatHotel.Hotel
 
         [Header("References")]
         [SerializeField] private GridRenderer _gridRenderer;
+        public GridRenderer GridRenderer => _gridRenderer;
         [SerializeField] private EconomyManager _economy;
         [SerializeField] private ReputationManager _reputation;
         [SerializeField] private CatSpawner _catSpawner;
@@ -340,7 +341,7 @@ namespace CatHotel.Hotel
             var backSpr = isSpecial && breed.specialBackSprite != null ? breed.specialBackSprite : breed.backSprite;
             entity.SetSprites(frontSpr, rightSpr, backSpr);
             entity.SetBreed(breed);
-            entity.Init(_gridRenderer.Data, entrance, _catSpawner);
+            entity.Init(_gridRenderer.Data, entrance, _catSpawner, 0, _gridRenderer);
 
             // Pick a name
             string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
@@ -620,11 +621,13 @@ namespace CatHotel.Hotel
             // Serialize placed objects
             foreach (var obj in ObjectRegistry.Objects)
             {
+                if (obj.Data.isStairs) continue; // stairs are spawned by GridRenderer
                 data.placedObjects.Add(new PlacedObjectSaveData
                 {
                     objectAssetName = obj.Data.name,
                     gridX = obj.GridPos.x,
-                    gridY = obj.GridPos.y
+                    gridY = obj.GridPos.y,
+                    floorIndex = obj.FloorIndex
                 });
             }
 
@@ -634,6 +637,15 @@ namespace CatHotel.Hotel
                 if (cat.State == CatState.Leaving || cat.State == CatState.Pickup
                     || cat.State == CatState.Adopted)
                     continue; // skip departing cats
+
+                int[] visited = null;
+                if (cat.Entity != null && cat.Entity.VisitedFloors != null)
+                {
+                    var vf = cat.Entity.VisitedFloors;
+                    visited = new int[vf.Count];
+                    int i = 0;
+                    foreach (var f in vf) visited[i++] = f;
+                }
 
                 data.cats.Add(new CatCloudSaveData
                 {
@@ -647,7 +659,9 @@ namespace CatHotel.Hotel
                     pensionTimeRemaining = cat.PensionTimeRemaining,
                     happinessSum = cat.HappinessSum,
                     happinessSamples = cat.HappinessSamples,
-                    happyDuration = cat.HappyDuration
+                    happyDuration = cat.HappyDuration,
+                    floorIndex = cat.Entity != null ? cat.Entity.FloorIndex : 0,
+                    visitedFloors = visited
                 });
             }
 
@@ -764,7 +778,10 @@ namespace CatHotel.Hotel
                 }
 
                 var hotelObj = go.AddComponent<HotelObject>();
-                hotelObj.Init(objData, gridPos);
+                hotelObj.Init(objData, gridPos, saved.floorIndex);
+                // Hide the restored sprite if the object's floor isn't the visible one
+                if (sr != null && _gridRenderer != null && saved.floorIndex != _gridRenderer.CurrentFloor)
+                    sr.enabled = false;
             }
         }
 
@@ -834,12 +851,20 @@ namespace CatHotel.Hotel
                 entity.SetSprites(frontSpr, rightSpr, backSpr);
                 entity.SetBreed(breed);
 
-                // Place cat at a random floor cell (not at entrance)
-                var floorCells = _gridRenderer.CentralRoomFloorCells;
-                var spawnPos = floorCells.Count > 0
+                // Place cat at a random floor cell on the cat's SAVED floor (not the
+                // currently displayed one — those may differ after a future floor with
+                // a different layout).
+                int savedFloor = Mathf.Clamp(saved.floorIndex, 0, GridRenderer.FloorCount - 1);
+                var savedGrid = _gridRenderer.GetFloorData(savedFloor) ?? _gridRenderer.Data;
+                var floorCells = _gridRenderer.GetCentralRoomFloorCells(savedFloor)
+                                 ?? _gridRenderer.CentralRoomFloorCells;
+                var spawnPos = (floorCells != null && floorCells.Count > 0)
                     ? floorCells[UnityEngine.Random.Range(0, floorCells.Count)]
                     : new Vector2Int(10, 7);
-                entity.Init(_gridRenderer.Data, spawnPos, _catSpawner);
+                entity.Init(savedGrid, spawnPos, _catSpawner, savedFloor, _gridRenderer);
+                if (saved.visitedFloors != null)
+                    foreach (var vf in saved.visitedFloors)
+                        entity.AddVisitedFloor(vf);
 
                 string description = "";
                 var traitMods = CatTraitModifiers.Default;

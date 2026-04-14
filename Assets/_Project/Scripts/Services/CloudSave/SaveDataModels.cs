@@ -39,6 +39,7 @@ namespace CatHotel.Services
         public string objectAssetName;   // ScriptableObject.name (e.g. "Obj_Bed")
         public int gridX;
         public int gridY;
+        public int floorIndex;           // 0 = RDC, 1 = étage 1, ...
     }
 
     [Serializable]
@@ -61,5 +62,9 @@ namespace CatHotel.Services
         public float happinessSum;
         public int happinessSamples;
         public float happyDuration;
+
+        // Multi-floor
+        public int floorIndex;           // 0 = RDC, 1 = étage 1, ...
+        public int[] visitedFloors;      // floors the cat has already been to
     }
 }

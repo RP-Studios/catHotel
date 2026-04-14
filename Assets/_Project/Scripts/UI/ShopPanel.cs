@@ -199,6 +199,7 @@ namespace CatHotel.UI
             foreach (var obj in _allShopObjects)
             {
                 if (obj == null || obj.icon == null) continue;
+                if (obj.isStairs) continue;
 
                 var cat = ClassifyObject(obj);
                 if (cat.HasValue)

@@ -1198,6 +1198,9 @@ namespace CatHotel.Editor
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Left.png", 256, FilterMode.Point);
             ConfigureSprite($"{SpritesRoot}/Walls/WALL_H_Right.png", 256, FilterMode.Point);
 
+            // Stairs: 256x256 @ PPU 128 → 2x2 world units
+            ConfigureSprite($"{SpritesRoot}/Stairs/STAIRS.png", 128, FilterMode.Point);
+
             // Interior wall sprites — centered on grid lines
             string iw = $"{SpritesRoot}/Walls/Interrior";
             // H wall: centered vertically on horizontal grid line
@@ -1835,6 +1838,13 @@ namespace CatHotel.Editor
                 AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Logos/Allies_pension.png");
             soRenderer.FindProperty("_refugeLogoSprite").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Logos/Refuge.png");
+
+            // Wire stairs data (spawned on RDC, blocks pathfinding)
+            var stairsData = AssetDatabase.LoadAssetAtPath<HotelObjectData>(
+                "Assets/_Project/Data/Objects/Obj_Stairs.asset");
+            if (stairsData != null)
+                soRenderer.FindProperty("_stairsData").objectReferenceValue = stairsData;
+
             soRenderer.ApplyModifiedProperties();
 
             var builder = mgrObj.GetComponent<RoomBuilderInput>();
@@ -2022,7 +2032,28 @@ namespace CatHotel.Editor
             soSelector.FindProperty("_catSpawner").objectReferenceValue = spawner;
             soSelector.FindProperty("_objectPlacement").objectReferenceValue = objectPlacement;
             soSelector.FindProperty("_objectMover").objectReferenceValue = objectMover;
+            soSelector.FindProperty("_gridRenderer").objectReferenceValue = renderer;
             soSelector.ApplyModifiedProperties();
+
+            // --- FloorManager ---
+            var floorManager = mgrObj.GetComponent<FloorManager>();
+            if (floorManager == null)
+                floorManager = mgrObj.AddComponent<FloorManager>();
+            var soFloor = new SerializedObject(floorManager);
+            soFloor.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+            soFloor.FindProperty("_catSpawner").objectReferenceValue = spawner;
+            soFloor.FindProperty("_camera").objectReferenceValue = cam;
+            soFloor.ApplyModifiedProperties();
+
+            // --- FloorNavigationUI ---
+            var floorNav = mgrObj.GetComponent<CatHotel.UI.FloorNavigationUI>();
+            if (floorNav == null)
+                floorNav = mgrObj.AddComponent<CatHotel.UI.FloorNavigationUI>();
+            var soNav = new SerializedObject(floorNav);
+            soNav.FindProperty("_floorManager").objectReferenceValue = floorManager;
+            soNav.FindProperty("_placement").objectReferenceValue = objectPlacement;
+            soNav.FindProperty("_mover").objectReferenceValue = objectMover;
+            soNav.ApplyModifiedProperties();
 
             // --- ShopPanel ---
             var shopPanel = mgrObj.GetComponent<ShopPanel>();
@@ -2361,6 +2392,25 @@ namespace CatHotel.Editor
                 spritePath: $"{ObjectsRoot}/Carpets/CARPET_COSMIC.png", size: new Vector2Int(2, 2),
                 animController: carpetCosmicCtrl);
 
+            // --- Stairs (special object: blocks pathfinding, not in shop, not selectable) ---
+            var stairsData = CreateObjectAsset($"{D}/Obj_Stairs.asset", "Escalier",
+                ObjectCategory.Decoration, 0, 0f, 0f, maxUsers: 0,
+                spritePath: $"{SpritesRoot}/Stairs/STAIRS.png", size: new Vector2Int(2, 2),
+                isStairs: true);
+
+            // Wire stairs to the GridRenderer now that the asset exists
+            var gridMgr = GameObject.Find("GridManager");
+            if (gridMgr != null)
+            {
+                var gr = gridMgr.GetComponent<GridRenderer>();
+                if (gr != null)
+                {
+                    var soGR = new SerializedObject(gr);
+                    soGR.FindProperty("_stairsData").objectReferenceValue = stairsData;
+                    soGR.ApplyModifiedProperties();
+                }
+            }
+
             // No default objects placed — player buys everything from the shop
 
             EditorUtility.SetDirty(root);
@@ -2373,7 +2423,7 @@ namespace CatHotel.Editor
             int maxUsers = 1, string spritePath = null, Vector2Int? size = null,
             float visualScale = 1f, bool wallMount = false, bool requiresTable = false,
             RuntimeAnimatorController animController = null, Sprite iconOverride = null,
-            string selectedSpritePath = null, bool isTable = false)
+            string selectedSpritePath = null, bool isTable = false, bool isStairs = false)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -2387,6 +2437,7 @@ namespace CatHotel.Editor
             so.FindProperty("wallMount").boolValue = wallMount;
             so.FindProperty("requiresTable").boolValue = requiresTable;
             so.FindProperty("isTable").boolValue = isTable;
+            so.FindProperty("isStairs").boolValue = isStairs;
             so.FindProperty("worldAnimController").objectReferenceValue = animController;
 
             if (spritePath != null)

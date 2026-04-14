@@ -37,6 +37,7 @@ namespace CatHotel.Cats
         private SpriteRenderer _sr;
         private Animator _animator;
         private GridData _grid;
+        private CatHotel.Grid.GridRenderer _gridRenderer;
         private CatSpawner _spawner;
         private CatNeeds _needs;
         private CatBreedData _breed;
@@ -56,12 +57,21 @@ namespace CatHotel.Cats
         private HotelObject _targetObject;
         private bool _isUsingObject;
 
+        // Multi-floor
+        private int _floorIndex;
+        private readonly HashSet<int> _visitedFloors = new() { 0 };
+        private bool _isChangingFloor;
+        private float _floorChangeCooldown;
+
         // Pooled path buffer to avoid GC allocation per wander
         private readonly List<Vector2Int> _pathBuffer = new(8);
 
         public Vector2Int GridPos => _gridPos;
         public bool IsFighting => _isFighting;
         public bool IsUsingObject => _isUsingObject;
+        public bool IsChangingFloor => _isChangingFloor;
+        public int FloorIndex => _floorIndex;
+        public IReadOnlyCollection<int> VisitedFloors => _visitedFloors;
         public SpriteRenderer SpriteRenderer => _sr;
         public CatBreedData Breed => _breed;
 
@@ -90,19 +100,96 @@ namespace CatHotel.Cats
             _backSprite = back;
         }
 
-        public void Init(GridData grid, Vector2Int startCell, CatSpawner spawner = null)
+        public void Init(GridData grid, Vector2Int startCell, CatSpawner spawner = null,
+            int floorIndex = 0, CatHotel.Grid.GridRenderer gridRenderer = null)
         {
             _grid = grid;
+            _gridRenderer = gridRenderer;
             _spawner = spawner;
             _gridPos = startCell;
+            _floorIndex = floorIndex;
+            _visitedFloors.Add(floorIndex);
             _sr = GetComponent<SpriteRenderer>();
             _animator = GetComponent<Animator>();
             _needs = GetComponent<CatNeeds>();
             transform.position = CellToWorld(startCell);
 
             _currentDir = CatDirection.Front;
+            SyncFloorVisibility();
             EnterRest();
         }
+
+        /// <summary>Add a floor to the set the cat remembers having visited.</summary>
+        public void AddVisitedFloor(int floor) => _visitedFloors.Add(floor);
+
+        /// <summary>Set the floor this cat is on (used by FloorManager / climb logic).</summary>
+        public void SetFloorIndex(int floorIndex)
+        {
+            _floorIndex = floorIndex;
+            _visitedFloors.Add(floorIndex);
+            if (_gridRenderer != null)
+            {
+                var data = _gridRenderer.GetFloorData(floorIndex);
+                if (data != null) _grid = data;
+            }
+            SyncFloorVisibility();
+        }
+
+        /// <summary>
+        /// Show/hide this cat based on whether its floor is the visible one.
+        /// When hiding: kill active tweens + snap to cell center + pause animator. This avoids
+        /// mid-tween / mid-animation artifacts when the player returns to this floor.
+        /// When showing: resume animator and restart the AI from a clean state.
+        /// </summary>
+        public void SyncFloorVisibility()
+        {
+            int visible = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+            bool on = _floorIndex == visible;
+            if (_sr != null) _sr.enabled = on;
+
+            // Also toggle child sprites (mood bubbles, etc.)
+            foreach (var childSr in GetComponentsInChildren<SpriteRenderer>(true))
+                childSr.enabled = on;
+
+            _canPlaySfx = on;
+
+            // Don't freeze/unfreeze while the cat is in the middle of a stair climb —
+            // the climb manages its own state machine.
+            if (_isChangingFloor) return;
+
+            if (on)
+            {
+                // --- Resume ---
+                if (_animator != null) _animator.speed = 1f;
+                if (_simulationFrozen)
+                {
+                    _simulationFrozen = false;
+                    if (!_isDeparting)
+                    {
+                        // Fresh AI pass from the cat's snapped position.
+                        _isWalking = false;
+                        _chosenRestState = null;
+                        EnterRest();
+                    }
+                }
+            }
+            else
+            {
+                // --- Freeze ---
+                _moveSequence?.Kill();
+                _pendingAction?.Kill();
+                SyncGridPos();
+                transform.position = CellToWorld(_gridPos);
+                _isWalking = false;
+                _chosenRestState = null;
+                _simulationFrozen = true;
+                if (_animator != null) _animator.speed = 0f;
+            }
+        }
+
+        private bool _canPlaySfx = true;
+        private bool _simulationFrozen;
+        public bool CanPlaySfx => _canPlaySfx;
 
         private void LateUpdate()
         {
@@ -366,39 +453,177 @@ namespace CatHotel.Cats
 
         /// <summary>
         /// Main decision point. Checks needs and decides what to do next.
-        /// Priority: Combat > Seek object for urgent need > Idle/Wander.
+        /// Priority: Combat > Seek object for urgent need > Random floor change > Idle/Wander.
         /// </summary>
         private void EnterRest()
         {
             if (_isDeparting) return;
+            if (_isChangingFloor) return;
+            if (_simulationFrozen) return;
             SyncGridPos();
             _isWalking = false;
             _chosenRestState = null;
             ReleaseCurrentObject();
 
+            if (_floorChangeCooldown > 0f) _floorChangeCooldown -= Time.deltaTime;
+
             if (TryInitiateFight()) return;
             if (_needs != null && TrySeekObject()) return;
+            if (TryRandomFloorChange()) return;
             EnterIdle();
+        }
+
+        // ---- Multi-floor: climb stairs ----
+
+        private const float FloorChangeChance = 0.10f;
+        private const float FloorChangeCooldownSec = 20f;
+        private const float ClimbMinScale = 0.5f;
+
+        private bool TryRandomFloorChange()
+        {
+            if (_isChangingFloor || _gridRenderer == null) return false;
+            if (_floorChangeCooldown > 0f) return false;
+            if (CatHotel.Grid.GridRenderer.FloorCount < 2) return false;
+            if (Random.value >= FloorChangeChance) return false;
+
+            int target = _floorIndex == 0 ? 1 : 0;
+            StartFloorChange(target);
+            return true;
+        }
+
+        /// <summary>
+        /// Navigate to the cell at the SOUTH of the stairs using the normal walk system,
+        /// then play the climb tween (walk up the stairs, fade to black at the top),
+        /// then walk back DOWN the stairs on the new floor to end at the south-adjacent cell.
+        /// Entry and exit are always on the same side so the cat ends up in the usable room area.
+        /// </summary>
+        private void StartFloorChange(int targetFloor)
+        {
+            if (_gridRenderer == null || targetFloor == _floorIndex) return;
+            _isChangingFloor = true;
+            _floorChangeCooldown = FloorChangeCooldownSec;
+            ReleaseCurrentObject();
+            ReleaseBedIfClaimed();
+
+            var stairsBL = _gridRenderer.StairsBottomLeft;
+            var stairsSize = _gridRenderer.StairsSize;
+
+            // Always enter and exit on the SOUTH side (same column, one cell below the stair footprint).
+            int laneX = stairsBL.x + stairsSize.x / 2;
+            int approachY = stairsBL.y - 1;
+            var approach = new Vector2Int(laneX, approachY);
+
+            if (_gridPos == approach)
+            {
+                PlayClimbSequence(targetFloor, laneX, stairsBL, stairsSize);
+                return;
+            }
+
+            WalkToTarget(approach, () =>
+                PlayClimbSequence(targetFloor, laneX, stairsBL, stairsSize));
+        }
+
+        private void PlayClimbSequence(int targetFloor, int laneX,
+            Vector2Int stairsBL, Vector2Int stairsSize)
+        {
+            // Everything on a single vertical lane (laneX + 0.5 world units).
+            float laneWorldX = laneX + 0.5f;
+
+            int southCellY  = stairsBL.y - 1;                        // entry/exit cell (same side)
+            int topStairY   = stairsBL.y + stairsSize.y - 1;         // last stair row (north)
+            float southCenterY = southCellY + 0.5f;
+            float topStairCenterY = topStairY + 0.5f;
+
+            Vector3 origScale = transform.localScale;
+            if (origScale == Vector3.zero) origScale = Vector3.one;
+
+            // Snap to the south approach cell center (eliminates any residual drift).
+            transform.position = new Vector3(laneWorldX, southCenterY, 0f);
+
+            // PHASE 1 — walk NORTH onto the stairs on the CURRENT floor, scale 1 → 0.5.
+            _currentDir = CatDirection.Back;
+            PlayAnimState($"Walk_{_currentDir}");
+
+            Vector3 p1End = new Vector3(laneWorldX, topStairCenterY, 0f);
+            float   p1Dist = Mathf.Abs(p1End.y - southCenterY);
+            float   p1Dur  = p1Dist * _cellMoveTime;
+
+            var seq = DOTween.Sequence();
+            seq.Append(transform.DOMove(p1End, p1Dur).SetEase(Ease.Linear));
+            seq.Join(transform.DOScale(origScale * ClimbMinScale, p1Dur).SetEase(Ease.Linear));
+
+            // Swap floor at the top. Cat keeps the same world position (stairs occupy
+            // the same grid cells on every floor, so (laneWorldX, topStairCenterY) is still
+            // at the top of the stairs on the new floor).
+            seq.AppendCallback(() =>
+            {
+                SetFloorIndex(targetFloor);
+                _currentDir = CatDirection.Front;
+                PlayAnimState($"Walk_{_currentDir}");
+            });
+
+            // PHASE 2 — walk SOUTH back off the stairs on the NEW floor, scale 0.5 → 1.
+            Vector3 p2End = new Vector3(laneWorldX, southCenterY, 0f);
+            float   p2Dist = Mathf.Abs(topStairCenterY - p2End.y);
+            float   p2Dur  = p2Dist * _cellMoveTime;
+
+            seq.Append(transform.DOMove(p2End, p2Dur).SetEase(Ease.Linear));
+            seq.Join(transform.DOScale(origScale, p2Dur).SetEase(Ease.Linear));
+
+            seq.OnComplete(() =>
+            {
+                _gridPos = new Vector2Int(laneX, southCellY);
+                transform.localScale = origScale;
+                _isChangingFloor = false;
+                _chosenRestState = null;
+
+                // Re-sync visibility now that the climb is done. If the new floor isn't
+                // the one the player is watching, SyncFloorVisibility will freeze the cat.
+                SyncFloorVisibility();
+                if (!_simulationFrozen)
+                    Wander();
+            });
         }
 
         /// <summary>
         /// Find the most urgent need and walk to an object that satisfies it.
+        /// Prefers objects on the current floor; falls back to objects on floors
+        /// the cat has already visited (triggers a stair climb).
         /// </summary>
         private bool TrySeekObject()
         {
             var urgentNeed = _needs.GetMostUrgentNeed();
             if (urgentNeed == null) return false;
 
-            var obj = ObjectRegistry.FindNearest(urgentNeed.Value, _gridPos);
-            if (obj == null) return false;
-            if (!obj.TryReserve(GetInstanceID())) return false;
+            // 1) Try current floor first.
+            var obj = ObjectRegistry.FindNearest(urgentNeed.Value, _gridPos, _floorIndex);
+            if (obj != null)
+            {
+                if (!obj.TryReserve(GetInstanceID())) return false;
+                _targetObject = obj;
+                _isUsingObject = false;
+                var usePos = FindUsePosition(obj);
+                WalkToTarget(usePos, () => StartUsingObject(urgentNeed.Value));
+                return true;
+            }
 
-            _targetObject = obj;
-            _isUsingObject = false;
+            // 2) Fallback: check other visited floors.
+            if (_visitedFloors.Count > 1 && !_isChangingFloor)
+            {
+                foreach (var f in _visitedFloors)
+                {
+                    if (f == _floorIndex) continue;
+                    var alt = ObjectRegistry.FindNearest(urgentNeed.Value, _gridPos, f);
+                    if (alt != null)
+                    {
+                        // Go to stairs, change floor, then re-seek on arrival.
+                        StartFloorChange(f);
+                        return true;
+                    }
+                }
+            }
 
-            var usePos = FindUsePosition(obj);
-            WalkToTarget(usePos, () => StartUsingObject(urgentNeed.Value));
-            return true;
+            return false;
         }
 
         private void ApplyUseOffset(HotelObject obj) { }
@@ -465,13 +690,16 @@ namespace CatHotel.Cats
             _chosenRestState = DirectionalState(animPrefix, _currentDir);
             PlayAnimState(_chosenRestState);
 
-            // Play action SFX
-            if (need == NeedType.Hunger)
-                CatSoundManager.Instance?.PlayEat();
-            else if (need == NeedType.Thirst)
-                CatSoundManager.Instance?.PlayDrink();
-            else if (need == NeedType.Clean)
-                CatSoundManager.Instance?.PlayLitter();
+            // Play action SFX (only if this cat is on the visible floor)
+            if (_canPlaySfx)
+            {
+                if (need == NeedType.Hunger)
+                    CatSoundManager.Instance?.PlayEat();
+                else if (need == NeedType.Thirst)
+                    CatSoundManager.Instance?.PlayDrink();
+                else if (need == NeedType.Clean)
+                    CatSoundManager.Instance?.PlayLitter();
+            }
 
             float duration = _targetObject.Data.useDuration;
             float ratePerSec = _targetObject.SatisfactionRate;

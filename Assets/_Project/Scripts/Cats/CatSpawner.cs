@@ -78,10 +78,12 @@ namespace CatHotel.Cats
             Vector2 screenPos = Pointer.current.position.ReadValue();
             Vector3 worldPos = _mainCam.ScreenToWorldPoint(screenPos);
 
+            int visibleFloor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
             CatEntity nearest = null;
             float bestDist = 1.5f;
             foreach (var cat in _cats)
             {
+                if (cat.FloorIndex != visibleFloor) continue;
                 float dist = Vector2.Distance(worldPos, cat.transform.position);
                 if (dist < bestDist)
                 {

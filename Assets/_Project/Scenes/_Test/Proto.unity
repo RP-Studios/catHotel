@@ -1863,37 +1863,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 1
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!1 &108581393
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 108581394}
-  m_Layer: 0
-  m_Name: HotelObjects
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &108581394
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 108581393}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &116812494
 GameObject:
   m_ObjectHideFlags: 0
@@ -2223,7 +2192,7 @@ GameObject:
   - component: {fileID: 190195678}
   - component: {fileID: 190195677}
   m_Layer: 0
-  m_Name: Up
+  m_Name: FloorUpAction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -22115,6 +22084,8 @@ GameObject:
   - component: {fileID: 1831571462}
   - component: {fileID: 1831571463}
   - component: {fileID: 1831571464}
+  - component: {fileID: 1831571466}
+  - component: {fileID: 1831571465}
   m_Layer: 0
   m_Name: GridManager
   m_TagString: Untagged
@@ -22199,6 +22170,8 @@ MonoBehaviour:
   - {fileID: 1352469001, guid: f27b26829a2a06f4fac22f18b23b3b7b, type: 3}
   _pensionLogoSprite: {fileID: 21300000, guid: 3ca48a9eb2b64dc40b2c1a520a85b70a, type: 3}
   _refugeLogoSprite: {fileID: 21300000, guid: 96ee31a39a9e98d48bf23e823554b4db, type: 3}
+  _stairsData: {fileID: 11400000, guid: e2b913ae299be5148918c0428c80dd84, type: 2}
+  _stairsBottomLeft: {x: 12, y: 15}
 --- !u!4 &1831571447
 Transform:
   m_ObjectHideFlags: 0
@@ -22300,6 +22273,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Hotel.HotelManager
   _config: {fileID: 11400000, guid: a9eeedda27acbf44ba8e50243195f65f, type: 2}
   _personalityConfig: {fileID: 11400000, guid: e42e5e1f39bf91c4c85062a8853b3ebd, type: 2}
+  _breedEntries:
+  - assetName: Breed_Europeen
+    minReputation: 0
+  - assetName: Breed_Europeen2
+    minReputation: 0
+  - assetName: Breed_Europeen3
+    minReputation: 0
+  - assetName: Breed_SiberienBlack
+    minReputation: 0
+  - assetName: Breed_SiberienWhite
+    minReputation: 0
+  - assetName: Breed_Ragdoll
+    minReputation: 1
+  - assetName: Breed_Ragdoll2
+    minReputation: 1
+  - assetName: Breed_Siamois
+    minReputation: 2
+  - assetName: Breed_Chartreux
+    minReputation: 8
   _gridRenderer: {fileID: 1831571446}
   _economy: {fileID: 1831571454}
   _reputation: {fileID: 1831571453}
@@ -22463,6 +22455,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2ba16f79e4074424499075d35f540575, type: 2}
   - {fileID: 11400000, guid: 36fa80b26e8a7de4da615a880edf8bd7, type: 2}
   - {fileID: 11400000, guid: d1b6314ff5d7ac44ca4c6b32875aa4e9, type: 2}
+  - {fileID: 11400000, guid: e2b913ae299be5148918c0428c80dd84, type: 2}
   - {fileID: 11400000, guid: 52c90bd82ed8afa4bb4bb7df73cdb11c, type: 2}
   - {fileID: 11400000, guid: f120f3c2403834248b5d6ef066710bba, type: 2}
   - {fileID: 11400000, guid: 9b5ffd1673fb1dc4db177f714bb4e837, type: 2}
@@ -22517,6 +22510,7 @@ MonoBehaviour:
   _catSpawner: {fileID: 1831571448}
   _objectPlacement: {fileID: 1831571461}
   _objectMover: {fileID: 1831571464}
+  _gridRenderer: {fileID: 1831571446}
 --- !u!114 &1831571463
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -22566,6 +22560,39 @@ MonoBehaviour:
   - {fileID: -6419502277716022246, guid: 26620c84f15c0d546a3e8b40a1173382, type: 3}
   - {fileID: 9101877460067397633, guid: 26620c84f15c0d546a3e8b40a1173382, type: 3}
   - {fileID: -6587554531011415648, guid: 26620c84f15c0d546a3e8b40a1173382, type: 3}
+--- !u!114 &1831571465
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1831571444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a1b20da42baa2545b8536f750c7de96, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatHotel.UI.FloorNavigationUI
+  _floorManager: {fileID: 1831571466}
+  _placement: {fileID: 1831571461}
+  _mover: {fileID: 1831571464}
+--- !u!114 &1831571466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1831571444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31011819b4fde664a90090129e9a3a1e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Hotel.FloorManager
+  _gridRenderer: {fileID: 1831571446}
+  _catSpawner: {fileID: 1831571448}
+  _camera: {fileID: 1171482645}
+  _fadeOverlay: {fileID: 0}
+  _fadeDuration: 0.4
+  _cameraYOffset: 0.5
 --- !u!1 &1835674683
 GameObject:
   m_ObjectHideFlags: 0
@@ -22578,7 +22605,7 @@ GameObject:
   - component: {fileID: 1835674686}
   - component: {fileID: 1835674685}
   m_Layer: 0
-  m_Name: Down
+  m_Name: FloorDownAction
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -23764,37 +23791,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1913241193}
   m_CullTransparentMesh: 1
---- !u!1 &1916564637
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1916564638}
-  m_Layer: 0
-  m_Name: Decorations
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1916564638
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1916564637}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1917261372
 GameObject:
   m_ObjectHideFlags: 0
@@ -24776,6 +24772,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1952907865}
   m_CullTransparentMesh: 1
+--- !u!1 &1969935068
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1969935069}
+  m_Layer: 0
+  m_Name: HotelObjects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1969935069
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1969935068}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1996536591
 GameObject:
   m_ObjectHideFlags: 0
@@ -25481,6 +25508,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2056759653}
   m_CullTransparentMesh: 1
+--- !u!1 &2065761688
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2065761689}
+  m_Layer: 0
+  m_Name: Decorations
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2065761689
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2065761688}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2068251335
 GameObject:
   m_ObjectHideFlags: 0
@@ -26850,5 +26908,5 @@ SceneRoots:
   - {fileID: 366774794}
   - {fileID: 705030544}
   - {fileID: 225495465}
-  - {fileID: 108581394}
-  - {fileID: 1916564638}
+  - {fileID: 1969935069}
+  - {fileID: 2065761689}
