@@ -1753,6 +1753,10 @@ namespace CatHotel.Editor
             if (camCtrl == null)
                 camCtrl = camObj.AddComponent<CameraController>();
 
+            var camFocus = camObj.GetComponent<CatHotel.Input.CameraFocus>();
+            if (camFocus == null)
+                camFocus = camObj.AddComponent<CatHotel.Input.CameraFocus>();
+
             // Force camera bounds for half-size grid
             var camSo = new SerializedObject(camCtrl);
             camSo.FindProperty("_minOrthoSize").floatValue = 1.5f;
@@ -1959,6 +1963,7 @@ namespace CatHotel.Editor
             var shelterIcon = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/UI/Icons/Minimalist/shelter.png");
             soCatInfo.FindProperty("_pensionIcon").objectReferenceValue = pensionIcon;
             soCatInfo.FindProperty("_shelterIcon").objectReferenceValue = shelterIcon;
+            soCatInfo.FindProperty("_cameraFocus").objectReferenceValue = camFocus;
             soCatInfo.ApplyModifiedProperties();
 
             // --- OptionsPanel ---

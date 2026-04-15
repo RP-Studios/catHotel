@@ -18,6 +18,7 @@ namespace CatHotel.UI
         [SerializeField] private HotelManager _hotel;
         [SerializeField] private Sprite _pensionIcon;
         [SerializeField] private Sprite _shelterIcon;
+        [SerializeField] private CatHotel.Input.CameraFocus _cameraFocus;
 
         private RectTransform _panel;
         private GameObject _panelObj;
@@ -185,10 +186,15 @@ namespace CatHotel.UI
         {
             if (_panel == null || cat == null) return;
 
+            bool wasAlreadyOpen = _isOpen;
             _currentCat = cat;
             _isOpen = true;
             _refreshTimer = 0f;
             ResetDirtyState();
+
+            // Camera: focus (or retarget) on the selected cat
+            if (_cameraFocus != null && cat.Entity != null)
+                _cameraFocus.Focus(cat.Entity.transform);
 
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
@@ -243,16 +249,20 @@ namespace CatHotel.UI
 
             RefreshValues();
 
-            UISoundManager.Instance?.PlayOpenSection();
+            // Only play the open SFX + re-slide if the panel wasn't already on screen.
+            // Otherwise we just refresh the contents for the new cat (smooth cat switch).
+            if (!wasAlreadyOpen)
+            {
+                UISoundManager.Instance?.PlayOpenSection();
 
-            // Activate + position offscreen before slide
-            _panelObj.SetActive(true);
-            var p = _panel.anchoredPosition;
-            p.x = _panelWidth;
-            _panel.anchoredPosition = p;
+                _panelObj.SetActive(true);
+                var p = _panel.anchoredPosition;
+                p.x = _panelWidth;
+                _panel.anchoredPosition = p;
 
-            _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(0f, 0.7f).SetEase(Ease.OutCubic);
+                _slideTween?.Kill();
+                _slideTween = _panel.DOAnchorPosX(0f, 0.7f).SetEase(Ease.OutCubic);
+            }
         }
 
         public void Close()
@@ -262,6 +272,9 @@ namespace CatHotel.UI
             UISoundManager.Instance?.PlayCloseSection();
             _isOpen = false;
             _currentCat = null;
+
+            // Release camera smoothly
+            if (_cameraFocus != null) _cameraFocus.Release();
 
             _slideTween?.Kill();
             _slideTween = _panel.DOAnchorPosX(_panelWidth, 0.5f)

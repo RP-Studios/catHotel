@@ -197,12 +197,6 @@ namespace CatHotel.Economy
 
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
-            if (_catInfoPanel != null && _catInfoPanel.IsOpen)
-            {
-                _catInfoPanel.Close();
-                return;
-            }
-
             Vector2 screenPos = pointer.position.ReadValue();
             if (float.IsNaN(screenPos.x) || float.IsNaN(screenPos.y)) return;
             Vector3 worldPos = _cam.ScreenToWorldPoint(screenPos);
@@ -225,8 +219,15 @@ namespace CatHotel.Economy
                 }
             }
 
-            if (tappedCat == null) return;
+            // No cat under pointer: empty-space tap closes the info panel if open.
+            if (tappedCat == null)
+            {
+                if (_catInfoPanel != null && _catInfoPanel.IsOpen)
+                    _catInfoPanel.Close();
+                return;
+            }
 
+            // Tap on a cat: try coin collection first, otherwise open/switch the info panel.
             FloatingCoin catCoin = FindCoinForCat(tappedCat.transform);
             if (catCoin != null)
             {
@@ -239,7 +240,7 @@ namespace CatHotel.Economy
                 CatSoundManager.Instance?.PlayMeowForCat(tappedCat);
                 var instance = _catInfoPanel.FindCatInstance(tappedCat);
                 if (instance != null)
-                    _catInfoPanel.Show(instance);
+                    _catInfoPanel.Show(instance); // handles both first-open and cat-switch
             }
         }
 
