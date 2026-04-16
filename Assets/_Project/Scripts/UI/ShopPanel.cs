@@ -83,7 +83,35 @@ namespace CatHotel.UI
         // All shop items grouped by ShopCategory
         private readonly Dictionary<ShopCategory, List<HotelObjectData>> _shopItems = new();
 
+        // Tutorial filter: when set, only these categories are tappable/visible.
+        private HashSet<ShopCategory> _tutorialFilter;
+        private Dictionary<ShopCategory, RectTransform> _categoryRects;
+
         public bool IsOpen => _isOpen;
+
+        /// <summary>Show only the listed categories (for tutorial). Pass null to show all.</summary>
+        public void SetTutorialFilter(HashSet<ShopCategory> allowed)
+        {
+            _tutorialFilter = allowed;
+            RefreshCategoryFilter();
+        }
+
+        public void ClearTutorialFilter()
+        {
+            _tutorialFilter = null;
+            RefreshCategoryFilter();
+        }
+
+        private void RefreshCategoryFilter()
+        {
+            if (_categoryRects == null) return;
+            foreach (var kvp in _categoryRects)
+            {
+                if (kvp.Value == null) continue;
+                kvp.Value.gameObject.SetActive(
+                    _tutorialFilter == null || _tutorialFilter.Contains(kvp.Key));
+            }
+        }
 
         private void Start()
         {
@@ -123,6 +151,24 @@ namespace CatHotel.UI
             _shelvesRect = FindRect(_panelObj, "ShelvesAction");
             _aquariumsRect = FindRect(_panelObj, "AquariumAction");
             _carpetsRect = FindRect(_panelObj, "CarpetsAction");
+
+            _categoryRects = new Dictionary<ShopCategory, RectTransform>
+            {
+                { ShopCategory.Beds, _bedsRect },
+                { ShopCategory.Pillows, _pillowsRect },
+                { ShopCategory.Croquettes, _croquettesRect },
+                { ShopCategory.Water, _waterRect },
+                { ShopCategory.Balls, _ballsRect },
+                { ShopCategory.Scratchers, _scratchersRect },
+                { ShopCategory.Litters, _littersRect },
+                { ShopCategory.Frames, _framesRect },
+                { ShopCategory.Lamps, _lampsRect },
+                { ShopCategory.Tables, _tablesRect },
+                { ShopCategory.Plants, _plantsRect },
+                { ShopCategory.Shelves, _shelvesRect },
+                { ShopCategory.Aquariums, _aquariumsRect },
+                { ShopCategory.Carpets, _carpetsRect },
+            };
 
             AddJuice(_closeRect);
             AddJuice(_bedsRect);

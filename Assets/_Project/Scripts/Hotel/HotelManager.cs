@@ -179,9 +179,26 @@ namespace CatHotel.Hotel
             int currentRep = _reputation != null ? _reputation.Level : 0;
             yield return _breedRegistry.PreloadUnlockedAsync(currentRep);
 
-            // Spawn first cat only if no cats were restored from save
-            if (_cats.Count == 0)
+            // Start or resume tutorial FIRST — it may suppress the initial cat spawn.
+            var tutMgr = Tutorial.TutorialManager.Instance;
+            if (tutMgr != null)
+            {
+                var save = CloudSaveManager.Instance;
+                bool isNewGame = save == null || !save.IsLoaded || save.Progression.saveVersion == 0;
+                int resumeStep = isNewGame ? 0 : save.Progression.tutorialStepIndex;
+                tutMgr.Begin(resumeStep);
+            }
+            else
+            {
+                Debug.LogWarning("[Hotel] TutorialManager.Instance is null — run Setup Proto Scene.");
+            }
+
+            // Spawn first cat only if no tutorial is running and no cats restored from save.
+            if (_cats.Count == 0
+                && (Tutorial.TutorialManager.Instance == null || !Tutorial.TutorialManager.Instance.IsActive))
+            {
                 TrySpawnCat();
+            }
         }
 
         private void Update()
@@ -210,6 +227,9 @@ namespace CatHotel.Hotel
 
         private void UpdateArrivals()
         {
+            // Suppress auto-spawn while the tutorial is running
+            if (Tutorial.TutorialManager.Instance != null && Tutorial.TutorialManager.Instance.IsActive) return;
+
             _arrivalTimer += Time.deltaTime;
             if (_arrivalTimer < _config.arrivalInterval) return;
             _arrivalTimer = 0f;
@@ -217,6 +237,144 @@ namespace CatHotel.Hotel
             if (_cats.Count >= _config.maxCats) return;
 
             TrySpawnCat();
+        }
+
+        /// <summary>Spawn a pension cat on demand (used by tutorial). Returns the CatEntity.</summary>
+        public CatEntity SpawnTutorialCat()
+        {
+            int prevCount = _cats.Count;
+            TrySpawnCat();
+            if (_cats.Count > prevCount)
+                return _cats[^1].Entity;
+            return null;
+        }
+
+        /// <summary>Spawn a refuge cat on demand (used by tutorial). Returns the CatEntity.</summary>
+        public CatEntity SpawnTutorialRefugeCat()
+        {
+            var entrances = _gridRenderer.Entrances;
+            if (entrances == null || entrances.Count == 0) return null;
+            var breed = PickRandomBreed();
+            if (breed == null) return null;
+
+            var entrance = _gridRenderer.RefugeEntrance;
+            int prevCount = _cats.Count;
+
+            // Reuse TrySpawnCat's full logic but force Refuge mode.
+            // Simplest: temporarily swap and call the full creation inline.
+            // For now, just call TrySpawnCat-style code with mode forced.
+            SpawnCatInternal(breed, CatMode.Refuge, entrance, false);
+
+            if (_cats.Count > prevCount)
+                return _cats[^1].Entity;
+            return null;
+        }
+
+        /// <summary>Internal shared cat spawn (extracted from TrySpawnCat).</summary>
+        private void SpawnCatInternal(CatBreedData breed, CatMode mode, Vector2Int entrance, bool isSpecial)
+        {
+            if (breed.controller != null && breed.hasSpecialVariant && breed.specialController != null
+                && !isSpecial && UnityEngine.Random.value < breed.specialChance && !HasSpecialOfBreed(breed))
+                isSpecial = true;
+
+            var go = new GameObject($"Cat_{_cats.Count}_{breed.breedName}");
+            go.transform.SetParent(transform);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = isSpecial && breed.specialFrontSprite != null ? breed.specialFrontSprite : breed.frontSprite;
+            sr.sortingLayerName = "Cats";
+            go.AddComponent<Core.SortByY>();
+
+            if (breed.controller != null)
+            {
+                var animator = go.AddComponent<Animator>();
+                var ctrl = isSpecial && breed.specialController != null ? breed.specialController : breed.controller;
+                animator.runtimeAnimatorController = ctrl;
+                animator.enabled = false;
+            }
+
+            float scale = breed.size * UnityEngine.Random.Range(0.6f, 0.8f);
+            go.transform.localScale = new Vector3(scale, scale, 1f);
+
+            var needs = go.AddComponent<CatNeeds>();
+            needs.Init(breed, _config, isSpecial);
+            needs.SetSizeMultiplier(scale);
+            if (mode == CatMode.Refuge) needs.SetRefugeStartValues();
+            int repDeficit = _reputation.GetDeficit(breed.minReputation);
+            needs.SetReputationDeficit(repDeficit);
+
+            var happiness = go.AddComponent<CatHappiness>();
+            happiness.Init(needs, _config);
+            var moodBubble = go.AddComponent<CatMoodBubble>();
+            moodBubble.Init(happiness, needs, _config,
+                _moodHappy, _moodEcstatic, _moodDepressed, _moodAggressive, _moodAngry,
+                _needHungry, _needThirsty, _needTired, _needBored, _needDirty);
+
+            var entity = go.AddComponent<CatEntity>();
+            entity.SetSprites(
+                isSpecial && breed.specialFrontSprite != null ? breed.specialFrontSprite : breed.frontSprite,
+                isSpecial && breed.specialRightSprite != null ? breed.specialRightSprite : breed.rightSprite,
+                isSpecial && breed.specialBackSprite != null ? breed.specialBackSprite : breed.backSprite);
+            entity.SetBreed(breed);
+            entity.Init(_gridRenderer.Data, entrance, _catSpawner, 0, _gridRenderer);
+
+            string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
+            float pensionDuration = mode == CatMode.Pension ? UnityEngine.Random.Range(60f, 300f) : 0f;
+
+            string description = "";
+            var traitMods = CatTraitModifiers.Default;
+            if (_personalityConfig != null)
+            {
+                var (desc, mods) = _personalityConfig.GeneratePersonality(breed, catName.GetHashCode());
+                description = desc;
+                traitMods = mods;
+            }
+            needs.SetTraitModifiers(traitMods);
+            happiness.SetTraitModifiers(traitMods);
+            entity.SetTraitModifiers(traitMods);
+
+            var affinityRng = new System.Random(catName.GetHashCode() + 7919);
+            CatBreedData likedBreed = null, dislikedBreed = null;
+            if (_breedRegistry.Count > 1)
+            {
+                var otherBreeds = new List<CatBreedData>();
+                foreach (var b in _breedRegistry.LoadedBreeds)
+                    if (b.breedName != breed.breedName) otherBreeds.Add(b);
+                if (otherBreeds.Count > 0 && affinityRng.NextDouble() < _config.likedBreedChance)
+                    likedBreed = otherBreeds[affinityRng.Next(otherBreeds.Count)];
+                if (otherBreeds.Count > 0 && affinityRng.NextDouble() < _config.dislikedBreedChance)
+                {
+                    var dc = new List<CatBreedData>();
+                    foreach (var b in otherBreeds) if (likedBreed == null || b.breedName != likedBreed.breedName) dc.Add(b);
+                    if (dc.Count > 0) dislikedBreed = dc[affinityRng.Next(dc.Count)];
+                }
+            }
+
+            var instance = new CatInstance
+            {
+                Entity = entity, Needs = needs, Happiness = happiness, Breed = breed,
+                Mode = mode, IsSpecial = isSpecial, CatName = catName, Description = description,
+                TraitModifiers = traitMods, LikedBreed = likedBreed, DislikedBreed = dislikedBreed,
+                State = CatState.Arriving, PensionTimeRemaining = pensionDuration, PensionDuration = pensionDuration
+            };
+
+            if (likedBreed != null || dislikedBreed != null)
+            {
+                var affinity = go.AddComponent<CatAffinity>();
+                affinity.Init(likedBreed, dislikedBreed, happiness, entity, _catSpawner, _config);
+            }
+
+            entity.OnServiceUsed += () => OnCatServiceUsed(instance);
+            _cats.Add(instance);
+            if (_catSpawner != null) _catSpawner.RegisterCat(entity);
+            OnCatArrived?.Invoke(instance);
+
+            var floorCells = _gridRenderer.CentralRoomFloorCells;
+            if (floorCells.Count > 0)
+            {
+                var target = floorCells[UnityEngine.Random.Range(0, floorCells.Count)];
+                entity.WalkToTarget(target, () => instance.State = CatState.Idle);
+            }
+            else instance.State = CatState.Idle;
         }
 
         /// <summary>Single merged loop for departures + pension timers (tick-based).</summary>
@@ -257,6 +415,7 @@ namespace CatHotel.Hotel
         private void OnCatServiceUsed(CatInstance cat)
         {
             Debug.Log($"[Hotel] OnCatServiceUsed for {cat.CatName}, entity={cat.Entity != null}, happiness={cat.Happiness?.Value}, isUnhappy={cat.Happiness?.IsUnhappy}");
+            Tutorial.TutorialManager.Instance?.NotifyEvent(Tutorial.TutorialTrigger.WaitForCatServiceUsed);
             if (cat.Entity == null || cat.Happiness == null) return;
             if (cat.Happiness.IsUnhappy) return;
 
@@ -607,6 +766,9 @@ namespace CatHotel.Hotel
         /// <summary>Collect current progression data for saving.</summary>
         public ProgressionSaveData CollectProgressionData()
         {
+            // Preserve fields written by other systems (e.g. TutorialManager)
+            var prev = CloudSaveManager.Instance?.Progression;
+
             var data = new ProgressionSaveData
             {
                 reputationLevel = _reputation.Level,
@@ -614,6 +776,7 @@ namespace CatHotel.Hotel
                 coins = _economy.Coins,
                 gems = _economy.Gems,
                 floorTileIndex = _gridRenderer.FloorTileIndex,
+                tutorialStepIndex = prev?.tutorialStepIndex ?? 0,
                 placedObjects = new List<PlacedObjectSaveData>(),
                 cats = new List<CatCloudSaveData>()
             };

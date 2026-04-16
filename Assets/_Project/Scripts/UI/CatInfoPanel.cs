@@ -196,6 +196,9 @@ namespace CatHotel.UI
             if (_cameraFocus != null && cat.Entity != null)
                 _cameraFocus.Focus(cat.Entity.transform);
 
+            // Tutorial: notify cat selected
+            Tutorial.TutorialManager.Instance?.NotifyEvent(Tutorial.TutorialTrigger.WaitForCatSelected);
+
             // Fill static info
             if (_catName != null) _catName.text = cat.CatName;
             if (_catSpecies != null) _catSpecies.text = LocalizeBreedName(cat.Breed.breedName);

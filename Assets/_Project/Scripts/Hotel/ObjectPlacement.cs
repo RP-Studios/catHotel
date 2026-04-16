@@ -380,8 +380,11 @@ namespace CatHotel.Hotel
 
             string placedName = _currentData.displayName;
             Vector2Int placedPos = _currentGridPos;
+            var placedCategory = _currentData.category;
             CleanupPlacement();
             Debug.Log($"[Placement] Placed {placedName} at {placedPos}");
+            Tutorial.TutorialManager.Instance?.NotifyEvent(
+                Tutorial.TutorialTrigger.WaitForObjectPlaced, placedCategory);
 
             // Auto-save after placing object
             var hotel = GetComponent<HotelManager>() ?? FindAnyObjectByType<HotelManager>();

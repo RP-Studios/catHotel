@@ -261,6 +261,9 @@ namespace CatHotel.Economy
             _economy.StartCollect(coin);
             // Animate and deposit on completion
             AnimateCollect(coin);
+            // Tutorial: notify coin collected
+            CatHotel.Tutorial.TutorialManager.Instance?.NotifyEvent(
+                CatHotel.Tutorial.TutorialTrigger.WaitForCoinCollected);
         }
 
         /// <summary>Pulse the CollectAll button when floating coins exist.</summary>

@@ -25,6 +25,7 @@ namespace CatHotel.Input
         private Camera _cam;
         private CameraController _controller;
         private Transform _followTarget;
+        private GameObject _staticTarget; // auto-created for FocusOnPosition
         private Vector3 _returnPosition;
         private bool _hasReturnPosition;
         private State _state = State.Idle;
@@ -35,6 +36,18 @@ namespace CatHotel.Input
         {
             _cam = GetComponent<Camera>();
             _controller = GetComponent<CameraController>();
+        }
+
+        /// <summary>Focus on a fixed world position (no follow — camera just pans there).</summary>
+        public void FocusOnPosition(Vector3 worldPos)
+        {
+            if (_staticTarget == null)
+            {
+                _staticTarget = new GameObject("[CameraFocusTarget]");
+                _staticTarget.hideFlags = HideFlags.HideAndDontSave;
+            }
+            _staticTarget.transform.position = worldPos;
+            Focus(_staticTarget.transform);
         }
 
         /// <summary>Start or retarget a smooth follow on the given transform.</summary>

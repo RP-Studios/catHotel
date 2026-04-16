@@ -236,6 +236,10 @@ namespace CatHotel.Hotel
             ObjectRegistry.Register(_movingObject);
 
             ExitMoveMode();
+
+            // Auto-save after moving object
+            var hotel = GetComponent<HotelManager>() ?? FindAnyObjectByType<HotelManager>();
+            if (hotel != null) hotel.SaveProgression();
         }
 
         private void CancelMove()
@@ -261,6 +265,10 @@ namespace CatHotel.Hotel
             var obj = _movingObject;
             ExitMoveMode();
             Destroy(obj.gameObject);
+
+            // Auto-save after selling object (coins + object removal)
+            var hotel = GetComponent<HotelManager>() ?? FindAnyObjectByType<HotelManager>();
+            if (hotel != null) hotel.SaveProgression();
         }
 
         // ======================== DRAG ========================

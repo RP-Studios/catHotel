@@ -484,6 +484,9 @@ namespace CatHotel.Cats
             if (_isChangingFloor || _gridRenderer == null) return false;
             if (_floorChangeCooldown > 0f) return false;
             if (CatHotel.Grid.GridRenderer.FloorCount < 2) return false;
+            // Don't wander to another floor while the tutorial is running
+            if (CatHotel.Tutorial.TutorialManager.Instance != null
+                && CatHotel.Tutorial.TutorialManager.Instance.IsActive) return false;
             if (Random.value >= FloorChangeChance) return false;
 
             int target = _floorIndex == 0 ? 1 : 0;
@@ -918,6 +921,10 @@ namespace CatHotel.Cats
             for (int i = 0; i < steps; i++)
             {
                 var neighbors = _grid.GetFloorNeighbors(current.x, current.y);
+
+                // Never wander into Door cells (entrance/exit corridors) — those are
+                // for targeted walks only. Prevents cats from drifting into dark corridors.
+                neighbors.RemoveAll(n => _grid.GetCell(n.x, n.y) != CellType.Floor);
 
                 if (_pathBuffer.Count >= 1)
                     neighbors.Remove(_pathBuffer.Count >= 2 ? _pathBuffer[^2] : _gridPos);

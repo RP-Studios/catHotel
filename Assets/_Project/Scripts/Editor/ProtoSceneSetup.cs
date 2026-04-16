@@ -2060,6 +2060,34 @@ namespace CatHotel.Editor
             soNav.FindProperty("_mover").objectReferenceValue = objectMover;
             soNav.ApplyModifiedProperties();
 
+            // --- TutorialManager ---
+            var tutMgr = mgrObj.GetComponent<CatHotel.Tutorial.TutorialManager>();
+            if (tutMgr == null)
+                tutMgr = mgrObj.AddComponent<CatHotel.Tutorial.TutorialManager>();
+            var tutSeq = AssetDatabase.LoadAssetAtPath<CatHotel.Tutorial.TutorialSequenceData>(
+                "Assets/_Project/Data/TutorialFirstTime.asset");
+            var narrationPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(
+                "Assets/_Project/Prefabs/UI/NarrationUI.prefab");
+            CatHotel.Tutorial.NarrationUI narrationUI = null;
+            if (narrationPrefab != null)
+            {
+                // Find or instantiate the NarrationUI in the scene
+                narrationUI = Object.FindAnyObjectByType<CatHotel.Tutorial.NarrationUI>();
+                if (narrationUI == null)
+                {
+                    var narGo = (GameObject)PrefabUtility.InstantiatePrefab(narrationPrefab);
+                    narGo.name = "NarrationUI";
+                    narrationUI = narGo.GetComponent<CatHotel.Tutorial.NarrationUI>();
+                }
+            }
+            var soTut = new SerializedObject(tutMgr);
+            soTut.FindProperty("_sequence").objectReferenceValue = tutSeq;
+            soTut.FindProperty("_narrationUI").objectReferenceValue = narrationUI;
+            soTut.FindProperty("_hotel").objectReferenceValue = hotelMgr;
+            soTut.FindProperty("_cameraFocus").objectReferenceValue = camFocus;
+            soTut.FindProperty("_gridRenderer").objectReferenceValue = renderer;
+            soTut.ApplyModifiedProperties();
+
             // --- ShopPanel ---
             var shopPanel = mgrObj.GetComponent<ShopPanel>();
             if (shopPanel == null)

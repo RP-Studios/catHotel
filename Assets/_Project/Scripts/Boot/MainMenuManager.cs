@@ -84,8 +84,22 @@ namespace CatHotel.Boot
             if (_versionLabel != null)
                 _versionLabel.text = $"v{Application.version}";
 
-            // Sound (from cloud save or PlayerPrefs fallback)
-            _soundEnabled = PlayerPrefs.GetInt(PrefSound, 1) == 1;
+            // Sound (from cloud save, fallback to PlayerPrefs for migration)
+            if (CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
+                && CloudSaveManager.Instance.Settings.saveVersion > 0)
+            {
+                _soundEnabled = CloudSaveManager.Instance.Settings.soundEnabled;
+            }
+            else
+            {
+                _soundEnabled = PlayerPrefs.GetInt(PrefSound, 1) == 1;
+                // Migrate to cloud save
+                if (CloudSaveManager.Instance != null)
+                {
+                    CloudSaveManager.Instance.Settings.soundEnabled = _soundEnabled;
+                    CloudSaveManager.Instance.SaveSettings();
+                }
+            }
             ApplySoundState();
 
             Core.LocalizedStrings.OnLanguageChanged += ApplySoundState;
@@ -269,9 +283,13 @@ namespace CatHotel.Boot
         private void OnSoundToggleTapped()
         {
             _soundEnabled = !_soundEnabled;
-            PlayerPrefs.SetInt(PrefSound, _soundEnabled ? 1 : 0);
-            PlayerPrefs.Save();
             ApplySoundState();
+
+            if (CloudSaveManager.Instance != null)
+            {
+                CloudSaveManager.Instance.Settings.soundEnabled = _soundEnabled;
+                CloudSaveManager.Instance.SaveSettings();
+            }
         }
 
         private void ApplySoundState()

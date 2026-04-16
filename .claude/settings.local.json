@@ -104,7 +104,8 @@
       "Bash(mv \"d:/Unity/catHotel_github/Assets/_Project/Resources/Breeds/\"*.meta \"d:/Unity/catHotel_github/Assets/_Project/Data/Breeds/\")",
       "Bash(find \"d:/Unity/catHotel_github/Assets/_Project/Scripts\" -name \"*.cs\" -type f -exec grep -l \"AnimationEvent\\\\|OnAnimationEvent\\\\|CatSound\\\\|AudioSource\" {} \\\\;)",
       "Bash(find \"Assets/_Project/Art/Environment/Stairs\" -name \"*.png\" ! -name \"*.meta\")",
-      "Bash(python -c ':*)"
+      "Bash(python -c ':*)",
+      "Bash(grep -v \"//\")"
     ]
   }
 }
