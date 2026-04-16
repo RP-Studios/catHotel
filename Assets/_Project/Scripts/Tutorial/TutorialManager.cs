@@ -195,7 +195,8 @@ namespace CatHotel.Tutorial
 
         // ---- Actions ----
 
-        private CatEntity _refugeCat; // second cat spawned for the tutorial
+        private CatEntity _firstCat;  // pension cat
+        private CatEntity _refugeCat; // refuge cat
 
         private void ExecuteAction(TutorialAction action)
         {
@@ -203,6 +204,7 @@ namespace CatHotel.Tutorial
             {
                 case TutorialAction.SpawnFirstCat:
                     _lastSpawnedCat = _hotel != null ? _hotel.SpawnTutorialCat() : null;
+                    _firstCat = _lastSpawnedCat;
                     break;
 
                 case TutorialAction.SpawnRefugeCatHungry:
@@ -263,6 +265,14 @@ namespace CatHotel.Tutorial
                     break;
                 case TutorialAction.EnableFullShop:
                     ClearShopFilter();
+                    break;
+
+                case TutorialAction.DespawnFirstCat:
+                    if (_firstCat != null && _hotel != null)
+                    {
+                        _hotel.RemoveCat(_firstCat);
+                        _firstCat = null;
+                    }
                     break;
             }
         }

@@ -40,6 +40,7 @@ namespace CatHotel.Tutorial
         EnableShopClean,
         EnableShopBalls,
         EnableFullShop,
+        DespawnFirstCat,
     }
 
     [Serializable]

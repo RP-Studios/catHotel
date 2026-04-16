@@ -11,6 +11,6 @@ namespace CatHotel.Core
         /// Minimum save version accepted. Saves below this are wiped.
         /// Bump this number before each store push that needs a forced fresh start.
         /// </summary>
-        public const int RequiredSaveVersion = 1;
+        public const int RequiredSaveVersion = 2; // v0.21 — forced fresh start for tutorial
     }
 }

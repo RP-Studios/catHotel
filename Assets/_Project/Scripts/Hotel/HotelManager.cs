@@ -239,13 +239,21 @@ namespace CatHotel.Hotel
             TrySpawnCat();
         }
 
-        /// <summary>Spawn a pension cat on demand (used by tutorial). Returns the CatEntity.</summary>
+        /// <summary>Spawn a pension cat on demand (used by tutorial). Returns the CatEntity.
+        /// Pension duration is forced to 5 minutes so the cat doesn't leave mid-tutorial.</summary>
         public CatEntity SpawnTutorialCat()
         {
             int prevCount = _cats.Count;
             TrySpawnCat();
             if (_cats.Count > prevCount)
-                return _cats[^1].Entity;
+            {
+                var cat = _cats[^1];
+                cat.PensionDuration = 300f;
+                cat.PensionTimeRemaining = 300f;
+                // All needs full so the pension cat doesn't distract during tutorial
+                cat.Needs?.FromArray(new float[] { 100f, 100f, 100f, 100f, 100f });
+                return cat.Entity;
+            }
             return null;
         }
 
@@ -721,6 +729,15 @@ namespace CatHotel.Hotel
 
             // Adopted/refuge cats leave via bottom-left entrance (no door animation)
             cat.Entity.WalkToTarget(_gridRenderer.RefugeEntrance, () => FinalizeDeparture(cat));
+        }
+
+        /// <summary>Immediately remove a cat from the game (used by tutorial to despawn the first cat).</summary>
+        public void RemoveCat(CatEntity entity)
+        {
+            if (entity == null) return;
+            var cat = _cats.FirstOrDefault(c => c.Entity == entity);
+            if (cat != null) FinalizeDeparture(cat);
+            else Destroy(entity.gameObject);
         }
 
         private void FinalizeDeparture(CatInstance cat)

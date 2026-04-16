@@ -81,7 +81,9 @@ namespace CatHotel.Editor
             // --- Let the game breathe 5s ---
             Step("", null, "", TutorialTrigger.WaitForDelay, delay: 5f);
 
-            // --- Spawn refuge cat (hungry) ---
+            // --- Despawn pension cat + Spawn refuge cat (hungry) ---
+            Step("", null, "", TutorialTrigger.Action,
+                onS: TutorialAction.DespawnFirstCat, onC: TutorialAction.None);
             Step("", null, "", TutorialTrigger.Action,
                 onS: TutorialAction.SpawnRefugeCatHungry, onC: TutorialAction.FocusCameraOnLastSpawnedCat);
             Step(J, jasper01, "tuto.refugecat", TutorialTrigger.WaitForTap);
