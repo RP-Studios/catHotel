@@ -87,9 +87,12 @@ namespace CatHotel.Cats
             _clean = vals[4];
         }
 
+        /// <summary>When true, needs don't decay over time (used during tutorial).</summary>
+        public bool FreezeDecay { get; set; }
+
         private void Update()
         {
-            if (_config == null) return;
+            if (_config == null || FreezeDecay) return;
 
             _tickAccumulator += Time.deltaTime;
             if (_tickAccumulator < TickInterval) return;

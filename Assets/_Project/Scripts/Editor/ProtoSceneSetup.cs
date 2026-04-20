@@ -198,6 +198,12 @@ namespace CatHotel.Editor
 
             // SadWalk (8f @256, 12 FPS) — only Right direction
             ("SadWalk/europeen1_base_walk_sad_right.png", "eur1_sadwalk_right", "SadWalk_Right", 8, 12f),
+
+            // Run (4f, face/back @256 → 12 FPS, left/right @512 → 12 FPS)
+            ("Run/europeen_base_run_face.png",  "eur1_run_face",  "Run_Front", 4, 12f),
+            ("Run/europeen_base_run_back.png",  "eur1_run_back",  "Run_Back",  4, 12f),
+            ("Run/europeen_base_run_left.png",  "eur1_run_left",  "Run_Left",  4, 12f),
+            ("Run/europeen_base_run_right.png", "eur1_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== EUROPEEN 2 ====================
@@ -290,6 +296,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f @256, 12 FPS)
             ("SadWalk/europeen2_base_walk_sad_right.png", "eur2_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/europeen_2_run_face.png",  "eur2_run_face",  "Run_Front", 4, 12f),
+            ("Run/europeen_2_run_back.png",  "eur2_run_back",  "Run_Back",  4, 12f),
+            ("Run/europeen_2_run_left.png",  "eur2_run_left",  "Run_Left",  4, 12f),
+            ("Run/europeen_2_run_right.png", "eur2_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== EUROPEEN 3 ====================
@@ -383,6 +393,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f @256, 12 FPS)
             ("SadWalk/europeen3_base_walk_sad_right.png", "eur3_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/europeen_3_run_face.png",  "eur3_run_face",  "Run_Front", 4, 12f),
+            ("Run/europeen_3_run_back.png",  "eur3_run_back",  "Run_Back",  4, 12f),
+            ("Run/europeen_3_run_left.png",  "eur3_run_left",  "Run_Left",  4, 12f),
+            ("Run/europeen_3_run_right.png", "eur3_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== SIAMOIS ====================
@@ -476,6 +490,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f @256, 12 FPS)
             ("SadWalk/siamois_base_walk_sad_right.png", "siam_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/siamois_base_run_face.png",  "siam_run_face",  "Run_Front", 4, 12f),
+            ("Run/siamois_base_run_back.png",  "siam_run_back",  "Run_Back",  4, 12f),
+            ("Run/siamois_base_run_left.png",  "siam_run_left",  "Run_Left",  4, 12f),
+            ("Run/siamois_base_run_right.png", "siam_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== RAGDOLL ====================
@@ -552,6 +570,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f, 12 FPS)
             ("Walk Sad/ragdoll_base_walk_sad_right.png", "rd_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/ragdoll_base_run_face.png",  "rd_run_face",  "Run_Front", 4, 12f),
+            ("Run/ragdoll_base_run_back.png",  "rd_run_back",  "Run_Back",  4, 12f),
+            ("Run/ragdoll_base_run_left.png",  "rd_run_left",  "Run_Left",  4, 12f),
+            ("Run/ragdoll_base_run_right.png", "rd_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== RAGDOLL 2 ====================
@@ -601,6 +623,10 @@ namespace CatHotel.Editor
             ("Fighting/ragdoll_2_fighting_out_left.png",  "rd2_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/ragdoll_2_fighting_out_right.png", "rd2_fighting_out_right", "Fight_Out_Right", 8, 8f),
             ("Walk Sad/ragdoll_2_walk_sad_right.png", "rd2_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/ragdoll_2_run_face.png",  "rd2_run_face",  "Run_Front", 4, 12f),
+            ("Run/ragdoll_2_run_back.png",  "rd2_run_back",  "Run_Back",  4, 12f),
+            ("Run/ragdoll_2_run_left.png",  "rd2_run_left",  "Run_Left",  4, 12f),
+            ("Run/ragdoll_2_run_right.png", "rd2_run_right", "Run_Right", 4, 12f),
             ("Scratch/In/Ragdoll_2_Scratch_In_Left.png",  "rd2_scratch_in_left",  "Scratch_In_Left",  7, 14f),
             ("Scratch/In/Ragdoll_2_Scratch_In_Right.png", "rd2_scratch_in_right", "Scratch_In_Right", 7, 14f),
             ("Scratch/Boucle/Ragdoll_2_Scratch_Left.png",  "rd2_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
@@ -686,6 +712,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f, 12 FPS)
             ("Walk Sad/siberien_black_walk_sad_right.png", "sibb_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/siberien_black_run_face.png",  "sibb_run_face",  "Run_Front", 4, 12f),
+            ("Run/siberien_black_run_back.png",  "sibb_run_back",  "Run_Back",  4, 12f),
+            ("Run/siberien_black_run_left.png",  "sibb_run_left",  "Run_Left",  4, 12f),
+            ("Run/siberien_black_run_right.png", "sibb_run_right", "Run_Right", 4, 12f),
 
             // Scratch In (7f, 14 FPS → 0.5s)
             ("Scratch/In/siberien_black_Scratch_In_left.png",  "sibb_scratch_in_left",  "Scratch_In_Left",  7, 14f),
@@ -775,6 +805,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f, 12 FPS)
             ("Walk Sad/siberien_white_walk_sad_right.png", "sibw_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/siberien_white_run_face.png",  "sibw_run_face",  "Run_Front", 4, 12f),
+            ("Run/siberien_white_run_back.png",  "sibw_run_back",  "Run_Back",  4, 12f),
+            ("Run/siberien_white_run_left.png",  "sibw_run_left",  "Run_Left",  4, 12f),
+            ("Run/siberien_white_run_right.png", "sibw_run_right", "Run_Right", 4, 12f),
 
             // Scratch In (7f, 14 FPS → 0.5s)
             ("Scratch/In/siberien_white_Scratch_In_left.png",  "sibw_scratch_in_left",  "Scratch_In_Left",  7, 14f),
@@ -863,6 +897,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f @256, 12 FPS)
             ("SadWalk/siamois_cleo_walk_sad_right.png", "cleo_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/siamois_cleo_run_face.png",  "cleo_run_face",  "Run_Front", 4, 12f),
+            ("Run/siamois_cleo_run_back.png",  "cleo_run_back",  "Run_Back",  4, 12f),
+            ("Run/siamois_cleo_run_left.png",  "cleo_run_left",  "Run_Left",  4, 12f),
+            ("Run/siamois_cleo_run_right.png", "cleo_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== ARISTOTE (Special Cat) ====================
@@ -954,6 +992,10 @@ namespace CatHotel.Editor
 
             // SadWalk (8f @256, 12 FPS)
             ("SadWalk/europeen_aristote_walk_sad_right.png", "ari_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/europeen_aristote_run_face.png",  "ari_run_face",  "Run_Front", 4, 12f),
+            ("Run/europeen_aristote_run_back.png",  "ari_run_back",  "Run_Back",  4, 12f),
+            ("Run/europeen_aristote_run_left.png",  "ari_run_left",  "Run_Left",  4, 12f),
+            ("Run/europeen_aristote_run_right.png", "ari_run_right", "Run_Right", 4, 12f),
         };
 
         // ==================== CHARTREUX ====================
@@ -1001,6 +1043,10 @@ namespace CatHotel.Editor
             ("Fighting/chartreu_fighting_out_left.png",  "chr_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/chartreu_fighting_out_right.png", "chr_fighting_out_right", "Fight_Out_Right", 8, 8f),
             ("Walk Sad/chartreu_base_walk_sad_right.png", "chr_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/chartreu_base_run_face.png",  "chr_run_face",  "Run_Front", 4, 12f),
+            ("Run/chartreu_base_run_back.png",  "chr_run_back",  "Run_Back",  4, 12f),
+            ("Run/chartreu_base_run_left.png",  "chr_run_left",  "Run_Left",  4, 12f),
+            ("Run/chartreu_base_run_right.png", "chr_run_right", "Run_Right", 4, 12f),
             ("Scratch/In/chartreu_Base_Scratch_In_Left.png",  "chr_scratch_in_left",  "Scratch_In_Left",  7, 14f),
             ("Scratch/In/chartreu_Base_Scratch_In_Right.png", "chr_scratch_in_right", "Scratch_In_Right", 7, 14f),
             ("Scratch/Boucle/chartreu_Base_Scratch_Left.png",  "chr_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
@@ -1055,6 +1101,10 @@ namespace CatHotel.Editor
             ("Fighting/chartreu_fighting_out_left.png",          "nap_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/chartreu_napoleon_fighting_out_right.png","nap_fighting_out_right", "Fight_Out_Right", 8, 8f),
             ("Walk Sad/chartreu_napoleon_walk_sad_right.png", "nap_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/chartreu_napoleon_run_face.png",  "nap_run_face",  "Run_Front", 4, 12f),
+            ("Run/chartreu_napoleon_run_back.png",  "nap_run_back",  "Run_Back",  4, 12f),
+            ("Run/chartreu_napoleon_run_left.png",  "nap_run_left",  "Run_Left",  4, 12f),
+            ("Run/chartreu_napoleon_run_right.png", "nap_run_right", "Run_Right", 4, 12f),
             ("Scratch/In/chartreu_napoleon_Scratch_In_Left.png",  "nap_scratch_in_left",  "Scratch_In_Left",  7, 14f),
             ("Scratch/In/chartreu_napoleon_Scratch_In_Right.png", "nap_scratch_in_right", "Scratch_In_Right", 7, 14f),
             ("Scratch/Boucle/chartreu_napoleon_Scratch_Left.png",  "nap_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
@@ -1110,6 +1160,10 @@ namespace CatHotel.Editor
             ("Fighting/ragdoll_orion_fighting_out_left.png",  "ori_fighting_out_left",  "Fight_Out_Left",  8, 8f),
             ("Fighting/ragdoll_orion_fighting_out_right.png", "ori_fighting_out_right", "Fight_Out_Right", 8, 8f),
             ("Walk Sad/ragdoll_orion_walk_sad_right.png", "ori_sadwalk_right", "SadWalk_Right", 8, 12f),
+            ("Run/ragdoll_orion_run_face.png",  "ori_run_face",  "Run_Front", 4, 12f),
+            ("Run/ragdoll_orion_run_back.png",  "ori_run_back",  "Run_Back",  4, 12f),
+            ("Run/ragdoll_orion_run_left.png",  "ori_run_left",  "Run_Left",  4, 12f),
+            ("Run/ragdoll_orion_run_right.png", "ori_run_right", "Run_Right", 4, 12f),
         };
 
         [MenuItem("Cat Hotel/Scene/Setup Proto Scene", false, 1)]

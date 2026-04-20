@@ -239,18 +239,22 @@ namespace CatHotel.Hotel
             TrySpawnCat();
         }
 
-        /// <summary>Spawn a pension cat on demand (used by tutorial). Returns the CatEntity.
-        /// Pension duration is forced to 5 minutes so the cat doesn't leave mid-tutorial.</summary>
+        /// <summary>Spawn a PENSION cat on demand (used by tutorial). Returns the CatEntity.
+        /// Pension duration is forced to 5 minutes, needs full.</summary>
         public CatEntity SpawnTutorialCat()
         {
+            var breed = PickRandomBreed();
+            if (breed == null) return null;
+
+            var entrance = _gridRenderer.PensionEntrance;
             int prevCount = _cats.Count;
-            TrySpawnCat();
+            SpawnCatInternal(breed, CatMode.Pension, entrance, false);
+
             if (_cats.Count > prevCount)
             {
                 var cat = _cats[^1];
                 cat.PensionDuration = 300f;
                 cat.PensionTimeRemaining = 300f;
-                // All needs full so the pension cat doesn't distract during tutorial
                 cat.Needs?.FromArray(new float[] { 100f, 100f, 100f, 100f, 100f });
                 return cat.Entity;
             }

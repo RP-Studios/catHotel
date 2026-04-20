@@ -56,6 +56,7 @@ namespace CatHotel.Cats
         // Object interaction
         private HotelObject _targetObject;
         private bool _isUsingObject;
+        private bool _isRunning; // true when rushing to satisfy an urgent need
 
         // Multi-floor
         private int _floorIndex;
@@ -602,12 +603,22 @@ namespace CatHotel.Cats
             var obj = ObjectRegistry.FindNearest(urgentNeed.Value, _gridPos, _floorIndex);
             if (obj != null)
             {
-                if (!obj.TryReserve(GetInstanceID())) return false;
-                _targetObject = obj;
-                _isUsingObject = false;
                 var usePos = FindUsePosition(obj);
-                WalkToTarget(usePos, () => StartUsingObject(urgentNeed.Value));
-                return true;
+                // Verify path exists before reserving — avoids stuck-walk-in-place
+                var testPath = _grid.FindPath(_gridPos, usePos);
+                if (testPath == null || testPath.Count < 2)
+                {
+                    // Can't reach this object — skip
+                }
+                else if (obj.TryReserve(GetInstanceID()))
+                {
+                    _targetObject = obj;
+                    _isUsingObject = false;
+                    // Run if the need is critical (below seekThreshold)
+                    _isRunning = _needs != null && _needs.GetNeed(urgentNeed.Value) < 40f;
+                    WalkToTarget(usePos, () => { _isRunning = false; StartUsingObject(urgentNeed.Value); });
+                    return true;
+                }
             }
 
             // 2) Fallback: check other visited floors.
@@ -804,8 +815,9 @@ namespace CatHotel.Cats
                 _moveSequence.AppendCallback(() => SetWalkDirection(dir));
 
                 Vector3 worldTarget = CellToWorld(cell);
+                float moveTime = _isRunning ? _cellMoveTime * 0.6f : _cellMoveTime;
                 _moveSequence.Append(
-                    transform.DOMove(worldTarget, _cellMoveTime)
+                    transform.DOMove(worldTarget, moveTime)
                         .SetEase(Ease.Linear));
             }
 
@@ -867,6 +879,8 @@ namespace CatHotel.Cats
             _currentDir = dir;
             if (_useSadWalk && dir == CatDirection.Right)
                 PlayAnimState("SadWalk_Right");
+            else if (_isRunning)
+                PlayAnimState($"Run_{dir}");
             else
                 PlayAnimState($"Walk_{dir}");
         }

@@ -176,6 +176,7 @@ namespace CatHotel.Tutorial
             _running = false;
             RestoreGameUI();
             ClearShopFilter();
+            UnfreezeAllCats();
             UnsubscribeEvents();
             Debug.Log("[Tutorial] Complete!");
         }
@@ -205,16 +206,24 @@ namespace CatHotel.Tutorial
                 case TutorialAction.SpawnFirstCat:
                     _lastSpawnedCat = _hotel != null ? _hotel.SpawnTutorialCat() : null;
                     _firstCat = _lastSpawnedCat;
+                    if (_firstCat != null)
+                    {
+                        var firstNeeds = _firstCat.GetComponent<CatHotel.Cats.CatNeeds>();
+                        if (firstNeeds != null) firstNeeds.FreezeDecay = true;
+                    }
                     break;
 
                 case TutorialAction.SpawnRefugeCatHungry:
                     _refugeCat = _hotel != null ? _hotel.SpawnTutorialRefugeCat() : null;
                     _lastSpawnedCat = _refugeCat;
-                    // Force hunger critical, everything else comfortable
                     if (_refugeCat != null)
                     {
                         var needs = _refugeCat.GetComponent<CatHotel.Cats.CatNeeds>();
-                        needs?.FromArray(new float[] { 10f, 90f, 90f, 90f, 90f });
+                        if (needs != null)
+                        {
+                            needs.FreezeDecay = true; // prevent natural decay during tutorial
+                            needs.FromArray(new float[] { 10f, 90f, 90f, 90f, 90f });
+                        }
                     }
                     break;
 
@@ -319,6 +328,15 @@ namespace CatHotel.Tutorial
         {
             _shopFilter.Clear();
             GetShop()?.ClearTutorialFilter();
+        }
+
+        private void UnfreezeAllCats()
+        {
+            if (_hotel == null) return;
+            foreach (var cat in _hotel.Cats)
+            {
+                if (cat.Needs != null) cat.Needs.FreezeDecay = false;
+            }
         }
 
         // ---- Events from game systems ----
