@@ -33,6 +33,7 @@ namespace CatHotel.Boot
         private bool _hasSave;
 
         private ParametersPanel _parametersPanel;
+        private CreditsPanel _creditsPanel;
         private bool _isTransitioning;
         private CanvasGroup _menuGroup;
 
@@ -86,7 +87,7 @@ namespace CatHotel.Boot
 
             // Sound (from cloud save, fallback to PlayerPrefs for migration)
             if (CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
-                && CloudSaveManager.Instance.Settings.saveVersion > 0)
+                && CloudSaveManager.Instance.HasPersistedSave)
             {
                 _soundEnabled = CloudSaveManager.Instance.Settings.soundEnabled;
             }
@@ -145,8 +146,11 @@ namespace CatHotel.Boot
         {
             if (_isTransitioning) return;
             if (_parametersPanel != null && _parametersPanel.IsOpen) return;
+            if (_creditsPanel != null && _creditsPanel.IsOpen) return;
             if (_parametersPanel == null)
                 _parametersPanel = FindAnyObjectByType<ParametersPanel>();
+            if (_creditsPanel == null)
+                _creditsPanel = FindAnyObjectByType<CreditsPanel>();
 
             var pointer = Pointer.current;
             if (pointer == null || !pointer.press.wasPressedThisFrame) return;
@@ -242,12 +246,9 @@ namespace CatHotel.Boot
         /// <summary>Check if a save exists (cloud or local).</summary>
         private static bool HasExistingSave()
         {
-            if (CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded)
-            {
-                var p = CloudSaveManager.Instance.Progression;
-                return p != null && p.saveVersion > 0;
-            }
-            return false;
+            return CloudSaveManager.Instance != null
+                && CloudSaveManager.Instance.IsLoaded
+                && CloudSaveManager.Instance.HasPersistedSave;
         }
 
         private static readonly Color DisabledColor = new(1f, 1f, 1f, 0.35f);
@@ -347,13 +348,11 @@ namespace CatHotel.Boot
 
         private void OnCreditsTapped()
         {
-            // Animation only for now — no credits screen yet
-            if (_creditsRect != null)
-            {
-                _creditsRect.DOKill();
-                _creditsRect.localScale = Vector3.one;
-                _creditsRect.DOPunchScale(Vector3.one * 0.15f, 0.4f, 6, 0.5f);
-            }
+            // Lazy find — CreditsPanel may not be available at Start
+            if (_creditsPanel == null)
+                _creditsPanel = FindAnyObjectByType<CreditsPanel>();
+            if (_creditsPanel != null)
+                _creditsPanel.Open();
         }
 
         private static RectTransform FindRect(string name)

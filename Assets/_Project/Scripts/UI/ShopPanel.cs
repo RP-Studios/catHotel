@@ -496,6 +496,7 @@ namespace CatHotel.UI
             // Check if player can afford it
             if (_economy.Coins < data.cost)
             {
+                UISoundManager.Instance?.PlayTapNegative();
                 Debug.LogWarning($"[Shop] Not enough coins for {data.displayName} (need {data.cost}, have {_economy.Coins})");
                 return;
             }

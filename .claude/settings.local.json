@@ -106,7 +106,20 @@
       "Bash(find \"Assets/_Project/Art/Environment/Stairs\" -name \"*.png\" ! -name \"*.meta\")",
       "Bash(python -c ':*)",
       "Bash(grep -v \"//\")",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(awk '/m_ChildStates:/,/m_ChildStateMachines:/' \"d:/Unity/catHotel_github/Assets/_Project/Art/Cats/Europeen/Animations/CatEuropeen.controller\")",
+      "Read(//c/Users/artem/AppData/Local/Android/Sdk/platform-tools/**)",
+      "Read(//c/Program Files/Unity/Hub/Editor/**)",
+      "Read(//d/tmp/**)",
+      "Bash(echo \"COMPREHENSIVE CAT ANIMATION STRUCTURE REPORT\")",
+      "Bash(grep -B5 -A20 \"m_Name: Credits$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -A5 '&__TRACKED_VAR__$' d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -B15 \"&1910194921$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -B15 \"&1809850746$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -B15 \"&2085621539$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -B15 \"&1886169247$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -B15 \"&1200336157$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
+      "Bash(grep -A2 \"m_Name: ParametersPanel$\" \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity\")"
     ]
   }
 }

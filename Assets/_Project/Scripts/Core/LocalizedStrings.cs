@@ -276,6 +276,12 @@ namespace CatHotel.Core
             { "ui.play", "Jouer" },
             { "ui.continue", "Continuer partie" },
             { "ui.new_game", "Nouvelle partie" },
+
+            // Credits panel
+            { "credits.title", "Crédits" },
+            { "credits.gameby", "un jeu de" },
+            { "credits.direction", "Direction / développement" },
+            { "credits.disclaimer", "Ce jeu a été créé à l'aide du moteur Unity, propriété de Unity Technologies. Unity et le logo Unity sont des marques déposées de Unity Technologies aux États-Unis d'Amérique et dans d'autres pays" },
             { "ui.credits", "Crédits" },
             { "ui.parameters", "Paramètres" },
 
@@ -539,6 +545,12 @@ namespace CatHotel.Core
             { "ui.play", "Play" },
             { "ui.continue", "Continue" },
             { "ui.new_game", "New game" },
+
+            // Credits panel
+            { "credits.title", "Credits" },
+            { "credits.gameby", "a game by" },
+            { "credits.direction", "Direction / development" },
+            { "credits.disclaimer", "This game was created using the Unity engine, owned by Unity Technologies. Unity and the Unity logo are trademarks of Unity Technologies in the United States of America and in other countries" },
             { "ui.credits", "Credits" },
             { "ui.parameters", "Settings" },
 

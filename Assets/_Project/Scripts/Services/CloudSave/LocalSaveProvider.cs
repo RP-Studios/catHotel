@@ -58,6 +58,11 @@ namespace CatHotel.Services
             return ReadJson<ProgressionSaveData>(ProgressionPath);
         }
 
+        public static void DeleteProgression()
+        {
+            if (File.Exists(ProgressionPath)) File.Delete(ProgressionPath);
+        }
+
         // --- Pending Sync tracking ---
 
         public static void SetPendingSync(bool settingsDirty, bool progressionDirty)

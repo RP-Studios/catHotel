@@ -141,7 +141,7 @@ namespace CatHotel.Hotel
 
             // Init economy + reputation from save if available, otherwise defaults
             var savedProg = CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
-                && CloudSaveManager.Instance.Progression.saveVersion > 0
+                && CloudSaveManager.Instance.HasPersistedSave
                 ? CloudSaveManager.Instance.Progression : null;
 
             if (_economy != null && _config != null)
@@ -184,7 +184,7 @@ namespace CatHotel.Hotel
             if (tutMgr != null)
             {
                 var save = CloudSaveManager.Instance;
-                bool isNewGame = save == null || !save.IsLoaded || save.Progression.saveVersion == 0;
+                bool isNewGame = save == null || !save.IsLoaded || !save.HasPersistedSave;
                 int resumeStep = isNewGame ? 0 : save.Progression.tutorialStepIndex;
                 tutMgr.Begin(resumeStep);
             }
@@ -867,9 +867,10 @@ namespace CatHotel.Hotel
         public void LoadProgression()
         {
             if (CloudSaveManager.Instance == null || !CloudSaveManager.Instance.IsLoaded) return;
+            if (!CloudSaveManager.Instance.HasPersistedSave) return;
 
             var data = CloudSaveManager.Instance.Progression;
-            if (data == null || data.saveVersion == 0) return;
+            if (data == null) return;
 
             // Economy + reputation already initialized from save in Start()
 

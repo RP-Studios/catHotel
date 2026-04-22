@@ -99,28 +99,8 @@ namespace CatHotel.Boot
             if (adManager != null)
                 adManager.InitializeAds();
 
-            // Wipe saves that are older than the required version (forces fresh start on store push).
-            EnforceMinimumSaveVersion();
-
             IsReady = true;
             Debug.Log("[Boot] Services initialized. Main menu ready.");
-        }
-
-        /// <summary>
-        /// If the player's save is below GameVersion.RequiredSaveVersion, wipe it.
-        /// This forces a new game (and therefore the tutorial) on the next store build.
-        /// </summary>
-        private static void EnforceMinimumSaveVersion()
-        {
-            if (CloudSaveManager.Instance == null || !CloudSaveManager.Instance.IsLoaded) return;
-            var prog = CloudSaveManager.Instance.Progression;
-            if (prog == null) return;
-
-            if (prog.saveVersion > 0 && prog.saveVersion < CatHotel.Core.GameVersion.RequiredSaveVersion)
-            {
-                Debug.Log($"[Boot] Save version {prog.saveVersion} < required {CatHotel.Core.GameVersion.RequiredSaveVersion}. Wiping save for fresh start.");
-                CloudSaveManager.Instance.ResetAllData();
-            }
         }
 
         /// <summary>
@@ -131,10 +111,10 @@ namespace CatHotel.Boot
         {
             if (CloudSaveManager.Instance == null) return;
 
-            // Check if already migrated (progression has data)
+            // Skip if we already have a persisted cloud/local save
+            if (CloudSaveManager.Instance.HasPersistedSave) return;
+
             var progression = CloudSaveManager.Instance.Progression;
-            bool alreadyMigrated = progression.saveVersion > 0;
-            if (alreadyMigrated) return;
 
             // Migrate from old SaveManager
 #pragma warning disable CS0612, CS0618 // Intentional use of obsolete SaveManager for migration
@@ -144,7 +124,6 @@ namespace CatHotel.Boot
             {
                 progression.reputationLevel = oldData.reputationLevel;
                 progression.reputationXp = oldData.reputationXp;
-                progression.saveVersion = 1;
 
                 // Migrate cats
                 if (oldData.cats != null)
@@ -170,7 +149,7 @@ namespace CatHotel.Boot
                 Debug.Log("[Boot] Migrated old save data to cloud save system");
             }
 
-            // Migrate settings from PlayerPrefs
+            // Migrate settings from PlayerPrefs (only if we don't have cloud settings yet)
             var settings = CloudSaveManager.Instance.Settings;
             if (string.IsNullOrEmpty(settings.language))
             {
@@ -180,7 +159,6 @@ namespace CatHotel.Boot
                 settings.pushNotifications = PlayerPrefs.GetInt("Param_PushNotif", 1) == 1;
                 settings.batterySaving = PlayerPrefs.GetInt("Param_BatterySaving", 0) == 1;
                 settings.soundEnabled = PlayerPrefs.GetInt("Param_SoundEnabled", 1) == 1;
-                settings.saveVersion = 1;
                 CloudSaveManager.Instance.SaveSettings();
                 Debug.Log("[Boot] Migrated PlayerPrefs settings to cloud save system");
             }

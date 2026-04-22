@@ -17,7 +17,6 @@ namespace CatHotel.Services
         public bool soundEnabled = true;
         public bool pushNotifications;
         public bool batterySaving;
-        public int saveVersion;          // 0 = never saved, 1+ = saved
     }
 
     [Serializable]
@@ -27,12 +26,11 @@ namespace CatHotel.Services
         public int reputationXp;
         public int coins;
         public int gems;
-        public int floorTileIndex;       // which floor tile visual to use (-1 = not saved)
+        public int floorTileIndex = -1;  // which floor tile visual to use (-1 = not set)
         public List<PlacedObjectSaveData> placedObjects = new();
         public List<CatCloudSaveData> cats = new();
         public int tutorialStepIndex;    // current tutorial step (0 = start, N = finished)
         public string lastSaveTime;      // ISO 8601
-        public int saveVersion;          // 0 = never played, 1+ = has save
     }
 
     [Serializable]

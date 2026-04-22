@@ -204,6 +204,11 @@ namespace CatHotel.Editor
             ("Run/europeen_base_run_back.png",  "eur1_run_back",  "Run_Back",  4, 12f),
             ("Run/europeen_base_run_left.png",  "eur1_run_left",  "Run_Left",  4, 12f),
             ("Run/europeen_base_run_right.png", "eur1_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle — face 18f, left/right 16f @ 8 FPS)
+            ("Lick/europeen_base_lick_face.png",  "eur1_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/europeen_base_lick_left.png",  "eur1_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/europeen_base_lick_right.png", "eur1_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== EUROPEEN 2 ====================
@@ -300,6 +305,11 @@ namespace CatHotel.Editor
             ("Run/europeen_2_run_back.png",  "eur2_run_back",  "Run_Back",  4, 12f),
             ("Run/europeen_2_run_left.png",  "eur2_run_left",  "Run_Left",  4, 12f),
             ("Run/europeen_2_run_right.png", "eur2_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle)
+            ("Lick/europeen_2_lick_face.png",  "eur2_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/europeen_2_lick_left.png",  "eur2_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/europeen_2_lick_right.png", "eur2_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== EUROPEEN 3 ====================
@@ -397,6 +407,11 @@ namespace CatHotel.Editor
             ("Run/europeen_3_run_back.png",  "eur3_run_back",  "Run_Back",  4, 12f),
             ("Run/europeen_3_run_left.png",  "eur3_run_left",  "Run_Left",  4, 12f),
             ("Run/europeen_3_run_right.png", "eur3_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle)
+            ("Lick/europeen_3_lick_face.png",  "eur3_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/europeen_3_lick_left.png",  "eur3_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/europeen_3_lick_right.png", "eur3_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== SIAMOIS ====================
@@ -494,6 +509,11 @@ namespace CatHotel.Editor
             ("Run/siamois_base_run_back.png",  "siam_run_back",  "Run_Back",  4, 12f),
             ("Run/siamois_base_run_left.png",  "siam_run_left",  "Run_Left",  4, 12f),
             ("Run/siamois_base_run_right.png", "siam_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle)
+            ("Lick/siamois_base_lick_face.png",  "siam_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/siamois_base_lick_left.png",  "siam_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/siamois_base_lick_right.png", "siam_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== RAGDOLL ====================
@@ -574,6 +594,11 @@ namespace CatHotel.Editor
             ("Run/ragdoll_base_run_back.png",  "rd_run_back",  "Run_Back",  4, 12f),
             ("Run/ragdoll_base_run_left.png",  "rd_run_left",  "Run_Left",  4, 12f),
             ("Run/ragdoll_base_run_right.png", "rd_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle)
+            ("Lick/ragdoll_base_lick_face.png",  "rd_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/ragdoll_base_lick_left.png",  "rd_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/ragdoll_base_lick_right.png", "rd_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== RAGDOLL 2 ====================
@@ -627,6 +652,11 @@ namespace CatHotel.Editor
             ("Run/ragdoll_2_run_back.png",  "rd2_run_back",  "Run_Back",  4, 12f),
             ("Run/ragdoll_2_run_left.png",  "rd2_run_left",  "Run_Left",  4, 12f),
             ("Run/ragdoll_2_run_right.png", "rd2_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle)
+            ("Lick/ragdoll_2_lick_face.png",  "rd2_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/ragdoll_2_lick_left.png",  "rd2_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/ragdoll_2_lick_right.png", "rd2_lick_right", "Lick_Right", 16, 8f),
             ("Scratch/In/Ragdoll_2_Scratch_In_Left.png",  "rd2_scratch_in_left",  "Scratch_In_Left",  7, 14f),
             ("Scratch/In/Ragdoll_2_Scratch_In_Right.png", "rd2_scratch_in_right", "Scratch_In_Right", 7, 14f),
             ("Scratch/Boucle/Ragdoll_2_Scratch_Left.png",  "rd2_scratch_boucle_left",  "Scratch_Boucle_Left",  11, 5.5f),
@@ -728,6 +758,11 @@ namespace CatHotel.Editor
             // Scratch Out (7f, 14 FPS → 0.5s)
             ("Scratch/Out/siberien_black_Scratch_Out_Left.png",  "sibb_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
             ("Scratch/Out/siberien_Black_Scratch_Out_Right.png", "sibb_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+
+            // Lick (paw-licking idle) — files imported with siamois_base_* prefix
+            ("Lick/siamois_base_lick_face.png",  "sibb_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/siamois_base_lick_left.png",  "sibb_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/siamois_base_lick_right.png", "sibb_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== SIBERIAN WHITE ====================
@@ -821,6 +856,11 @@ namespace CatHotel.Editor
             // Scratch Out (7f, 14 FPS → 0.5s)
             ("Scratch/Out/siberien_white_Scratch_Out_Left.png",  "sibw_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
             ("Scratch/Out/siberien_white_Scratch_Out_Right.png", "sibw_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+
+            // Lick (paw-licking idle)
+            ("Lick/siberien_white_lick_face.png",  "sibw_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/siberien_white_lick_left.png",  "sibw_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/siberien_white_lick_right.png", "sibw_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== CLEO (Special Cat) ====================
@@ -901,6 +941,11 @@ namespace CatHotel.Editor
             ("Run/siamois_cleo_run_back.png",  "cleo_run_back",  "Run_Back",  4, 12f),
             ("Run/siamois_cleo_run_left.png",  "cleo_run_left",  "Run_Left",  4, 12f),
             ("Run/siamois_cleo_run_right.png", "cleo_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle — face 36f, left/right 20f)
+            ("Lick/siamois_cleo_lick_face.png",  "cleo_lick_face",  "Lick_Front", 36, 12f),
+            ("Lick/siamois_cleo_lick_left.png",  "cleo_lick_left",  "Lick_Left",  20, 10f),
+            ("Lick/siamois_cleo_lick_right.png", "cleo_lick_right", "Lick_Right", 20, 10f),
         };
 
         // ==================== ARISTOTE (Special Cat) ====================
@@ -996,6 +1041,11 @@ namespace CatHotel.Editor
             ("Run/europeen_aristote_run_back.png",  "ari_run_back",  "Run_Back",  4, 12f),
             ("Run/europeen_aristote_run_left.png",  "ari_run_left",  "Run_Left",  4, 12f),
             ("Run/europeen_aristote_run_right.png", "ari_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle — face 36f, left/right 32f @ 12 FPS)
+            ("Lick/europeen_aristote_lick_face.png",  "ari_lick_face",  "Lick_Front", 36, 12f),
+            ("Lick/europeen_aristote_lick_left.png",  "ari_lick_left",  "Lick_Left",  32, 12f),
+            ("Lick/europeen_aristote_lick_right.png", "ari_lick_right", "Lick_Right", 32, 12f),
         };
 
         // ==================== CHARTREUX ====================
@@ -1053,6 +1103,11 @@ namespace CatHotel.Editor
             ("Scratch/Boucle/chartreu_Base_Scratch_Right.png", "chr_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
             ("Scratch/Out/chartreu_Base_Scratch_out_Left.png",  "chr_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
             ("Scratch/Out/chartreu_Base_Scratch_out_Right.png", "chr_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+
+            // Lick (paw-licking idle)
+            ("Lick/chartreu_base_lick_face.png",  "chr_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/chartreu_base_lick_left.png",  "chr_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/chartreu_base_lick_right.png", "chr_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== NAPOLEON (Special - Chartreux) ====================
@@ -1111,6 +1166,11 @@ namespace CatHotel.Editor
             ("Scratch/Boucle/chartreu_napoleon_Scratch_Right.png", "nap_scratch_boucle_right", "Scratch_Boucle_Right", 11, 5.5f),
             ("Scratch/Out/chartreu_napoleon_Scratch_out_Left.png",  "nap_scratch_out_left",  "Scratch_Out_Left",  7, 14f),
             ("Scratch/Out/chartreu_napoleon_Scratch_out_Right.png", "nap_scratch_out_right", "Scratch_Out_Right", 7, 14f),
+
+            // Lick (paw-licking idle — face 28f, left/right 20f @ 10 FPS)
+            ("Lick/chartreu_napoleon_lick_face.png",  "nap_lick_face",  "Lick_Front", 28, 10f),
+            ("Lick/chartreu_napoleon_lick_left.png",  "nap_lick_left",  "Lick_Left",  20, 10f),
+            ("Lick/chartreu_napoleon_lick_right.png", "nap_lick_right", "Lick_Right", 20, 10f),
         };
 
         // ==================== ORION (Special - Ragdoll) ====================
@@ -1164,6 +1224,11 @@ namespace CatHotel.Editor
             ("Run/ragdoll_orion_run_back.png",  "ori_run_back",  "Run_Back",  4, 12f),
             ("Run/ragdoll_orion_run_left.png",  "ori_run_left",  "Run_Left",  4, 12f),
             ("Run/ragdoll_orion_run_right.png", "ori_run_right", "Run_Right", 4, 12f),
+
+            // Lick (paw-licking idle)
+            ("Lick/ragdoll_orion_lick_face.png",  "ori_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/ragdoll_orion_lick_left.png",  "ori_lick_left",  "Lick_Left",  18, 8f),
+            ("Lick/ragdoll_orion_lick_right.png", "ori_lick_right", "Lick_Right", 18, 8f),
         };
 
         [MenuItem("Cat Hotel/Scene/Setup Proto Scene", false, 1)]

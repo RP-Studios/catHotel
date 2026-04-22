@@ -32,6 +32,12 @@ namespace CatHotel.Services
         /// <summary>True once initial load is complete (cloud or local).</summary>
         public bool IsLoaded { get; private set; }
 
+        /// <summary>
+        /// True if a persisted save (local file or cloud key) was found during load.
+        /// This is the authoritative signal for "is this a returning player".
+        /// </summary>
+        public bool HasPersistedSave { get; private set; }
+
         private bool _settingsDirty;
         private bool _progressionDirty;
         private float _syncRetryTimer;
@@ -105,15 +111,21 @@ namespace CatHotel.Services
         /// <summary>Load all data from local cache only (offline mode).</summary>
         public void LoadFromLocal()
         {
-            Settings = LocalSaveProvider.LoadSettings() ?? new SettingsSaveData();
-            Progression = LocalSaveProvider.LoadProgression() ?? new ProgressionSaveData();
+            var localSettings = LocalSaveProvider.LoadSettings();
+            var localProgression = LocalSaveProvider.LoadProgression();
+
+            Settings = localSettings ?? new SettingsSaveData();
+            Progression = localProgression ?? new ProgressionSaveData();
+
+            // If either local save file existed, it's a returning player
+            if (localProgression != null) HasPersistedSave = true;
 
             var pending = LocalSaveProvider.LoadPendingSync();
             HasPendingSync = pending.settingsDirty || pending.progressionDirty;
             _settingsDirty = pending.settingsDirty;
             _progressionDirty = pending.progressionDirty;
 
-            Debug.Log("[CloudSaveManager] Loaded from local cache");
+            Debug.Log($"[CloudSaveManager] Loaded from local cache (hasSave={HasPersistedSave})");
         }
 
         private async Task LoadFromCloudAsync()
@@ -123,6 +135,13 @@ namespace CatHotel.Services
 
             Settings = cloudSettings ?? new SettingsSaveData();
             Progression = cloudProgression ?? new ProgressionSaveData();
+
+            // If cloud returned a progression key, it's a returning player
+            if (cloudProgression != null) HasPersistedSave = true;
+
+            // Fallback check: if cloud has nothing but local does, still a returning player
+            if (!HasPersistedSave && LocalSaveProvider.LoadProgression() != null)
+                HasPersistedSave = true;
 
             // Update local cache with cloud data
             LocalSaveProvider.SaveSettings(Settings);
@@ -196,8 +215,8 @@ namespace CatHotel.Services
         /// </summary>
         public async void SaveProgression()
         {
-            if (Progression.saveVersion < 1) Progression.saveVersion = 1;
             Progression.lastSaveTime = DateTime.UtcNow.ToString("o");
+            HasPersistedSave = true;
 
             // Async local write (serialization on main thread, I/O on background)
             await LocalSaveProvider.SaveProgressionAsync(Progression);
@@ -227,8 +246,8 @@ namespace CatHotel.Services
         /// </summary>
         public void SaveProgressionImmediate()
         {
-            if (Progression.saveVersion < 1) Progression.saveVersion = 1;
             Progression.lastSaveTime = DateTime.UtcNow.ToString("o");
+            HasPersistedSave = true;
             LocalSaveProvider.SaveProgression(Progression);
         }
 
@@ -239,16 +258,19 @@ namespace CatHotel.Services
         public async void ResetAllData()
         {
             Progression = new ProgressionSaveData();
-            LocalSaveProvider.SaveProgression(Progression);
+            LocalSaveProvider.DeleteProgression();
             LocalSaveProvider.ClearPendingSync();
             HasPendingSync = false;
             _progressionDirty = false;
+            // No persisted save anymore — HotelManager will initialize with GameConfig defaults.
+            // First real SaveProgression (auto-save, event) will re-create the file.
+            HasPersistedSave = false;
 
             if (IsCloudAvailable)
             {
                 try
                 {
-                    await CloudSaveProvider.SaveAsync(ProgressionKey, Progression);
+                    await CloudSaveProvider.DeleteAsync(ProgressionKey);
                 }
                 catch (Exception e)
                 {

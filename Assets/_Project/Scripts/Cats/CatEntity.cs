@@ -25,6 +25,12 @@ namespace CatHotel.Cats
         [SerializeField] private int   _wanderStepsMin = 2;
         [SerializeField] private int   _wanderStepsMax = 6;
 
+        [Header("Lick Grooming")]
+        [Tooltip("Chance per idle to do a paw-licking animation instead of a regular idle.")]
+        [SerializeField, Range(0f, 1f)] private float _lickChance = 0.18f;
+        [Tooltip("How long the cat stays in the Lick state before moving on.")]
+        [SerializeField] private float _lickDuration = 2.2f;
+
         // Idle: multiple variants per direction, chosen randomly
         private static readonly string[][] IdleStates =
         {
@@ -32,6 +38,13 @@ namespace CatHotel.Cats
             new[] { "Idle1_Back", "Idle3_Back" },                   // Back (no Idle2)
             new[] { "Idle1_Right", "Idle2_Right", "Idle3_Right" }, // Right
             new[] { "Idle1_Left", "Idle2_Left", "Idle3_Left" },    // Left
+        };
+
+        // Lick has no Back variant — Back direction falls back to Front.
+        // Index order matches CatDirection: Front, Back, Right, Left
+        private static readonly string[] LickByDir =
+        {
+            "Lick_Front", "Lick_Front", "Lick_Right", "Lick_Left"
         };
 
         private SpriteRenderer _sr;
@@ -740,17 +753,34 @@ namespace CatHotel.Cats
         {
             _isWalking = false;
 
-            if (_chosenRestState == null)
+            // Rare: grooming animation (licks paw) — uses the full animation duration
+            bool doLick = Random.value < _lickChance;
+            float idleTime;
+
+            if (doLick)
             {
-                var options = IdleStates[(int)_currentDir];
-                _chosenRestState = options[Random.Range(0, options.Length)];
+                _chosenRestState = LickByDir[(int)_currentDir];
+                idleTime = _lickDuration;
+            }
+            else
+            {
+                // Don't reuse a previous Lick state — pick a new regular idle
+                if (_chosenRestState == null || _chosenRestState.StartsWith("Lick_"))
+                {
+                    var options = IdleStates[(int)_currentDir];
+                    _chosenRestState = options[Random.Range(0, options.Length)];
+                }
+                idleTime = Random.Range(_idleTimeMin, _idleTimeMax);
             }
 
             PlayAnimState(_chosenRestState);
 
-            float idleTime = Random.Range(_idleTimeMin, _idleTimeMax);
             _pendingAction = DOVirtual.DelayedCall(idleTime, () =>
             {
+                // Clear Lick so the cat doesn't repeat grooming next tick
+                if (_chosenRestState != null && _chosenRestState.StartsWith("Lick_"))
+                    _chosenRestState = null;
+
                 // After idle, check needs again before wandering
                 if (_needs != null && TrySeekObject()) return;
                 Wander();
@@ -878,11 +908,23 @@ namespace CatHotel.Cats
         {
             _currentDir = dir;
             if (_useSadWalk && dir == CatDirection.Right)
+            {
                 PlayAnimState("SadWalk_Right");
-            else if (_isRunning)
-                PlayAnimState($"Run_{dir}");
-            else
-                PlayAnimState($"Walk_{dir}");
+                return;
+            }
+            if (_isRunning)
+            {
+                string runState = $"Run_{dir}";
+                if (_animator != null && _animator.HasState(0, Animator.StringToHash(runState)))
+                {
+                    PlayAnimState(runState);
+                    return;
+                }
+                // Run state missing for this breed — fall back to Walk so the cat
+                // still animates instead of sliding with a static sprite.
+                Debug.LogWarning($"[CatEntity] Missing {runState} on '{_animator?.runtimeAnimatorController?.name}' — fallback to Walk_{dir}");
+            }
+            PlayAnimState($"Walk_{dir}");
         }
 
         // --- Helpers ---
