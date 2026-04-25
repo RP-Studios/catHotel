@@ -403,9 +403,10 @@ namespace CatHotel.Hotel
                     cat.HappinessSamples++;
                 }
 
-                // Departure check (skip cats already leaving or being picked up)
+                // Departure check (skip cats already leaving, being picked up, or still arriving)
                 if (cat.Happiness != null && cat.Happiness.ShouldLeave
-                    && cat.State != CatState.Leaving && cat.State != CatState.Pickup)
+                    && cat.State != CatState.Leaving && cat.State != CatState.Pickup
+                    && cat.State != CatState.Arriving)
                 {
                     StartUnhappyDeparture(cat);
                     continue;
@@ -600,7 +601,12 @@ namespace CatHotel.Hotel
             if (floorCells.Count > 0)
             {
                 var target = floorCells[UnityEngine.Random.Range(0, floorCells.Count)];
-                entity.WalkToTarget(target, () => instance.State = CatState.Idle);
+                entity.SetArriving();
+                entity.WalkToTarget(target, () =>
+                {
+                    instance.State = CatState.Idle;
+                    entity.ClearArriving();
+                });
             }
             else
             {

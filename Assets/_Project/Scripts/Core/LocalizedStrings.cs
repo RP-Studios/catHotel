@@ -131,6 +131,10 @@ namespace CatHotel.Core
             // --- Tutorial (Narration) ---
             { "tuto.speaker.jasper", "Jasper" },
             { "tuto.speaker.winston", "Winston" },
+            { "tuto.skip.link", "Passer le tutoriel" },
+            { "tuto.skip.ask", "Passer le tutoriel ?" },
+            { "tuto.skip.yes", "Oui" },
+            { "tuto.skip.no", "Non" },
             { "tuto.welcome", "Bienvenue dans <b>Meowtel</b> !\nJe suis Jasper, le maître d'hôtel." },
             { "tuto.explain", "Ici, vous accueillez des chats en pension et au refuge. Prenez soin d'eux et ils vous récompenseront !" },
             { "tuto.beta", "Nous sommes en <b>bêta fermée</b>. Quelques bugs et éléments manquants sont à prévoir, merci de votre patience !" },
@@ -400,6 +404,10 @@ namespace CatHotel.Core
             // --- Tutorial (Narration) ---
             { "tuto.speaker.jasper", "Jasper" },
             { "tuto.speaker.winston", "Winston" },
+            { "tuto.skip.link", "Skip tutorial" },
+            { "tuto.skip.ask", "Skip tutorial?" },
+            { "tuto.skip.yes", "Yes" },
+            { "tuto.skip.no", "No" },
             { "tuto.welcome", "Welcome to <b>Meowtel</b>!\nI'm Jasper, the concierge." },
             { "tuto.explain", "Here, you welcome cats for boarding and shelter. Take good care of them and they'll reward you!" },
             { "tuto.beta", "We're in <b>closed beta</b>. A few bugs and missing features are expected, thanks for your patience!" },

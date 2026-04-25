@@ -85,6 +85,11 @@ namespace CatHotel.Tutorial
             Debug.Log($"[Tutorial] Starting from step {_currentStep}/{_sequence.StepCount}");
             DisableGameUI();
             SubscribeEvents();
+
+            // Listen for the Skip-tutorial button click on the NarrationUI
+            _narrationUI.OnSkipConfirmed -= SkipTutorial;
+            _narrationUI.OnSkipConfirmed += SkipTutorial;
+
             StartCoroutine(RunStep());
         }
 
@@ -135,7 +140,11 @@ namespace CatHotel.Tutorial
 
                 // --- Dialogue step ---
                 if (step.HasDialogue)
-                    _narrationUI.Show(step.speakerLabelKey, step.speakerPortrait, step.textKey);
+                {
+                    // Show "Skip tutorial" link only on the very first step
+                    bool showSkip = _currentStep == 0;
+                    _narrationUI.Show(step.speakerLabelKey, step.speakerPortrait, step.textKey, showSkip);
+                }
 
                 // --- Wait for trigger ---
                 if (step.trigger == TutorialTrigger.WaitForTap)
@@ -178,12 +187,64 @@ namespace CatHotel.Tutorial
             ClearShopFilter();
             UnfreezeAllCats();
             UnsubscribeEvents();
+            if (_narrationUI != null) _narrationUI.OnSkipConfirmed -= SkipTutorial;
             Debug.Log("[Tutorial] Complete!");
         }
 
         private void AdvanceStep()
         {
             _currentStep++;
+            SaveStepIndex();
+        }
+
+        /// <summary>
+        /// Skip the entire tutorial. Called from the skip confirmation UI.
+        /// Marks the tutorial as complete, restores game UI, clears filters,
+        /// unfreezes cats, and destroys tutorial-specific cats if still present.
+        /// </summary>
+        public void SkipTutorial()
+        {
+            if (!_running) return;
+
+            Debug.Log("[Tutorial] Skipped by player");
+
+            // Mark as complete
+            _currentStep = _sequence != null ? _sequence.StepCount : 0;
+            _running = false;
+            _waitingForAction = false;
+
+            // Stop any running coroutine (RunStep)
+            StopAllCoroutines();
+
+            // Hide narration + any confirmation popup, and unsubscribe
+            if (_narrationUI != null)
+            {
+                _narrationUI.OnSkipConfirmed -= SkipTutorial;
+                _narrationUI.Hide();
+            }
+
+            // Release camera focus if any
+            if (_cameraFocus != null) _cameraFocus.Release();
+
+            // Restore game state
+            RestoreGameUI();
+            ClearShopFilter();
+            UnfreezeAllCats();
+            UnsubscribeEvents();
+
+            // Clean up tutorial-spawned cats that may still be frozen/idle
+            if (_firstCat != null && _hotel != null)
+            {
+                _hotel.RemoveCat(_firstCat);
+                _firstCat = null;
+            }
+            if (_refugeCat != null && _hotel != null)
+            {
+                _hotel.RemoveCat(_refugeCat);
+                _refugeCat = null;
+            }
+
+            // Persist state so tutorial won't restart next launch
             SaveStepIndex();
         }
 

@@ -108,8 +108,11 @@ namespace CatHotel.Cats
                 + _traitMods.HappinessOffset + _affinityOffset,
                 0f, 100f);
 
-            // Track time below leave threshold
-            if (_happiness < _config.unhappyLeaveThreshold)
+            // Track time below leave threshold (but not during arrival — grace period)
+            var entity = GetComponent<CatEntity>();
+            bool isArriving = entity != null && entity.IsArriving;
+
+            if (_happiness < _config.unhappyLeaveThreshold && !isArriving)
                 _unhappyTimer += dt;
             else
                 _unhappyTimer = 0f;

@@ -65,6 +65,16 @@ namespace CatHotel.Cats
         private string _chosenRestState;
         private BedSpot _claimedBed;
         private bool _isDeparting;
+        private bool _isArriving;
+
+        /// <summary>True while the cat is still walking from its entrance to its first rest cell.</summary>
+        public bool IsArriving => _isArriving;
+
+        /// <summary>Called by HotelManager once the arrival walk starts.</summary>
+        public void SetArriving() => _isArriving = true;
+
+        /// <summary>Called automatically when the arrival walk completes (or manually).</summary>
+        public void ClearArriving() => _isArriving = false;
 
         // Object interaction
         private HotelObject _targetObject;
@@ -343,6 +353,8 @@ namespace CatHotel.Cats
         {
             if (_animator == null || _isFighting) return false;
             if (_fightCooldown > 0f) return false;
+            if (_isArriving || _isDeparting) return false;
+            if (_isUsingObject || _isChangingFloor) return false;
             return _animator.HasState(0, Animator.StringToHash("Fight_In_Left"));
         }
 
