@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b4a859acf7c52844af702cb9b04309e, type: 3}
+  m_Name: FloorUnlockConfig
+  m_EditorClassIdentifier: Assembly-CSharp::CatHotel.Hotel.FloorUnlockConfig
+  floors:
+  - floorIndex: 0
+    requiredReputationLevel: 0
+    catCoinCost: 0
+    totalCapacity: 5
+  - floorIndex: 1
+    requiredReputationLevel: 1
+    catCoinCost: 750
+    totalCapacity: 10
+  - floorIndex: 2
+    requiredReputationLevel: 3
+    catCoinCost: 4000
+    totalCapacity: 16
+  - floorIndex: 3
+    requiredReputationLevel: 5
+    catCoinCost: 18000
+    totalCapacity: 24
+  - floorIndex: 4
+    requiredReputationLevel: 7
+    catCoinCost: 60000
+    totalCapacity: 32
+  - floorIndex: 5
+    requiredReputationLevel: 9
+    catCoinCost: 120000
+    totalCapacity: 40

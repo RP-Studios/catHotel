@@ -228,7 +228,9 @@ namespace CatHotel.UI
             if (_capacityText == null) return;
 
             int current = _hotel.CatCount;
-            int max = _hotel.Config != null ? _hotel.Config.maxCats : 20;
+            int max = CatHotel.Hotel.FloorProgression.Instance != null
+                ? CatHotel.Hotel.FloorProgression.Instance.MaxCats
+                : (_hotel.Config != null ? _hotel.Config.maxCats : 20);
             int pct = max > 0 ? Mathf.RoundToInt((float)current / max * 100f) : 0;
             if (pct == _prevCapacityPct) return;
             _prevCapacityPct = pct;
@@ -239,7 +241,9 @@ namespace CatHotel.UI
         {
             if (_comfortText == null) return;
 
-            int max = _hotel.Config != null ? _hotel.Config.maxCats : 20;
+            int max = CatHotel.Hotel.FloorProgression.Instance != null
+                ? CatHotel.Hotel.FloorProgression.Instance.MaxCats
+                : (_hotel.Config != null ? _hotel.Config.maxCats : 20);
             int comfortFloor = _hotel != null && _hotel.GridRenderer != null ? _hotel.GridRenderer.CurrentFloor : 0;
             float comfort = ObjectRegistry.CalculateComfort(_hotel.CatCount, max, comfortFloor);
             int rounded = Mathf.RoundToInt(comfort);

@@ -287,13 +287,19 @@ namespace CatHotel.Editor
             askTmp.alignment = TextAlignmentOptions.Center;
             askTmp.raycastTarget = false;
 
-            // Yes / No buttons
-            var (yesBtn, yesTmp) = BuildConfirmButton(popupPanel.transform, "YesBtn",
-                new Vector2(0.10f, 0.10f), new Vector2(0.45f, 0.35f),
-                "Oui", new Color(0.9f, 0.4f, 0.3f, 1f));
-            var (noBtn, noTmp) = BuildConfirmButton(popupPanel.transform, "NoBtn",
-                new Vector2(0.55f, 0.10f), new Vector2(0.90f, 0.35f),
-                "Non", new Color(0.5f, 0.5f, 0.5f, 1f));
+            // Yes / No sprite buttons (ready / cancel — same as object placement)
+            var readySprites  = LoadAllSprites("Assets/_Project/Animations/UI/ready.png");
+            var cancelSprites = LoadAllSprites("Assets/_Project/Animations/UI/cancel.png");
+
+            // "Ready" button = Yes (confirm skip)
+            var yesBtn = BuildSpriteButton(popupPanel.transform, "ReadyBtn",
+                new Vector2(0.18f, 0.08f), new Vector2(0.42f, 0.38f),
+                readySprites, fps: 10f);
+
+            // "Cancel" button = No (cancel skip)
+            var noBtn = BuildSpriteButton(popupPanel.transform, "CancelBtn",
+                new Vector2(0.58f, 0.08f), new Vector2(0.82f, 0.38f),
+                cancelSprites, fps: 10f);
 
             popup.SetActive(false);
 
@@ -312,8 +318,6 @@ namespace CatHotel.Editor
             // Confirm popup
             soN.FindProperty("_confirmPopupGo").objectReferenceValue  = popup;
             soN.FindProperty("_confirmAskText").objectReferenceValue  = askTmp;
-            soN.FindProperty("_confirmYesText").objectReferenceValue  = yesTmp;
-            soN.FindProperty("_confirmNoText").objectReferenceValue   = noTmp;
             soN.FindProperty("_confirmYesButton").objectReferenceValue = yesBtn;
             soN.FindProperty("_confirmNoButton").objectReferenceValue  = noBtn;
             soN.ApplyModifiedProperties();
@@ -326,8 +330,12 @@ namespace CatHotel.Editor
             if (ok) Debug.Log($"[TutorialSetup] NarrationUI prefab → {PrefabPath}");
         }
 
-        private static (Button btn, TMP_Text labelTmp) BuildConfirmButton(Transform parent, string name,
-            Vector2 anchorMin, Vector2 anchorMax, string label, Color bg)
+        /// <summary>
+        /// Build a UI button whose Image sprite is animated frame-by-frame from a spritesheet
+        /// (same visual treatment as the ready/cancel buttons used during object placement).
+        /// </summary>
+        private static Button BuildSpriteButton(Transform parent, string name,
+            Vector2 anchorMin, Vector2 anchorMax, Sprite[] frames, float fps)
         {
             var go = CreateUI(name, parent);
             var rt = go.GetComponent<RectTransform>();
@@ -337,23 +345,17 @@ namespace CatHotel.Editor
             rt.offsetMax = Vector2.zero;
 
             var img = go.AddComponent<Image>();
-            img.color = bg;
-            var btn = go.AddComponent<Button>();
+            if (frames != null && frames.Length > 0) img.sprite = frames[0];
+            img.preserveAspect = true;
+            img.raycastTarget = true;
 
-            var labelGo = CreateUI("Label", go.transform);
-            var lRt = labelGo.GetComponent<RectTransform>();
-            lRt.anchorMin = Vector2.zero;
-            lRt.anchorMax = Vector2.one;
-            lRt.offsetMin = Vector2.zero;
-            lRt.offsetMax = Vector2.zero;
-            var tmp = labelGo.AddComponent<TextMeshProUGUI>();
-            tmp.text = label;
-            tmp.fontSize = 36f;
-            tmp.fontStyle = FontStyles.Bold;
-            tmp.color = Color.white;
-            tmp.alignment = TextAlignmentOptions.Center;
-            tmp.raycastTarget = false;
-            return (btn, tmp);
+            var btn = go.AddComponent<Button>();
+            btn.transition = Selectable.Transition.None;
+
+            var anim = go.AddComponent<CatHotel.UI.UIFrameAnimator>();
+            anim.Init(frames, fps);
+
+            return btn;
         }
 
         // ---- Helpers ----
@@ -384,6 +386,17 @@ namespace CatHotel.Editor
             rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
+        }
+
+        /// <summary>Load all sub-sprites from a multi-sprite texture asset, sorted by name.</summary>
+        private static Sprite[] LoadAllSprites(string path)
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath(path);
+            var sprites = new System.Collections.Generic.List<Sprite>();
+            foreach (var a in assets)
+                if (a is Sprite s) sprites.Add(s);
+            sprites.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
+            return sprites.ToArray();
         }
     }
 }

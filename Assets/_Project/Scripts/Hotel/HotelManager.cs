@@ -234,7 +234,10 @@ namespace CatHotel.Hotel
             if (_arrivalTimer < _config.arrivalInterval) return;
             _arrivalTimer = 0f;
 
-            if (_cats.Count >= _config.maxCats) return;
+            int maxCats = FloorProgression.Instance != null
+                ? FloorProgression.Instance.MaxCats
+                : _config.maxCats;
+            if (_cats.Count >= maxCats) return;
 
             TrySpawnCat();
         }
@@ -435,6 +438,16 @@ namespace CatHotel.Hotel
             Debug.Log($"[Hotel] Calling ProcessRevenueTick for {cat.CatName}");
             _economy.ProcessRevenueTick(
                 cat.Happiness, cat.Breed, cat.Entity.transform, cat.IsSpecial);
+        }
+
+        /// <summary>
+        /// Force-spawn a cat right now (resets the arrival timer).
+        /// Used when the tutorial is skipped on an empty hotel so the player isn't left waiting.
+        /// </summary>
+        public void SpawnCatNow()
+        {
+            _arrivalTimer = 0f;
+            TrySpawnCat();
         }
 
         private void TrySpawnCat()
@@ -828,6 +841,11 @@ namespace CatHotel.Hotel
                     || cat.State == CatState.Adopted)
                     continue; // skip departing cats
 
+                // Skip cats still arriving — they'd be saved with a half-walk position.
+                // Saving an Arriving cat that hasn't reached a settled cell would mean restoring it
+                // at a random spot anyway. Better to drop it cleanly.
+                if (cat.State == CatState.Arriving) continue;
+
                 int[] visited = null;
                 if (cat.Entity != null && cat.Entity.VisitedFloors != null)
                 {
@@ -837,12 +855,26 @@ namespace CatHotel.Hotel
                     foreach (var f in vf) visited[i++] = f;
                 }
 
+                // Capture exact scale (set randomly at spawn — must persist)
+                float catScale = cat.Entity != null
+                    ? cat.Entity.transform.localScale.x
+                    : 1f;
+
+                // Capture current grid position (cat may be mid-walk → snap to nearest cell)
+                int gx = cat.Entity != null ? Mathf.FloorToInt(cat.Entity.transform.position.x) : 0;
+                int gy = cat.Entity != null ? Mathf.FloorToInt(cat.Entity.transform.position.y) : 0;
+
                 data.cats.Add(new CatCloudSaveData
                 {
                     breedName = cat.Breed.breedName,
                     catName = cat.CatName,
                     mode = cat.Mode.ToString(),
                     isSpecial = cat.IsSpecial,
+                    scale = catScale,
+                    gridX = gx,
+                    gridY = gy,
+                    floorIndex = cat.Entity != null ? cat.Entity.FloorIndex : 0,
+                    visitedFloors = visited,
                     needs = cat.Needs != null ? cat.Needs.ToArray() : new float[5],
                     happiness = cat.Happiness != null ? cat.Happiness.Value : 50f,
                     pensionDuration = cat.PensionDuration,
@@ -850,8 +882,6 @@ namespace CatHotel.Hotel
                     happinessSum = cat.HappinessSum,
                     happinessSamples = cat.HappinessSamples,
                     happyDuration = cat.HappyDuration,
-                    floorIndex = cat.Entity != null ? cat.Entity.FloorIndex : 0,
-                    visitedFloors = visited
                 });
             }
 
@@ -1011,15 +1041,21 @@ namespace CatHotel.Hotel
                     animator.enabled = false;
                 }
 
-                float scale = breed.size * UnityEngine.Random.Range(0.6f, 0.8f);
+                // Restore exact saved scale (fallback to a random one if save predates this field)
+                float scale = saved.scale > 0.01f
+                    ? saved.scale
+                    : breed.size * UnityEngine.Random.Range(0.6f, 0.8f);
                 go.transform.localScale = new Vector3(scale, scale, 1f);
 
                 var needs = go.AddComponent<CatNeeds>();
                 needs.Init(breed, _config, saved.isSpecial);
                 needs.SetSizeMultiplier(scale);
+                // Restore the cat's actual needs from save (don't re-randomize refuge cats —
+                // their saved needs ARE their current state).
                 if (saved.needs != null && saved.needs.Length == 5)
                     needs.FromArray(saved.needs);
-                if (mode == CatMode.Refuge) needs.SetRefugeStartValues();
+                else if (mode == CatMode.Refuge)
+                    needs.SetRefugeStartValues();
 
                 int repDeficit = _reputation.GetDeficit(breed.minReputation);
                 needs.SetReputationDeficit(repDeficit);
@@ -1042,16 +1078,25 @@ namespace CatHotel.Hotel
                 entity.SetSprites(frontSpr, rightSpr, backSpr);
                 entity.SetBreed(breed);
 
-                // Place cat at a random floor cell on the cat's SAVED floor (not the
-                // currently displayed one — those may differ after a future floor with
-                // a different layout).
+                // Restore exact saved position. Fall back to a random floor cell only if
+                // the saved data is missing or out of bounds (legacy save).
                 int savedFloor = Mathf.Clamp(saved.floorIndex, 0, GridRenderer.FloorCount - 1);
                 var savedGrid = _gridRenderer.GetFloorData(savedFloor) ?? _gridRenderer.Data;
-                var floorCells = _gridRenderer.GetCentralRoomFloorCells(savedFloor)
-                                 ?? _gridRenderer.CentralRoomFloorCells;
-                var spawnPos = (floorCells != null && floorCells.Count > 0)
-                    ? floorCells[UnityEngine.Random.Range(0, floorCells.Count)]
-                    : new Vector2Int(10, 7);
+
+                Vector2Int spawnPos = new Vector2Int(saved.gridX, saved.gridY);
+                bool savedPosValid = savedGrid != null
+                    && savedGrid.InBounds(spawnPos.x, spawnPos.y)
+                    && savedGrid.IsWalkable(spawnPos.x, spawnPos.y);
+
+                if (!savedPosValid)
+                {
+                    var floorCells = _gridRenderer.GetCentralRoomFloorCells(savedFloor)
+                                     ?? _gridRenderer.CentralRoomFloorCells;
+                    spawnPos = (floorCells != null && floorCells.Count > 0)
+                        ? floorCells[UnityEngine.Random.Range(0, floorCells.Count)]
+                        : new Vector2Int(10, 7);
+                }
+
                 entity.Init(savedGrid, spawnPos, _catSpawner, savedFloor, _gridRenderer);
                 if (saved.visitedFloors != null)
                     foreach (var vf in saved.visitedFloors)

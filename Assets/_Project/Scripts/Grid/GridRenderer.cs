@@ -46,7 +46,7 @@ namespace CatHotel.Grid
         [SerializeField] private Color _invalidColor = new(0.8f, 0.2f, 0.2f, 0.5f);
 
         // Per-floor state
-        public const int FloorCount = 2;
+        public const int FloorCount = 6;
 
         private readonly GridData[] _floorGrids = new GridData[FloorCount];
         private readonly RoomRegistry[] _floorRegistries = new RoomRegistry[FloorCount];
@@ -149,11 +149,12 @@ namespace CatHotel.Grid
             if (_floorTiles == null || _floorTiles.Length == 0)
                 return;
 
-            // RDC = FLOOR_01 (index 2), F1 = FLOOR_04 (index 8 in FloorSpriteNames).
-            // "FLOOR_Basic"(0,1), "FLOOR_01"(2,3), "FLOOR_02"(4,5), "FLOOR_03"(6,7), "FLOOR_04"(8,9), ...
-            _floorTileIndexPerFloor[0] = Mathf.Min(2, _floorTiles.Length - 1);
-            if (FloorCount > 1)
-                _floorTileIndexPerFloor[1] = Mathf.Min(8, _floorTiles.Length - 1);
+            // FloorSpriteNames layout: pairs of (base, var) per visual style.
+            // Indices: FLOOR_Basic(0/1), FLOOR_01(2/3), FLOOR_02(4/5), FLOOR_03(6/7), FLOOR_04(8/9), FLOOR_05(10/11)
+            // Map floors 0..5 to distinct visuals.
+            int[] perFloor = { 2, 8, 4, 6, 0, 10 }; // RDC=01, F1=04, F2=02, F3=03, F4=Basic, F5=05
+            for (int i = 0; i < FloorCount; i++)
+                _floorTileIndexPerFloor[i] = Mathf.Min(perFloor[i % perFloor.Length], _floorTiles.Length - 1);
 
             // Build each floor by temporarily pointing _gridData/_roomRegistry at it
             for (int i = 0; i < FloorCount; i++)

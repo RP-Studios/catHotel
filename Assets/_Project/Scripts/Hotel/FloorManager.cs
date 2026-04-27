@@ -20,7 +20,7 @@ namespace CatHotel.Hotel
         [SerializeField] private Image _fadeOverlay;
 
         [Header("Transition")]
-        [SerializeField] private float _fadeDuration = 0.4f;
+        [SerializeField] private float _fadeDuration = 0.18f;
         [SerializeField] private float _cameraYOffset = 0.5f; // subtle "height" cue
 
         private int _currentFloor;
@@ -95,7 +95,17 @@ namespace CatHotel.Hotel
             SyncVisibility();
         }
 
-        public bool CanGoUp => !_isTransitioning && _currentFloor < GridRenderer.FloorCount - 1;
+        public bool CanGoUp
+        {
+            get
+            {
+                if (_isTransitioning) return false;
+                if (_currentFloor >= GridRenderer.FloorCount - 1) return false;
+                int next = _currentFloor + 1;
+                var prog = FloorProgression.Instance;
+                return prog == null || prog.IsUnlocked(next);
+            }
+        }
         public bool CanGoDown => !_isTransitioning && _currentFloor > 0;
 
         public void GoUp()

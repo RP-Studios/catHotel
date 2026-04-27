@@ -42,13 +42,9 @@ namespace CatHotel.Tutorial
         [SerializeField] private GameObject _confirmPopupGo;
         [Tooltip("Text component of the 'Skip tutorial?' question — auto-localized to 'tuto.skip.ask'.")]
         [SerializeField] private TMP_Text _confirmAskText;
-        [Tooltip("Text component of the Yes button — auto-localized to 'tuto.skip.yes'.")]
-        [SerializeField] private TMP_Text _confirmYesText;
-        [Tooltip("Text component of the No button — auto-localized to 'tuto.skip.no'.")]
-        [SerializeField] private TMP_Text _confirmNoText;
-        [Tooltip("Button that confirms the skip.")]
+        [Tooltip("'Ready' button (confirms the skip). Uses ready.png frames via UIFrameAnimator.")]
         [SerializeField] private Button _confirmYesButton;
-        [Tooltip("Button that cancels the skip.")]
+        [Tooltip("'Cancel' button (cancels the skip). Uses cancel.png frames via UIFrameAnimator.")]
         [SerializeField] private Button _confirmNoButton;
 
         private CanvasGroup _canvasGroup;
@@ -120,8 +116,6 @@ namespace CatHotel.Tutorial
         {
             if (_skipLinkText != null)   _skipLinkText.text   = LocalizedStrings.Get("tuto.skip.link");
             if (_confirmAskText != null) _confirmAskText.text = LocalizedStrings.Get("tuto.skip.ask");
-            if (_confirmYesText != null) _confirmYesText.text = LocalizedStrings.Get("tuto.skip.yes");
-            if (_confirmNoText != null)  _confirmNoText.text  = LocalizedStrings.Get("tuto.skip.no");
         }
 
         /// <summary>

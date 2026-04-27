@@ -244,6 +244,10 @@ namespace CatHotel.Tutorial
                 _refugeCat = null;
             }
 
+            // If the hotel is now empty, spawn a cat right away so the player isn't left waiting
+            if (_hotel != null && _hotel.Cats.Count == 0)
+                _hotel.SpawnCatNow();
+
             // Persist state so tutorial won't restart next launch
             SaveStepIndex();
         }

@@ -4,6 +4,8 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using DG.Tweening;
 using CatHotel.Audio;
+using CatHotel.Hotel;
+using CatHotel.Services;
 
 namespace CatHotel.UI
 {
@@ -167,6 +169,15 @@ namespace CatHotel.UI
         private void ReturnToMainMenu()
         {
             _isOpen = false;
+
+            // Force a synchronous save before leaving the scene so the player resumes exactly here
+            var hotel = FindAnyObjectByType<HotelManager>();
+            if (hotel != null && CloudSaveManager.Instance != null)
+            {
+                CloudSaveManager.Instance.Progression = hotel.CollectProgressionData();
+                CloudSaveManager.Instance.SaveProgressionImmediate();
+            }
+
             LoadingScreen.TransitionTo("Boot", () => Time.timeScale = 1f);
         }
 

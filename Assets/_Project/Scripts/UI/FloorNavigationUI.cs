@@ -21,6 +21,12 @@ namespace CatHotel.UI
         private Button _upBtn;
         private Button _downBtn;
 
+        // Cache last applied visibility — avoids SetActive every frame which triggers
+        // Canvas rebuilds and can interfere with click detection.
+        private bool _lastUpVisible;
+        private bool _lastDownVisible;
+        private bool _initialized;
+
         private void Start()
         {
             _upObj = FindInactiveByName("FloorUpAction");
@@ -45,15 +51,7 @@ namespace CatHotel.UI
 
         private void Update()
         {
-            // Hide buttons while placing/moving objects
             if (_floorManager == null) return;
-            bool busy = (_placement != null && _placement.IsPlacing)
-                     || (_mover != null && _mover.IsMoving)
-                     || _floorManager.IsTransitioning;
-            if (_upObj != null && _upObj.activeSelf == busy && _upObj.activeInHierarchy)
-            {
-                // keep call cheap — only toggle if state mismatches
-            }
             RefreshVisibility();
         }
 
@@ -65,10 +63,22 @@ namespace CatHotel.UI
                      || (_mover != null && _mover.IsMoving)
                      || _floorManager.IsTransitioning;
 
-            if (_upObj != null)
-                _upObj.SetActive(!busy && _floorManager.CanGoUp);
-            if (_downObj != null)
-                _downObj.SetActive(!busy && _floorManager.CanGoDown);
+            bool upVisible = !busy && _floorManager.CanGoUp;
+            bool downVisible = !busy && _floorManager.CanGoDown;
+
+            // Only toggle SetActive when state actually changes — protects click events
+            // and avoids per-frame Canvas rebuild churn.
+            if (!_initialized || upVisible != _lastUpVisible)
+            {
+                if (_upObj != null) _upObj.SetActive(upVisible);
+                _lastUpVisible = upVisible;
+            }
+            if (!_initialized || downVisible != _lastDownVisible)
+            {
+                if (_downObj != null) _downObj.SetActive(downVisible);
+                _lastDownVisible = downVisible;
+            }
+            _initialized = true;
         }
 
         private void OnUpTapped()
@@ -87,17 +97,23 @@ namespace CatHotel.UI
         {
             var btn = go.GetComponent<Button>();
             if (btn == null) btn = go.AddComponent<Button>();
-            // Ensure there's a raycast target for the Button to register clicks
+            btn.transition = Selectable.Transition.None;
+
+            // Ensure there's a raycast target covering the WHOLE rect so the user
+            // doesn't have to hit the small visible image.
             var img = go.GetComponent<Image>();
             if (img == null)
             {
-                var anyChildImg = go.GetComponentInChildren<Image>();
-                if (anyChildImg != null) btn.targetGraphic = anyChildImg;
+                img = go.AddComponent<Image>();
+                img.color = new Color(0f, 0f, 0f, 0f); // transparent but raycast-receiving
             }
-            else
-            {
-                btn.targetGraphic = img;
-            }
+            img.raycastTarget = true;
+            btn.targetGraphic = img;
+
+            // Children with images: keep the visual ones non-raycast so taps go to the parent.
+            foreach (var childImg in go.GetComponentsInChildren<Image>(true))
+                if (childImg != img) childImg.raycastTarget = false;
+
             return btn;
         }
 

@@ -2169,6 +2169,18 @@ namespace CatHotel.Editor
             soFloor.FindProperty("_camera").objectReferenceValue = cam;
             soFloor.ApplyModifiedProperties();
 
+            // --- FloorProgression (unlock system) ---
+            var floorProg = mgrObj.GetComponent<FloorProgression>();
+            if (floorProg == null)
+                floorProg = mgrObj.AddComponent<FloorProgression>();
+            var floorUnlockCfg = AssetDatabase.LoadAssetAtPath<FloorUnlockConfig>(
+                "Assets/_Project/Data/FloorUnlockConfig.asset");
+            var soProg = new SerializedObject(floorProg);
+            soProg.FindProperty("_config").objectReferenceValue = floorUnlockCfg;
+            soProg.FindProperty("_economy").objectReferenceValue = economyMgr;
+            soProg.FindProperty("_reputation").objectReferenceValue = repMgr;
+            soProg.ApplyModifiedProperties();
+
             // --- FloorNavigationUI ---
             var floorNav = mgrObj.GetComponent<CatHotel.UI.FloorNavigationUI>();
             if (floorNav == null)

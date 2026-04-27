@@ -515,7 +515,12 @@ namespace CatHotel.Cats
                 && CatHotel.Tutorial.TutorialManager.Instance.IsActive) return false;
             if (Random.value >= FloorChangeChance) return false;
 
-            int target = _floorIndex == 0 ? 1 : 0;
+            // Pick a random floor different from current, among UNLOCKED floors only.
+            var prog = CatHotel.Hotel.FloorProgression.Instance;
+            int highest = prog != null ? prog.HighestUnlockedFloor : 0;
+            if (highest <= 0) return false; // only RDC unlocked → nowhere to go
+            int target;
+            do { target = Random.Range(0, highest + 1); } while (target == _floorIndex);
             StartFloorChange(target);
             return true;
         }
