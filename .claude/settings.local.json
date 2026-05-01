@@ -119,7 +119,8 @@
       "Bash(grep -B15 \"&2085621539$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
       "Bash(grep -B15 \"&1886169247$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
       "Bash(grep -B15 \"&1200336157$\" d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity)",
-      "Bash(grep -A2 \"m_Name: ParametersPanel$\" \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity\")"
+      "Bash(grep -A2 \"m_Name: ParametersPanel$\" \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Boot.unity\")",
+      "Bash(awk '/m_GameObject: \\\\{fileID: 1159448928\\\\}|m_GameObject: \\\\{fileID: 1276140383\\\\}|m_GameObject: \\\\{fileID: 678475159\\\\}|m_GameObject: \\\\{fileID: 490381456\\\\}/ { found=1 } found && /^  m_Name:/ { print NR\": \"$0; found=0 }' \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Proto.unity\")"
     ]
   }
 }

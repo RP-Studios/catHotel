@@ -38,10 +38,6 @@ namespace CatHotel.Hotel
         /// <summary>Fired when a floor is successfully unlocked. Argument = newly unlocked floor index.</summary>
         public event Action<int> OnFloorUnlocked;
 
-        [Header("Auto-unlock (stub until the unlock UI is wired)")]
-        [Tooltip("If true, the next floor unlocks automatically the moment its rep + coin requirements are met.")]
-        [SerializeField] private bool _autoUnlock = true;
-
         private void Awake()
         {
             Instance = this;
@@ -51,42 +47,27 @@ namespace CatHotel.Hotel
 
         private void Start()
         {
-            // Load persisted unlock state
-            if (CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded)
-                _highestUnlockedFloor = Mathf.Max(0, CloudSaveManager.Instance.Progression.highestUnlockedFloor);
-
-            // Auto-unlock plumbing
-            if (_economy != null) _economy.OnCoinsChanged += OnCoinsChanged;
-            if (_reputation != null) _reputation.OnLevelChanged += OnRepChanged;
-            // First check on launch (in case rep+coins already meet requirements from save)
-            TryAutoUnlock();
+            // Floor unlock is now driven by reputation level: 1 rep level = 1 floor unlocked.
+            // We listen to OnLevelChanged and sync HighestUnlockedFloor accordingly.
+            if (_reputation != null)
+            {
+                _highestUnlockedFloor = _reputation.Level;
+                _reputation.OnLevelChanged += OnRepLevelChanged;
+            }
         }
 
         private void OnDestroy()
         {
-            if (_economy != null) _economy.OnCoinsChanged -= OnCoinsChanged;
-            if (_reputation != null) _reputation.OnLevelChanged -= OnRepChanged;
+            if (_reputation != null) _reputation.OnLevelChanged -= OnRepLevelChanged;
         }
 
-        private void OnCoinsChanged(int _) => TryAutoUnlock();
-        private void OnRepChanged(int _) => TryAutoUnlock();
-
-        /// <summary>
-        /// Greedy auto-unlock: if the next locked floor is unlockable, unlock it
-        /// (and keep going while consecutive floors remain unlockable with the
-        /// remaining coins).
-        /// </summary>
-        private void TryAutoUnlock()
+        private void OnRepLevelChanged(int newLevel)
         {
-            if (!_autoUnlock || _config == null) return;
-            int safety = 0;
-            while (safety++ < 16)
-            {
-                int next = NextLockedFloor;
-                if (next < 0) return;
-                if (CanUnlock(next) != UnlockResult.Success) return;
-                if (TryUnlock(next) != UnlockResult.Success) return;
-            }
+            if (newLevel <= _highestUnlockedFloor) return;
+            _highestUnlockedFloor = newLevel;
+            Persist();
+            OnFloorUnlocked?.Invoke(newLevel);
+            Debug.Log($"[FloorProgression] Floor {newLevel} unlocked via rep level-up.");
         }
 
         // ---- Queries ----
@@ -99,8 +80,8 @@ namespace CatHotel.Hotel
 
         public int GetCapacityFor(int floorIndex) => _config?.GetEntry(floorIndex)?.totalCapacity ?? 5;
 
-        /// <summary>Total max cats based on currently unlocked floors.</summary>
-        public int MaxCats => GetCapacityFor(_highestUnlockedFloor);
+        /// <summary>Total max cats. Reputation-driven; falls back to config or 5.</summary>
+        public int MaxCats => _reputation != null ? _reputation.MaxCats : GetCapacityFor(_highestUnlockedFloor);
 
         /// <summary>Next floor that is NOT yet unlocked. -1 if everything is unlocked.</summary>
         public int NextLockedFloor

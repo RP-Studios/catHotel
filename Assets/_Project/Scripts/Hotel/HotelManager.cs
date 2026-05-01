@@ -692,8 +692,7 @@ namespace CatHotel.Hotel
                 {
                     _economy.AddCoins(finalCoins);
 
-                    _reputation.AwardPensionXp(happiness, cat.IsSpecial,
-                        _cats.Count, GetAverageHappiness(), _economy.TrySpend);
+                    _reputation.AwardPensionXp(happiness, cat.IsSpecial);
 
                     FinalizeDeparture(cat);
                 });
@@ -702,8 +701,7 @@ namespace CatHotel.Hotel
             {
                 // Fallback if no panel
                 _economy.AddCoins(totalCoins);
-                _reputation.AwardPensionXp(happiness, cat.IsSpecial,
-                    _cats.Count, GetAverageHappiness(), _economy.TrySpend);
+                _reputation.AwardPensionXp(happiness, cat.IsSpecial);
                 FinalizeDeparture(cat);
             }
         }
@@ -719,8 +717,7 @@ namespace CatHotel.Hotel
             _economy.AddCoins(coins);
 
             // Award XP for completed adoption
-            _reputation.AwardAdoptionXp(cat.Happiness.Value, cat.IsSpecial,
-                _cats.Count, GetAverageHappiness(), _economy.TrySpend);
+            _reputation.AwardAdoptionXp(cat.Happiness.Value, cat.IsSpecial);
 
             StartCatDeparture(cat, CatState.Adopted);
         }
@@ -799,6 +796,16 @@ namespace CatHotel.Hotel
                     sum += cat.Happiness.Value;
             }
             return sum / _cats.Count;
+        }
+
+        /// <summary>Number of cats currently above the happy threshold (used by level-up panel).</summary>
+        public int CountHappyCats()
+        {
+            int n = 0;
+            foreach (var c in _cats)
+                if (c.Happiness != null && c.Happiness.Value >= ReputationManager.HappyCatThreshold)
+                    n++;
+            return n;
         }
 
         // ========== CLOUD SAVE INTEGRATION ==========

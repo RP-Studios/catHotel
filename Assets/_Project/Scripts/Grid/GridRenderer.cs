@@ -46,7 +46,7 @@ namespace CatHotel.Grid
         [SerializeField] private Color _invalidColor = new(0.8f, 0.2f, 0.2f, 0.5f);
 
         // Per-floor state
-        public const int FloorCount = 6;
+        public const int FloorCount = 11;
 
         private readonly GridData[] _floorGrids = new GridData[FloorCount];
         private readonly RoomRegistry[] _floorRegistries = new RoomRegistry[FloorCount];

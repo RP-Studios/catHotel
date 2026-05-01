@@ -66,6 +66,7 @@ namespace CatHotel.UI
         private int _prevTimerSec = -1;
         private int _prevLevel = -1;
         private int _prevXp = -1;
+        private int _prevHappyCats = -1;
 
         private void Start()
         {
@@ -161,6 +162,7 @@ namespace CatHotel.UI
             // Reset dirty flags to force all labels to refresh
             _prevLevel = -1;
             _prevXp = -1;
+            _prevHappyCats = -1;
             _prevTimerSec = -1;
             if (_floorText != null) _floorText.text = "";
         }
@@ -306,11 +308,13 @@ namespace CatHotel.UI
 
             int level = _reputation.Level;
             int xp = _reputation.Xp;
+            int happyCats = _hotel != null ? _hotel.CountHappyCats() : 0;
 
-            // Dirty check
-            if (level == _prevLevel && xp == _prevXp) return;
+            // Dirty check (also re-render when the happy-cats count changes)
+            if (level == _prevLevel && xp == _prevXp && happyCats == _prevHappyCats) return;
             _prevLevel = level;
             _prevXp = xp;
+            _prevHappyCats = happyCats;
 
             var current = _reputation.CurrentLevel;
             var next = _reputation.NextLevel;
@@ -319,24 +323,19 @@ namespace CatHotel.UI
             if (_currentLvlValue != null)
                 _currentLvlValue.text = LocalizedStrings.Get("hud.level", level);
             if (_currentLvlDesc != null)
-                _currentLvlDesc.text = LocalizedStrings.Get(current.Name);
+                _currentLvlDesc.text = LocalizedStrings.Get(current.NameKey);
 
             if (next.HasValue)
             {
-                // Count cats meeting happiness threshold
-                int qualifiedCats = 0;
-                foreach (var cat in _hotel.Cats)
-                {
-                    if (cat.Happiness != null && cat.Happiness.Value >= next.Value.MinHappiness)
-                        qualifiedCats++;
-                }
+                int qualifiedCats = happyCats;
 
                 if (_nextLvlValue != null)
                     _nextLvlValue.text = LocalizedStrings.Get("hud.level", next.Value.Index);
                 if (_nextLvlDesc != null)
-                    _nextLvlDesc.text = LocalizedStrings.Get(next.Value.Name);
+                    _nextLvlDesc.text = LocalizedStrings.Get(next.Value.NameKey);
                 if (_nextLevelObjective != null)
-                    _nextLevelObjective.text = LocalizedStrings.Get("hud.level.objective", qualifiedCats, next.Value.CatsRequired, next.Value.MinHappiness);
+                    _nextLevelObjective.text = LocalizedStrings.Get("hud.level.objective",
+                        qualifiedCats, next.Value.HappyCatsRequired, ReputationManager.HappyCatThreshold);
 
                 // XP bar based on accumulated XP progress
                 if (_pexImage != null)

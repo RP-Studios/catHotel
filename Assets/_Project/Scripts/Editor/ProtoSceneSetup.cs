@@ -2151,6 +2151,14 @@ namespace CatHotel.Editor
                 cancelArr.GetArrayElementAtIndex(i).objectReferenceValue = cancelSprites[i];
             soMover.ApplyModifiedProperties();
 
+            // --- LevelUnlockPanel ---
+            var levelPanel = mgrObj.GetComponent<CatHotel.UI.LevelUnlockPanel>();
+            if (levelPanel == null)
+                levelPanel = mgrObj.AddComponent<CatHotel.UI.LevelUnlockPanel>();
+            var soLevelPanel = new SerializedObject(levelPanel);
+            soLevelPanel.FindProperty("_hotel").objectReferenceValue = hotelMgr;
+            soLevelPanel.ApplyModifiedProperties();
+
             // Wire ObjectMover to ObjectSelector
             var soSelector = new SerializedObject(objectSelector);
             soSelector.FindProperty("_catSpawner").objectReferenceValue = spawner;
