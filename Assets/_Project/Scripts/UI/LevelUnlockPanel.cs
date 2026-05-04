@@ -165,6 +165,8 @@ namespace CatHotel.UI
             _openedAtFrame = Time.frameCount;
             Refresh();
             UISoundManager.Instance?.PlayOpenSection();
+            CatHotel.Tutorial.TutorialManager.Instance?.NotifyEvent(
+                CatHotel.Tutorial.TutorialTrigger.WaitForLevelPanelOpened);
         }
 
         public void Close()

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 using CatHotel.Cats;
 using CatHotel.Hotel;
 using CatHotel.Input;
@@ -186,6 +187,8 @@ namespace CatHotel.Tutorial
             RestoreGameUI();
             ClearShopFilter();
             UnfreezeAllCats();
+            RestoreDimmedHud();
+            StopGlobalPexPulse();
             UnsubscribeEvents();
             if (_narrationUI != null) _narrationUI.OnSkipConfirmed -= SkipTutorial;
             Debug.Log("[Tutorial] Complete!");
@@ -341,6 +344,16 @@ namespace CatHotel.Tutorial
                     ClearShopFilter();
                     break;
 
+                case TutorialAction.HighlightGlobalPex:
+                    DimHudExcept("GlobalPex");
+                    StartGlobalPexPulse();
+                    break;
+
+                case TutorialAction.RestoreHighlight:
+                    RestoreDimmedHud();
+                    StopGlobalPexPulse();
+                    break;
+
                 case TutorialAction.DespawnFirstCat:
                     if (_firstCat != null && _hotel != null)
                     {
@@ -393,6 +406,98 @@ namespace CatHotel.Tutorial
         {
             _shopFilter.Clear();
             GetShop()?.ClearTutorialFilter();
+        }
+
+        // ---- HUD dim + GlobalPex pulse ----
+
+        private readonly System.Collections.Generic.Dictionary<UnityEngine.CanvasGroup, float> _dimmedGroups
+            = new System.Collections.Generic.Dictionary<UnityEngine.CanvasGroup, float>();
+        private Tween _globalPexPulse;
+        private Vector3 _globalPexBaseScale;
+        private Transform _globalPexTransform;
+
+        /// <summary>
+        /// Dim every HUD-level GameObject so only the named one stands out.
+        /// Adds CanvasGroups when missing and remembers original alpha for restore.
+        /// </summary>
+        private void DimHudExcept(string keepName)
+        {
+            // Dim a known set of HUD elements + the "HUD" / "HUDPanel" parent if found.
+            string[] candidates =
+            {
+                "HUD", "HUDPanel", "TopHUD",
+                "CurrentLvlValue", "CurrentLvlDesc",
+                "NextLvlValue", "NextLvlDesc",
+                "NextLevelObjectiveCurrentValue",
+                "PurrlsCounter", "CapacityPct", "ComfortLevel",
+                "NexCatTimerSec", "CurrentFloorIndex",
+                "FloorUpAction", "FloorDownAction",
+                "ShopAction", "ParameterAction",
+            };
+
+            foreach (var name in candidates)
+            {
+                var go = FindByName(name);
+                if (go == null) continue;
+                // Skip the kept element and any of its ancestors
+                if (go.name == keepName) continue;
+
+                var cg = go.GetComponent<UnityEngine.CanvasGroup>();
+                if (cg == null) cg = go.AddComponent<UnityEngine.CanvasGroup>();
+                if (!_dimmedGroups.ContainsKey(cg))
+                {
+                    _dimmedGroups[cg] = cg.alpha;
+                    cg.alpha = 0.3f;
+                    cg.blocksRaycasts = false;
+                    cg.interactable = false;
+                }
+            }
+
+            // Make sure the kept element fully shows + raycasts even if its parent is dimmed
+            var kept = FindByName(keepName);
+            if (kept != null)
+            {
+                var cg = kept.GetComponent<UnityEngine.CanvasGroup>();
+                if (cg == null) cg = kept.AddComponent<UnityEngine.CanvasGroup>();
+                cg.ignoreParentGroups = true;
+                cg.alpha = 1f;
+                cg.blocksRaycasts = true;
+                cg.interactable = true;
+            }
+        }
+
+        private void RestoreDimmedHud()
+        {
+            foreach (var kvp in _dimmedGroups)
+            {
+                if (kvp.Key == null) continue;
+                kvp.Key.alpha = kvp.Value;
+                kvp.Key.blocksRaycasts = true;
+                kvp.Key.interactable = true;
+            }
+            _dimmedGroups.Clear();
+        }
+
+        private void StartGlobalPexPulse()
+        {
+            var go = FindByName("GlobalPex");
+            if (go == null) return;
+            _globalPexTransform = go.transform;
+            _globalPexBaseScale = _globalPexTransform.localScale;
+            _globalPexPulse?.Kill();
+            _globalPexPulse = _globalPexTransform
+                .DOScale(_globalPexBaseScale * 1.06f, 0.55f)
+                .SetEase(Ease.InOutSine)
+                .SetLoops(-1, LoopType.Yoyo)
+                .SetUpdate(true);
+        }
+
+        private void StopGlobalPexPulse()
+        {
+            _globalPexPulse?.Kill();
+            _globalPexPulse = null;
+            if (_globalPexTransform != null && _globalPexBaseScale != Vector3.zero)
+                _globalPexTransform.localScale = _globalPexBaseScale;
         }
 
         private void UnfreezeAllCats()
@@ -456,6 +561,10 @@ namespace CatHotel.Tutorial
                 case TutorialTrigger.WaitForFloorChanged:
                     EnableByName("FloorUpAction");
                     EnableByName("FloorDownAction");
+                    break;
+                case TutorialTrigger.WaitForLevelPanelOpened:
+                    // GlobalPex stays alive via the HighlightGlobalPex action;
+                    // nothing else to enable here.
                     break;
                 // Cat selection/petting/coin/service don't need UI buttons — direct in-world.
             }

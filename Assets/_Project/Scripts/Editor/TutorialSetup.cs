@@ -58,9 +58,16 @@ namespace CatHotel.Editor
             // --- Intro ---
             Step(J, jasper01, "tuto.welcome",  TutorialTrigger.WaitForTap);
             Step(J, jasper02, "tuto.explain",  TutorialTrigger.WaitForTap);
-            Step(J, jasper01, "tuto.beta",     TutorialTrigger.WaitForTap);
-            Step(J, jasper02, "tuto.floors",   TutorialTrigger.WaitForTap);
-            Step(J, jasper01, "tuto.coins",    TutorialTrigger.WaitForTap);
+
+            // --- Floors + level-up explanation ---
+            Step(J, jasper01, "tuto.floors",         TutorialTrigger.WaitForTap);
+            Step(J, jasper02, "tuto.levelup.intro",  TutorialTrigger.WaitForTap);
+            Step(J, jasper01, "tuto.levelup.xp",     TutorialTrigger.WaitForTap);
+            Step(J, jasper02, "tuto.levelup.cond",   TutorialTrigger.WaitForTap);
+            Step(J, jasper01, "tuto.levelup.tap",    TutorialTrigger.WaitForLevelPanelOpened,
+                onS: TutorialAction.HighlightGlobalPex, onC: TutorialAction.RestoreHighlight);
+            Step(J, jasper02, "tuto.levelup.done",   TutorialTrigger.WaitForTap);
+            Step(J, jasper01, "tuto.coins",          TutorialTrigger.WaitForTap);
 
             // --- Tour: pension / refuge / exit ---
             Step(J, jasper02, "tuto.pension",  TutorialTrigger.WaitForTap,

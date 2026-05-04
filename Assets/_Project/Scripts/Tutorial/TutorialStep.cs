@@ -16,6 +16,7 @@ namespace CatHotel.Tutorial
         WaitForFloorChanged,
         WaitForCoinCollected,
         WaitForCatServiceUsed,
+        WaitForLevelPanelOpened,
         WaitForDelay,
         Action
     }
@@ -41,6 +42,8 @@ namespace CatHotel.Tutorial
         EnableShopBalls,
         EnableFullShop,
         DespawnFirstCat,
+        HighlightGlobalPex,
+        RestoreHighlight,
     }
 
     [Serializable]

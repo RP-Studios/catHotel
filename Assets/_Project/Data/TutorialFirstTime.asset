@@ -31,7 +31,7 @@ MonoBehaviour:
     actionOnComplete: 0
   - speakerLabelKey: tuto.speaker.jasper
     speakerPortrait: {fileID: 21300000, guid: 454e2ec86907b76448d35e82a8ae5b34, type: 3}
-    textKey: tuto.beta
+    textKey: tuto.floors
     trigger: 0
     requiredCategory: 0
     delaySeconds: 3
@@ -39,7 +39,39 @@ MonoBehaviour:
     actionOnComplete: 0
   - speakerLabelKey: tuto.speaker.jasper
     speakerPortrait: {fileID: 21300000, guid: 510adafb02d4c4140a4cbe1159bfc159, type: 3}
-    textKey: tuto.floors
+    textKey: tuto.levelup.intro
+    trigger: 0
+    requiredCategory: 0
+    delaySeconds: 3
+    actionOnStart: 0
+    actionOnComplete: 0
+  - speakerLabelKey: tuto.speaker.jasper
+    speakerPortrait: {fileID: 21300000, guid: 454e2ec86907b76448d35e82a8ae5b34, type: 3}
+    textKey: tuto.levelup.xp
+    trigger: 0
+    requiredCategory: 0
+    delaySeconds: 3
+    actionOnStart: 0
+    actionOnComplete: 0
+  - speakerLabelKey: tuto.speaker.jasper
+    speakerPortrait: {fileID: 21300000, guid: 510adafb02d4c4140a4cbe1159bfc159, type: 3}
+    textKey: tuto.levelup.cond
+    trigger: 0
+    requiredCategory: 0
+    delaySeconds: 3
+    actionOnStart: 0
+    actionOnComplete: 0
+  - speakerLabelKey: tuto.speaker.jasper
+    speakerPortrait: {fileID: 21300000, guid: 454e2ec86907b76448d35e82a8ae5b34, type: 3}
+    textKey: tuto.levelup.tap
+    trigger: 10
+    requiredCategory: 0
+    delaySeconds: 3
+    actionOnStart: 19
+    actionOnComplete: 20
+  - speakerLabelKey: tuto.speaker.jasper
+    speakerPortrait: {fileID: 21300000, guid: 510adafb02d4c4140a4cbe1159bfc159, type: 3}
+    textKey: tuto.levelup.done
     trigger: 0
     requiredCategory: 0
     delaySeconds: 3
@@ -80,7 +112,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 11
+    trigger: 12
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 1
@@ -120,7 +152,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 10
+    trigger: 11
     requiredCategory: 0
     delaySeconds: 5
     actionOnStart: 0
@@ -128,7 +160,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 11
+    trigger: 12
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 18
@@ -136,7 +168,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 11
+    trigger: 12
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 2
@@ -176,7 +208,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 10
+    trigger: 11
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 0
@@ -200,7 +232,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 10
+    trigger: 11
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 0
@@ -224,7 +256,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 10
+    trigger: 11
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 0
@@ -248,7 +280,7 @@ MonoBehaviour:
   - speakerLabelKey: 
     speakerPortrait: {fileID: 0}
     textKey: 
-    trigger: 10
+    trigger: 11
     requiredCategory: 0
     delaySeconds: 3
     actionOnStart: 0
