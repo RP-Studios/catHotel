@@ -139,6 +139,17 @@ namespace CatHotel.Hotel
                     CloudSaveManager.Instance.LoadFromLocal();
             }
 
+            // If the previous session ended while the tutorial was still in progress,
+            // wipe the save so the player must redo the tutorial from scratch (and the
+            // game state isn't half-set from a partial tutorial run).
+            if (CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
+                && CloudSaveManager.Instance.HasPersistedSave
+                && !CloudSaveManager.Instance.Progression.tutorialComplete)
+            {
+                Debug.Log("[Hotel] Tutorial was incomplete on quit — wiping save to restart it.");
+                CloudSaveManager.Instance.ResetAllData();
+            }
+
             // Init economy + reputation from save if available, otherwise defaults
             var savedProg = CloudSaveManager.Instance != null && CloudSaveManager.Instance.IsLoaded
                 && CloudSaveManager.Instance.HasPersistedSave

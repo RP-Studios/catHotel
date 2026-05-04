@@ -38,7 +38,8 @@ namespace CatHotel.Editor
 
             void Step(string spk, Sprite spr, string txt, TutorialTrigger trig,
                 TutorialAction onS = TutorialAction.None, TutorialAction onC = TutorialAction.None,
-                float delay = 3f, ObjectCategory reqCat = default)
+                float delay = 3f, ObjectCategory reqCat = default, string highlight = "",
+                bool bubbleRight = false)
             {
                 steps.arraySize = idx + 1;
                 var e = steps.GetArrayElementAtIndex(idx);
@@ -50,7 +51,19 @@ namespace CatHotel.Editor
                 e.FindPropertyRelative("actionOnComplete").enumValueIndex = (int)onC;
                 e.FindPropertyRelative("delaySeconds").floatValue = delay;
                 e.FindPropertyRelative("requiredCategory").enumValueIndex = (int)reqCat;
+                e.FindPropertyRelative("highlightTarget").stringValue = highlight;
+                e.FindPropertyRelative("bubbleOnRight").boolValue = bubbleRight;
                 idx++;
+            }
+
+            // Helper for HUD-element highlight steps
+            void HudStep(string spk, Sprite spr, string txt, string targetName, bool bubbleRight = false)
+            {
+                Step(spk, spr, txt, TutorialTrigger.WaitForTap,
+                    onS: TutorialAction.HighlightUI,
+                    onC: TutorialAction.RestoreHighlight,
+                    highlight: targetName,
+                    bubbleRight: bubbleRight);
             }
 
             string J = "tuto.speaker.jasper";
@@ -65,9 +78,25 @@ namespace CatHotel.Editor
             Step(J, jasper01, "tuto.levelup.xp",     TutorialTrigger.WaitForTap);
             Step(J, jasper02, "tuto.levelup.cond",   TutorialTrigger.WaitForTap);
             Step(J, jasper01, "tuto.levelup.tap",    TutorialTrigger.WaitForLevelPanelOpened,
-                onS: TutorialAction.HighlightGlobalPex, onC: TutorialAction.RestoreHighlight);
-            Step(J, jasper02, "tuto.levelup.done",   TutorialTrigger.WaitForTap);
-            Step(J, jasper01, "tuto.coins",          TutorialTrigger.WaitForTap);
+                onS: TutorialAction.HighlightGlobalPex);
+            // Wait until the player closes the panel themselves (no auto-tap-advance)
+            Step(J, jasper02, "tuto.levelup.done",   TutorialTrigger.WaitForLevelPanelClosed,
+                onC: TutorialAction.RestoreHighlight);
+
+            // --- HUD walkthrough: explain each top-level button / zone ---
+            // Targets are PANEL containers (parent of label) so the visual zone pulses, not just the text.
+            HudStep(J, jasper01, "tuto.hud.coins",       "Catcoins");
+            HudStep(J, jasper02, "tuto.hud.purrls",      "Puurls");
+            HudStep(J, jasper01, "tuto.hud.capacity",    "Capacity");
+            HudStep(J, jasper02, "tuto.hud.comfort",     "Comfort");
+            HudStep(J, jasper01, "tuto.hud.floors",      "Floors");
+            // System / CollectAllAction / AddBoost are on the LEFT side of the screen
+            // (where the bubble normally sits) → display the bubble on the right instead.
+            HudStep(J, jasper02, "tuto.hud.system",      "System",           bubbleRight: true);
+            HudStep(J, jasper01, "tuto.hud.collectall",  "CollectAllAction", bubbleRight: true);
+            HudStep(J, jasper02, "tuto.hud.addboost",    "AddBoost",         bubbleRight: true);
+            HudStep(J, jasper01, "tuto.hud.nextcat",     "NextCat");
+            HudStep(J, jasper02, "tuto.hud.shop",        "ShopAction");
 
             // --- Tour: pension / refuge / exit ---
             Step(J, jasper02, "tuto.pension",  TutorialTrigger.WaitForTap,

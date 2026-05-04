@@ -175,6 +175,8 @@ namespace CatHotel.UI
             _panelGo.SetActive(false);
             _isOpen = false;
             UISoundManager.Instance?.PlayCloseSection();
+            CatHotel.Tutorial.TutorialManager.Instance?.NotifyEvent(
+                CatHotel.Tutorial.TutorialTrigger.WaitForLevelPanelClosed);
         }
 
         public bool IsOpen => _isOpen;

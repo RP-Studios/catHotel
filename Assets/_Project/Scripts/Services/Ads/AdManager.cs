@@ -14,6 +14,7 @@ namespace CatHotel.Services
 
         private LevelPlayRewardedAd _rewardedAd;
         private bool _sdkReady;
+        private bool _adLoaded;
         private AdRewardType _pendingReward = AdRewardType.None;
 
         // Daily tracking
@@ -22,7 +23,7 @@ namespace CatHotel.Services
         private const string PrefKey = "AdDailyCount";
         private const string PrefDateKey = "AdDailyDate";
 
-        public bool IsAdReady => _sdkReady && _rewardedAd != null && _rewardedAd.IsAdReady();
+        public bool IsAdReady => _sdkReady && _adLoaded;
         public bool HasReachedDailyCap => _adsWatchedToday >= _config.dailyCap;
         public int AdsWatchedToday => _adsWatchedToday;
         public int DailyCap => _config != null ? _config.dailyCap : 10;
@@ -54,6 +55,15 @@ namespace CatHotel.Services
                 return;
             }
 
+            if (_config.stubAdsForBeta)
+            {
+                Debug.Log("[Ads] STUB MODE — LevelPlay bypassed, ads will be simulated");
+                _sdkReady = true;
+                _adLoaded = true;
+                OnAdAvailabilityChanged?.Invoke();
+                return;
+            }
+
             if (_config.testMode)
             {
                 LevelPlay.SetMetaData("is_test_suite", "enable");
@@ -72,6 +82,23 @@ namespace CatHotel.Services
             Debug.Log("[Ads] LevelPlay SDK initialized");
             _sdkReady = true;
             CreateRewardedAd();
+
+            if (_config.launchTestSuiteOnStart)
+            {
+                Debug.Log("[Ads] Launching LevelPlay Test Suite...");
+                LevelPlay.LaunchTestSuite();
+            }
+        }
+
+        public void LaunchTestSuite()
+        {
+            if (!_sdkReady)
+            {
+                Debug.LogWarning("[Ads] Cannot launch Test Suite - SDK not ready");
+                return;
+            }
+            Debug.Log("[Ads] Launching LevelPlay Test Suite manually");
+            LevelPlay.LaunchTestSuite();
         }
 
         private void OnSdkInitFailed(LevelPlayInitError error)
@@ -86,12 +113,14 @@ namespace CatHotel.Services
             _rewardedAd.OnAdLoaded += info =>
             {
                 Debug.Log("[Ads] Rewarded ad loaded");
+                _adLoaded = true;
                 OnAdAvailabilityChanged?.Invoke();
             };
 
             _rewardedAd.OnAdLoadFailed += error =>
             {
                 Debug.LogWarning($"[Ads] Rewarded ad load failed: {error.ErrorMessage}");
+                _adLoaded = false;
                 OnAdAvailabilityChanged?.Invoke();
             };
 
@@ -116,6 +145,8 @@ namespace CatHotel.Services
             _rewardedAd.OnAdDisplayFailed += (info, error) =>
             {
                 Debug.LogWarning($"[Ads] Rewarded ad display failed ({_pendingReward}): {error.ErrorMessage}");
+                _adLoaded = false;
+                OnAdAvailabilityChanged?.Invoke();
                 switch (_pendingReward)
                 {
                     case AdRewardType.BoostX2:
@@ -155,6 +186,16 @@ namespace CatHotel.Services
             }
 
             _pendingReward = AdRewardType.BoostX2;
+            _adLoaded = false;
+            OnAdAvailabilityChanged?.Invoke();
+
+            if (_config.stubAdsForBeta)
+            {
+                Debug.Log("[Ads] STUB — simulating BOOST ad...");
+                StartCoroutine(StubAdCoroutine());
+                return true;
+            }
+
             Debug.Log("[Ads] Showing BOOST rewarded ad...");
             _rewardedAd.ShowAd("BoostX2");
             return true;
@@ -170,9 +211,44 @@ namespace CatHotel.Services
             }
 
             _pendingReward = AdRewardType.PensionX2;
+            _adLoaded = false;
+            OnAdAvailabilityChanged?.Invoke();
+
+            if (_config.stubAdsForBeta)
+            {
+                Debug.Log("[Ads] STUB — simulating PENSION ad...");
+                StartCoroutine(StubAdCoroutine());
+                return true;
+            }
+
             Debug.Log("[Ads] Showing PENSION rewarded ad...");
             _rewardedAd.ShowAd("X2Pension");
             return true;
+        }
+
+        private System.Collections.IEnumerator StubAdCoroutine()
+        {
+            yield return new WaitForSecondsRealtime(_config.stubAdDuration);
+
+            _adsWatchedToday++;
+            SaveDailyCount();
+
+            switch (_pendingReward)
+            {
+                case AdRewardType.BoostX2:
+                    Debug.Log("[Ads] STUB reward granted: BoostX2");
+                    OnAdCompleted?.Invoke();
+                    break;
+                case AdRewardType.PensionX2:
+                    Debug.Log("[Ads] STUB reward granted: PensionX2");
+                    OnPensionAdCompleted?.Invoke();
+                    break;
+            }
+            _pendingReward = AdRewardType.None;
+
+            // Simulate next ad available
+            _adLoaded = true;
+            OnAdAvailabilityChanged?.Invoke();
         }
 
         private void LoadDailyCount()
@@ -203,12 +279,19 @@ namespace CatHotel.Services
         #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private void Update()
         {
-            if (UnityEngine.InputSystem.Keyboard.current != null &&
-                UnityEngine.InputSystem.Keyboard.current.rKey.wasPressedThisFrame)
+            var kb = UnityEngine.InputSystem.Keyboard.current;
+            if (kb == null) return;
+
+            if (kb.rKey.wasPressedThisFrame)
             {
                 _adsWatchedToday = 0;
                 SaveDailyCount();
                 Debug.Log("[Ads] Daily ad counter reset to 0");
+            }
+
+            if (kb.tKey.wasPressedThisFrame && _sdkReady)
+            {
+                LaunchTestSuite();
             }
         }
         #endif

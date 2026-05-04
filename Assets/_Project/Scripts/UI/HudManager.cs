@@ -368,8 +368,10 @@ namespace CatHotel.UI
         {
             var ads = AdManager.Instance;
             var boost = RevenueBoostManager.Instance;
-            if (ads == null || !ads.IsAdReady || ads.HasReachedDailyCap) return;
-            if (boost != null && boost.IsBoosted) return;
+            if (ads == null) { Debug.LogWarning("[HUD] AddBoost click ignored: AdManager.Instance is null"); return; }
+            if (!ads.IsAdReady) { Debug.LogWarning("[HUD] AddBoost click ignored: ad not ready"); return; }
+            if (ads.HasReachedDailyCap) { Debug.LogWarning("[HUD] AddBoost click ignored: daily cap reached"); return; }
+            if (boost != null && boost.IsBoosted) { Debug.LogWarning("[HUD] AddBoost click ignored: boost already active"); return; }
 
             if (ads.ShowRewardedAd() && _starRt != null)
             {

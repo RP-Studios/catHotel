@@ -760,9 +760,9 @@ namespace CatHotel.Editor
             ("Scratch/Out/siberien_Black_Scratch_Out_Right.png", "sibb_scratch_out_right", "Scratch_Out_Right", 7, 14f),
 
             // Lick (paw-licking idle) — files imported with siamois_base_* prefix
-            ("Lick/siamois_base_lick_face.png",  "sibb_lick_face",  "Lick_Front", 18, 8f),
-            ("Lick/siamois_base_lick_left.png",  "sibb_lick_left",  "Lick_Left",  16, 8f),
-            ("Lick/siamois_base_lick_right.png", "sibb_lick_right", "Lick_Right", 16, 8f),
+            ("Lick/siberien_black_lick_face.png",  "sibb_lick_face",  "Lick_Front", 18, 8f),
+            ("Lick/siberien_black_lick_left.png",  "sibb_lick_left",  "Lick_Left",  16, 8f),
+            ("Lick/siberien_black_lick_right.png", "sibb_lick_right", "Lick_Right", 16, 8f),
         };
 
         // ==================== SIBERIAN WHITE ====================

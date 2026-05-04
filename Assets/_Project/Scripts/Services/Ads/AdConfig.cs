@@ -6,8 +6,8 @@ namespace CatHotel.Services
     public class AdConfig : ScriptableObject
     {
         [Header("LevelPlay")]
-        [Tooltip("App Key depuis le dashboard LevelPlay (= Game ID Android)")]
-        public string appKey = "6065046";
+        [Tooltip("App Key LevelPlay (dashboard LevelPlay > Apps > ton app)")]
+        public string appKey = "258d1cc05";
 
         [Tooltip("Ad Unit ID pour le boost x2 revenus")]
         public string rewardedAdUnitId = "1rett8r2d58j6ob4";
@@ -29,5 +29,14 @@ namespace CatHotel.Services
         [Header("Debug")]
         [Tooltip("Active le mode test (pas de vraies pubs, pas de revenu)")]
         public bool testMode = true;
+
+        [Tooltip("Ouvre la Test Suite LevelPlay sur device au demarrage (touche T pour la rouvrir)")]
+        public bool launchTestSuiteOnStart = false;
+
+        [Tooltip("STUB : bypass total de LevelPlay, simule un visionnage de pub (delay + reward auto). Pour beta avant approbation.")]
+        public bool stubAdsForBeta = false;
+
+        [Tooltip("Duree simulee du visionnage stub en secondes")]
+        public float stubAdDuration = 2f;
     }
 }

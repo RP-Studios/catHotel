@@ -119,12 +119,12 @@ namespace CatHotel.Tutorial
                 var step = _sequence.steps[_currentStep];
 
                 // Execute start action (may spawn cat, lock camera, etc.)
-                ExecuteAction(step.actionOnStart);
+                ExecuteAction(step.actionOnStart, step);
 
                 // --- Pure Action step (no dialogue, no wait) ---
                 if (!step.HasDialogue && step.trigger == TutorialTrigger.Action)
                 {
-                    ExecuteAction(step.actionOnComplete);
+                    ExecuteAction(step.actionOnComplete, step);
                     AdvanceStep();
                     yield return null;
                     continue;
@@ -134,7 +134,7 @@ namespace CatHotel.Tutorial
                 if (!step.HasDialogue && step.trigger == TutorialTrigger.WaitForDelay)
                 {
                     yield return new WaitForSeconds(step.delaySeconds);
-                    ExecuteAction(step.actionOnComplete);
+                    ExecuteAction(step.actionOnComplete, step);
                     AdvanceStep();
                     continue;
                 }
@@ -144,7 +144,8 @@ namespace CatHotel.Tutorial
                 {
                     // Show "Skip tutorial" link only on the very first step
                     bool showSkip = _currentStep == 0;
-                    _narrationUI.Show(step.speakerLabelKey, step.speakerPortrait, step.textKey, showSkip);
+                    _narrationUI.Show(step.speakerLabelKey, step.speakerPortrait, step.textKey,
+                        showSkip, step.bubbleOnRight);
                 }
 
                 // --- Wait for trigger ---
@@ -174,7 +175,7 @@ namespace CatHotel.Tutorial
                     _narrationUI.Hide();
 
                 // Execute complete action
-                ExecuteAction(step.actionOnComplete);
+                ExecuteAction(step.actionOnComplete, step);
 
                 AdvanceStep();
 
@@ -188,10 +189,19 @@ namespace CatHotel.Tutorial
             ClearShopFilter();
             UnfreezeAllCats();
             RestoreDimmedHud();
-            StopGlobalPexPulse();
+            StopPulse();
             UnsubscribeEvents();
             if (_narrationUI != null) _narrationUI.OnSkipConfirmed -= SkipTutorial;
+            MarkComplete();
             Debug.Log("[Tutorial] Complete!");
+        }
+
+        private void MarkComplete()
+        {
+            if (CloudSaveManager.Instance == null) return;
+            CloudSaveManager.Instance.Progression.tutorialComplete = true;
+            // Immediate sync write — async save would race against the player going back to menu.
+            CloudSaveManager.Instance.SaveProgressionImmediate();
         }
 
         private void AdvanceStep()
@@ -253,6 +263,7 @@ namespace CatHotel.Tutorial
 
             // Persist state so tutorial won't restart next launch
             SaveStepIndex();
+            MarkComplete();
         }
 
         private void SaveStepIndex()
@@ -267,7 +278,7 @@ namespace CatHotel.Tutorial
         private CatEntity _firstCat;  // pension cat
         private CatEntity _refugeCat; // refuge cat
 
-        private void ExecuteAction(TutorialAction action)
+        private void ExecuteAction(TutorialAction action, TutorialStep step = null)
         {
             switch (action)
             {
@@ -346,12 +357,35 @@ namespace CatHotel.Tutorial
 
                 case TutorialAction.HighlightGlobalPex:
                     DimHudExcept("GlobalPex");
-                    StartGlobalPexPulse();
+                    StartPulseOn("GlobalPex");
                     break;
+
+                case TutorialAction.HighlightUI:
+                {
+                    string target = step != null ? step.highlightTarget : null;
+                    if (!string.IsNullOrEmpty(target))
+                    {
+                        // If the target was disabled by DisableGameUI, re-enable it temporarily
+                        // so the player can actually see it during the highlight.
+                        var targetGo = FindByName(target);
+                        if (targetGo != null && !targetGo.activeSelf)
+                        {
+                            _temporarilyEnabledForHighlight.Add(targetGo);
+                            targetGo.SetActive(true);
+                        }
+                        DimHudExcept(target);
+                        StartPulseOn(target);
+                    }
+                    break;
+                }
 
                 case TutorialAction.RestoreHighlight:
                     RestoreDimmedHud();
-                    StopGlobalPexPulse();
+                    StopPulse();
+                    // Re-disable elements we temporarily activated only for the highlight.
+                    foreach (var go in _temporarilyEnabledForHighlight)
+                        if (go != null) go.SetActive(false);
+                    _temporarilyEnabledForHighlight.Clear();
                     break;
 
                 case TutorialAction.DespawnFirstCat:
@@ -412,6 +446,7 @@ namespace CatHotel.Tutorial
 
         private readonly System.Collections.Generic.Dictionary<UnityEngine.CanvasGroup, float> _dimmedGroups
             = new System.Collections.Generic.Dictionary<UnityEngine.CanvasGroup, float>();
+        private readonly System.Collections.Generic.List<GameObject> _temporarilyEnabledForHighlight = new();
         private Tween _globalPexPulse;
         private Vector3 _globalPexBaseScale;
         private Transform _globalPexTransform;
@@ -423,24 +458,39 @@ namespace CatHotel.Tutorial
         private void DimHudExcept(string keepName)
         {
             // Dim a known set of HUD elements + the "HUD" / "HUDPanel" parent if found.
+            // Only top-level HUD panels — never the inner labels, otherwise CanvasGroup
+            // alphas multiply and the visible result becomes near-invisible (0.3 × 0.3 = 0.09).
             string[] candidates =
             {
-                "HUD", "HUDPanel", "TopHUD",
-                "CurrentLvlValue", "CurrentLvlDesc",
-                "NextLvlValue", "NextLvlDesc",
-                "NextLevelObjectiveCurrentValue",
-                "PurrlsCounter", "CapacityPct", "ComfortLevel",
-                "NexCatTimerSec", "CurrentFloorIndex",
-                "FloorUpAction", "FloorDownAction",
+                "GlobalPex",
+                "Catcoins", "Puurls",
+                "Capacity", "Comfort",
+                "Floors",
+                "System",
+                "CollectAllAction", "AddBoost",
+                "NextCat",
                 "ShopAction", "ParameterAction",
+                "FloorUpAction", "FloorDownAction",
             };
+
+            // Resolve the kept element's transform once so we can skip self + descendants + ancestors.
+            var keptGo = FindByName(keepName);
+            var keptT = keptGo != null ? keptGo.transform : null;
 
             foreach (var name in candidates)
             {
                 var go = FindByName(name);
                 if (go == null) continue;
-                // Skip the kept element and any of its ancestors
                 if (go.name == keepName) continue;
+
+                // Skip if candidate is an ancestor of kept (dimming it would dim kept's siblings, fine,
+                // but it could also affect kept itself). Skip if candidate is a descendant of kept.
+                if (keptT != null)
+                {
+                    var t = go.transform;
+                    if (t.IsChildOf(keptT)) continue;
+                    if (keptT.IsChildOf(t)) continue;
+                }
 
                 var cg = go.GetComponent<UnityEngine.CanvasGroup>();
                 if (cg == null) cg = go.AddComponent<UnityEngine.CanvasGroup>();
@@ -478,9 +528,9 @@ namespace CatHotel.Tutorial
             _dimmedGroups.Clear();
         }
 
-        private void StartGlobalPexPulse()
+        private void StartPulseOn(string targetName)
         {
-            var go = FindByName("GlobalPex");
+            var go = FindByName(targetName);
             if (go == null) return;
             _globalPexTransform = go.transform;
             _globalPexBaseScale = _globalPexTransform.localScale;
@@ -492,7 +542,7 @@ namespace CatHotel.Tutorial
                 .SetUpdate(true);
         }
 
-        private void StopGlobalPexPulse()
+        private void StopPulse()
         {
             _globalPexPulse?.Kill();
             _globalPexPulse = null;

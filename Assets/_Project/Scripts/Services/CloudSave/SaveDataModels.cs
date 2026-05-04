@@ -29,7 +29,8 @@ namespace CatHotel.Services
         public int floorTileIndex = -1;  // which floor tile visual to use (-1 = not set)
         public List<PlacedObjectSaveData> placedObjects = new();
         public List<CatCloudSaveData> cats = new();
-        public int tutorialStepIndex;    // current tutorial step (0 = start, N = finished)
+        public int tutorialStepIndex;    // current tutorial step (0 = start, N = last reached)
+        public bool tutorialComplete;    // true once the tutorial is fully done OR skipped — never wipe save afterwards
         public int highestUnlockedFloor; // 0 = only RDC, 1 = floor 1 unlocked, ...
         public string lastSaveTime;      // ISO 8601
     }

@@ -17,6 +17,7 @@ namespace CatHotel.Tutorial
         WaitForCoinCollected,
         WaitForCatServiceUsed,
         WaitForLevelPanelOpened,
+        WaitForLevelPanelClosed,
         WaitForDelay,
         Action
     }
@@ -42,7 +43,8 @@ namespace CatHotel.Tutorial
         EnableShopBalls,
         EnableFullShop,
         DespawnFirstCat,
-        HighlightGlobalPex,
+        HighlightGlobalPex, // legacy alias for HighlightUI(GlobalPex)
+        HighlightUI,        // dim everything + pulse the GameObject named in step.highlightTarget
         RestoreHighlight,
     }
 
@@ -62,6 +64,10 @@ namespace CatHotel.Tutorial
         public ObjectCategory requiredCategory;
         [Tooltip("For WaitForDelay: seconds to wait.")]
         public float delaySeconds = 3f;
+        [Tooltip("For HighlightUI action: GameObject name to dim-around + pulse.")]
+        public string highlightTarget;
+        [Tooltip("Show the dialogue with the bubble + portrait on the RIGHT side of the screen instead of the left.")]
+        public bool bubbleOnRight;
 
         [Header("Actions")]
         public TutorialAction actionOnStart;
