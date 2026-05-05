@@ -183,6 +183,12 @@ namespace CatHotel.Economy
 
                 float stackScale = 1f + (coin.Stacks - 1) * 0.125f;
                 go.transform.localScale = Vector3.one * stackScale;
+
+                // Hide coin if its cat is on a hidden floor (matches the cat's renderer state).
+                var catSr = coin.CatTransform != null ? coin.CatTransform.GetComponent<SpriteRenderer>() : null;
+                var coinSr = go.GetComponent<SpriteRenderer>();
+                if (coinSr != null)
+                    coinSr.enabled = catSr == null || catSr.enabled;
             }
             for (int i = 0; i < _toRemove.Count; i++)
                 _coinViews.Remove(_toRemove[i]);
@@ -210,6 +216,8 @@ namespace CatHotel.Economy
                 foreach (var cat in _catSpawner.AllCats)
                 {
                     if (cat == null) continue;
+                    // Skip cats on hidden floors (their renderer is disabled).
+                    if (cat.SpriteRenderer == null || !cat.SpriteRenderer.enabled) continue;
                     float dist = Vector2.Distance(worldPos, cat.transform.position);
                     if (dist < bestDist)
                     {

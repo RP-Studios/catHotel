@@ -5,42 +5,70 @@ using CatHotel.Core;
 namespace CatHotel.Cats
 {
     /// <summary>
-    /// Pool of cat names from localization.
-    /// Tracks used names to avoid duplicates.
+    /// Pool of cat names from localization. Tracks used names to avoid duplicates.
+    /// Supports per-breed extra names appended to the common pool.
     /// </summary>
     public static class CatNames
     {
-        private static string[] _names;
+        private static string[] _commonNames;
+        private static readonly Dictionary<string, string[]> _breedExtras = new();
         private static readonly HashSet<string> UsedNames = new();
         private static int _duplicateCounter;
 
-        private static string[] Names
+        private static string[] CommonNames
         {
             get
             {
-                if (_names == null)
-                {
-                    string pool = LocalizedStrings.Get("names.pool");
-                    _names = pool.Split(',');
-                    for (int i = 0; i < _names.Length; i++)
-                        _names[i] = _names[i].Trim();
-                }
-                return _names;
+                if (_commonNames == null)
+                    _commonNames = ParsePool(LocalizedStrings.Get("names.pool"));
+                return _commonNames;
             }
         }
 
-        public static string GetRandomName()
+        private static string[] GetBreedExtras(string breedAssetName)
         {
-            var names = Names;
-            for (int attempt = 0; attempt < names.Length; attempt++)
+            if (string.IsNullOrEmpty(breedAssetName)) return System.Array.Empty<string>();
+            if (_breedExtras.TryGetValue(breedAssetName, out var cached)) return cached;
+
+            string raw = LocalizedStrings.Get($"names.pool.{breedAssetName}");
+            // LocalizedStrings.Get returns "[key]" when missing → treat as empty
+            if (string.IsNullOrEmpty(raw) || raw.StartsWith("[") && raw.EndsWith("]"))
             {
-                string name = names[Random.Range(0, names.Length)];
-                if (UsedNames.Add(name))
-                    return name;
+                _breedExtras[breedAssetName] = System.Array.Empty<string>();
+                return _breedExtras[breedAssetName];
+            }
+
+            var arr = ParsePool(raw);
+            _breedExtras[breedAssetName] = arr;
+            return arr;
+        }
+
+        private static string[] ParsePool(string raw)
+        {
+            if (string.IsNullOrEmpty(raw)) return System.Array.Empty<string>();
+            var parts = raw.Split(',');
+            for (int i = 0; i < parts.Length; i++) parts[i] = parts[i].Trim();
+            return parts;
+        }
+
+        /// <summary>Pick a random unused name. Optionally include per-breed extras.</summary>
+        public static string GetRandomName(string breedAssetName = null)
+        {
+            var common = CommonNames;
+            var extras = GetBreedExtras(breedAssetName);
+            int total = common.Length + extras.Length;
+            if (total == 0) return "Cat";
+
+            for (int attempt = 0; attempt < total; attempt++)
+            {
+                int idx = Random.Range(0, total);
+                string name = idx < common.Length ? common[idx] : extras[idx - common.Length];
+                if (UsedNames.Add(name)) return name;
             }
 
             _duplicateCounter++;
-            string baseName = names[Random.Range(0, names.Length)];
+            int fallbackIdx = Random.Range(0, total);
+            string baseName = fallbackIdx < common.Length ? common[fallbackIdx] : extras[fallbackIdx - common.Length];
             string numbered = $"{baseName} {_duplicateCounter + 1}";
             UsedNames.Add(numbered);
             return numbered;
@@ -55,7 +83,8 @@ namespace CatHotel.Cats
         {
             UsedNames.Clear();
             _duplicateCounter = 0;
-            _names = null; // re-read from localization on next access
+            _commonNames = null;
+            _breedExtras.Clear();
         }
     }
 }

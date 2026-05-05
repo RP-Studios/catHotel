@@ -71,6 +71,11 @@ namespace CatHotel.Hotel
         private const float AutoSaveInterval = 30f;
         private float _autoSaveTimer;
 
+        // Passive income for cats on hidden floors (they don't tick services there).
+        private const float PassiveIncomeInterval = 10f; // every 10s
+        private const float PassiveIncomePerCat = 1.5f;  // base coins per hidden cat per tick (scaled by happiness)
+        private float _passiveIncomeTimer;
+
         public IReadOnlyList<CatInstance> Cats => _cats;
         public GameConfig Config => _config;
         public EconomyManager Economy => _economy;
@@ -234,6 +239,36 @@ namespace CatHotel.Hotel
                 _autoSaveTimer = 0f;
                 SaveProgression();
             }
+
+            // Passive income for cats living on hidden floors (their AI is frozen
+            // so they generate no service-based revenue; we compensate with a tick).
+            _passiveIncomeTimer += Time.deltaTime;
+            if (_passiveIncomeTimer >= PassiveIncomeInterval)
+            {
+                _passiveIncomeTimer = 0f;
+                TickPassiveIncome();
+            }
+        }
+
+        private void TickPassiveIncome()
+        {
+            if (_economy == null || _gridRenderer == null) return;
+            int visibleFloor = _gridRenderer.CurrentFloor;
+            float total = 0f;
+            foreach (var cat in _cats)
+            {
+                if (cat.Entity == null || cat.Entity.FloorIndex == visibleFloor) continue;
+                if (cat.State == CatState.Leaving || cat.State == CatState.Pickup) continue;
+                float happiness = cat.Happiness != null ? cat.Happiness.Value : 50f;
+                // Happier hidden cats earn more; unhappy ones still trickle a small amount.
+                total += PassiveIncomePerCat * (happiness / 100f);
+            }
+            int coins = Mathf.RoundToInt(total);
+            if (coins > 0)
+            {
+                _economy.AddCoins(coins);
+                Debug.Log($"[Hotel] Passive income tick: +{coins} coins from hidden floors.");
+            }
         }
 
         private void UpdateArrivals()
@@ -343,7 +378,7 @@ namespace CatHotel.Hotel
             entity.SetBreed(breed);
             entity.Init(_gridRenderer.Data, entrance, _catSpawner, 0, _gridRenderer);
 
-            string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
+            string catName = isSpecial ? breed.specialName : CatNames.GetRandomName(breed.name);
             float pensionDuration = mode == CatMode.Pension ? UnityEngine.Random.Range(60f, 300f) : 0f;
 
             string description = "";
@@ -541,7 +576,7 @@ namespace CatHotel.Hotel
             entity.Init(_gridRenderer.Data, entrance, _catSpawner, 0, _gridRenderer);
 
             // Pick a name
-            string catName = isSpecial ? breed.specialName : CatNames.GetRandomName();
+            string catName = isSpecial ? breed.specialName : CatNames.GetRandomName(breed.name);
 
             // Pension duration: 1-5 minutes (only for pension cats)
             float pensionDuration = mode == CatMode.Pension
@@ -666,6 +701,15 @@ namespace CatHotel.Hotel
             cat.State = CatState.Pickup;
             cat.Entity.SetDeparting();
 
+            // If the cat is on a hidden floor (frozen), the walk would never complete →
+            // skip the visual departure and show the panel right away.
+            int visibleFloor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+            if (cat.Entity.FloorIndex != visibleFloor)
+            {
+                ShowPensionEndPanel(cat);
+                return;
+            }
+
             // Pension cats leave via top-left entrance (no door animation)
             cat.Entity.WalkToTarget(_gridRenderer.PensionEntrance, () => ShowPensionEndPanel(cat));
         }
@@ -748,6 +792,14 @@ namespace CatHotel.Hotel
             if (_floatingCoinView != null && cat.Entity != null)
                 _floatingCoinView.ForceCollectCoinForCat(cat.Entity.transform);
 
+            // If the cat is frozen on a hidden floor, skip the visible walk and finalize.
+            int visibleFloor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+            if (cat.Entity.FloorIndex != visibleFloor)
+            {
+                FinalizeDeparture(cat);
+                return;
+            }
+
             // Unhappy cats leave via the single right exit (with door animation)
             var exit = _gridRenderer.UnhappyExit;
             var exitDoor = _gridRenderer.ExitDoor;
@@ -763,6 +815,14 @@ namespace CatHotel.Hotel
             cat.State = reason;
             cat.Entity.SetDeparting();
             CatHotel.Audio.CatSoundManager.Instance?.PlayDeparture();
+
+            // Frozen-floor cats: skip walk, finalize immediately so the player still gets the reward.
+            int visibleFloor = _gridRenderer != null ? _gridRenderer.CurrentFloor : 0;
+            if (cat.Entity.FloorIndex != visibleFloor)
+            {
+                FinalizeDeparture(cat);
+                return;
+            }
 
             // Adopted/refuge cats leave via bottom-left entrance (no door animation)
             cat.Entity.WalkToTarget(_gridRenderer.RefugeEntrance, () => FinalizeDeparture(cat));
