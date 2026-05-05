@@ -60,6 +60,41 @@ namespace CatHotel.Editor
             for (int i = 0; i < 4; i++)
                 bank.meowSadClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
                     $"Assets/_Project/Audio/SFX/Cats/Meow_Sad-{(i + 1):D3}.ogg");
+
+            bank.arrivalClips = new AudioClip[4];
+            for (int i = 0; i < 4; i++)
+                bank.arrivalClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Cat_Arrival ST-{(i + 1):D3}.ogg");
+
+            // "Chelter_Arrival ST.ogg" (single clip — typo in source asset name kept as-is)
+            bank.shelterArrivalClips = new AudioClip[1];
+            bank.shelterArrivalClips[0] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                "Assets/_Project/Audio/SFX/Cats/Chelter_Arrival ST.ogg");
+
+            bank.departureClips = new AudioClip[2];
+            for (int i = 0; i < 2; i++)
+                bank.departureClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Cat_Departure ST-{(i + 1):D3}.ogg");
+
+            bank.escapeClips = new AudioClip[3];
+            for (int i = 0; i < 3; i++)
+                bank.escapeClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Cat_Escape ST-{(i + 1):D3}.ogg");
+
+            bank.purringClips = new AudioClip[6];
+            for (int i = 0; i < 6; i++)
+                bank.purringClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Cat_Purring-{(i + 1):D3}.ogg");
+
+            bank.itemDropClips = new AudioClip[5];
+            for (int i = 0; i < 5; i++)
+                bank.itemDropClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Item_Drop-{(i + 1):D3}.ogg");
+
+            bank.itemDeleteClips = new AudioClip[5];
+            for (int i = 0; i < 5; i++)
+                bank.itemDeleteClips[i] = AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    $"Assets/_Project/Audio/SFX/Cats/Item_Delete-{(i + 1):D3}.ogg");
         }
     }
 }

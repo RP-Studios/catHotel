@@ -393,6 +393,7 @@ namespace CatHotel.Hotel
             _cats.Add(instance);
             if (_catSpawner != null) _catSpawner.RegisterCat(entity);
             OnCatArrived?.Invoke(instance);
+            PlayArrivalSfxFor(mode);
 
             var floorCells = _gridRenderer.CentralRoomFloorCells;
             if (floorCells.Count > 0)
@@ -619,6 +620,7 @@ namespace CatHotel.Hotel
             _cats.Add(instance);
             if (_catSpawner != null) _catSpawner.RegisterCat(entity);
             OnCatArrived?.Invoke(instance);
+            PlayArrivalSfxFor(mode);
 
             // Walk from entrance to a random floor cell
             var floorCells = _gridRenderer.CentralRoomFloorCells;
@@ -704,6 +706,7 @@ namespace CatHotel.Hotel
                     _economy.AddCoins(finalCoins);
 
                     _reputation.AwardPensionXp(happiness, cat.IsSpecial);
+                    CatHotel.Audio.CatSoundManager.Instance?.PlayDeparture();
 
                     FinalizeDeparture(cat);
                 });
@@ -713,6 +716,7 @@ namespace CatHotel.Hotel
                 // Fallback if no panel
                 _economy.AddCoins(totalCoins);
                 _reputation.AwardPensionXp(happiness, cat.IsSpecial);
+                CatHotel.Audio.CatSoundManager.Instance?.PlayDeparture();
                 FinalizeDeparture(cat);
             }
         }
@@ -739,6 +743,7 @@ namespace CatHotel.Hotel
             cat.State = CatState.Leaving;
             cat.Entity.SetDeparting();
             cat.Entity.SetSadWalk();
+            CatHotel.Audio.CatSoundManager.Instance?.PlayEscape();
 
             if (_floatingCoinView != null && cat.Entity != null)
                 _floatingCoinView.ForceCollectCoinForCat(cat.Entity.transform);
@@ -757,6 +762,7 @@ namespace CatHotel.Hotel
         {
             cat.State = reason;
             cat.Entity.SetDeparting();
+            CatHotel.Audio.CatSoundManager.Instance?.PlayDeparture();
 
             // Adopted/refuge cats leave via bottom-left entrance (no door animation)
             cat.Entity.WalkToTarget(_gridRenderer.RefugeEntrance, () => FinalizeDeparture(cat));
@@ -809,6 +815,15 @@ namespace CatHotel.Hotel
             return sum / _cats.Count;
         }
 
+        private static void PlayArrivalSfxFor(CatMode mode)
+        {
+            if (CatHotel.Audio.CatSoundManager.Instance == null) return;
+            if (mode == CatMode.Refuge)
+                CatHotel.Audio.CatSoundManager.Instance.PlayShelterArrival();
+            else
+                CatHotel.Audio.CatSoundManager.Instance.PlayArrival();
+        }
+
         /// <summary>Number of cats currently above the happy threshold (used by level-up panel).</summary>
         public int CountHappyCats()
         {
@@ -834,7 +849,9 @@ namespace CatHotel.Hotel
                 coins = _economy.Coins,
                 gems = _economy.Gems,
                 floorTileIndex = _gridRenderer.FloorTileIndex,
+                // Preserve tutorial state — these are written by TutorialManager, not by hotel state
                 tutorialStepIndex = prev?.tutorialStepIndex ?? 0,
+                tutorialComplete  = prev?.tutorialComplete ?? false,
                 placedObjects = new List<PlacedObjectSaveData>(),
                 cats = new List<CatCloudSaveData>()
             };

@@ -24,5 +24,26 @@ namespace CatHotel.Audio
 
         [Header("Meow Sad (random variant)")]
         public AudioClip[] meowSadClips;
+
+        [Header("Cat arrival (pension entrance)")]
+        public AudioClip[] arrivalClips;
+
+        [Header("Cat shelter arrival")]
+        public AudioClip[] shelterArrivalClips;
+
+        [Header("Cat departure (happy / pension end)")]
+        public AudioClip[] departureClips;
+
+        [Header("Cat escape (unhappy departure)")]
+        public AudioClip[] escapeClips;
+
+        [Header("Cat purring (petting)")]
+        public AudioClip[] purringClips;
+
+        [Header("Item drop (placement)")]
+        public AudioClip[] itemDropClips;
+
+        [Header("Item delete (sell)")]
+        public AudioClip[] itemDeleteClips;
     }
 }

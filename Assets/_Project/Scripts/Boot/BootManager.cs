@@ -15,7 +15,9 @@ namespace CatHotel.Boot
     /// </summary>
     public class BootManager : MonoBehaviour
     {
-        [SerializeField] private float _authTimeout = 5f;
+        // Total auth budget: AuthManager retries 3x with 0/1/3s backoff → ~4s of waits + actual calls.
+        // 10s leaves headroom on slow networks before falling back to offline mode.
+        [SerializeField] private float _authTimeout = 10f;
 
         public bool IsReady { get; private set; }
 
@@ -92,6 +94,9 @@ namespace CatHotel.Boot
                 var settings = CloudSaveManager.Instance.Settings;
                 if (!string.IsNullOrEmpty(settings.language))
                     CatHotel.Core.LocalizedStrings.SetLanguage(settings.language);
+
+                // Verification log: surface exactly what was loaded so prod logs are diagnosable.
+                LogSaveState(CloudSaveManager.Instance);
             }
 
             // Initialize Ads (non-blocking)
@@ -101,6 +106,24 @@ namespace CatHotel.Boot
 
             IsReady = true;
             Debug.Log("[Boot] Services initialized. Main menu ready.");
+        }
+
+        /// <summary>
+        /// Print a single-line summary of the save state after boot load.
+        /// Useful for diagnosing prod issues from logcat — tells you which source
+        /// won (cloud vs local), the lastSaveTime, and pending sync state.
+        /// </summary>
+        private static void LogSaveState(Services.CloudSaveManager mgr)
+        {
+            if (mgr == null) return;
+            var p = mgr.Progression;
+            string lastSave = string.IsNullOrEmpty(p?.lastSaveTime) ? "never" : p.lastSaveTime;
+            string source = mgr.IsCloudAvailable ? "cloud" : "local-only";
+            Debug.Log(
+                $"[Boot] Save state — source={source}, hasSave={mgr.HasPersistedSave}, " +
+                $"pendingSync={mgr.HasPendingSync}, lastSaveTime={lastSave}, " +
+                $"coins={p?.coins}, rep={p?.reputationLevel}, " +
+                $"cats={p?.cats?.Count ?? 0}, objects={p?.placedObjects?.Count ?? 0}");
         }
 
         /// <summary>

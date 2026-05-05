@@ -35,30 +35,49 @@ namespace CatHotel.Services
             DontDestroyOnLoad(gameObject);
         }
 
+        // Retry policy for transient network failures at boot
+        private static readonly int[] RetryDelaysMs = { 0, 1000, 3000 };
+
         public async Task InitializeAsync()
         {
-            try
+            Exception lastError = null;
+
+            for (int attempt = 0; attempt < RetryDelaysMs.Length; attempt++)
             {
-                var options = new InitializationOptions();
-                options.SetEnvironmentName(_config.environmentName);
-                await UnityServices.InitializeAsync(options);
+                if (RetryDelaysMs[attempt] > 0)
+                    await Task.Delay(RetryDelaysMs[attempt]);
 
-                if (!AuthenticationService.Instance.IsSignedIn)
-                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                try
+                {
+                    var options = new InitializationOptions();
+                    options.SetEnvironmentName(_config.environmentName);
+                    await UnityServices.InitializeAsync(options);
 
-                PlayerId = AuthenticationService.Instance.PlayerId;
-                IsSignedIn = true;
-                Debug.Log($"[Auth] UGS anonymous sign-in OK. PlayerId: {PlayerId}");
+                    if (!AuthenticationService.Instance.IsSignedIn)
+                        await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-                await TryLinkGooglePlayAsync();
+                    PlayerId = AuthenticationService.Instance.PlayerId;
+                    IsSignedIn = true;
+                    if (attempt > 0)
+                        Debug.Log($"[Auth] UGS sign-in OK on retry #{attempt}. PlayerId: {PlayerId}");
+                    else
+                        Debug.Log($"[Auth] UGS anonymous sign-in OK. PlayerId: {PlayerId}");
 
-                OnSignInComplete?.Invoke();
+                    await TryLinkGooglePlayAsync();
+
+                    OnSignInComplete?.Invoke();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    lastError = e;
+                    Debug.LogWarning($"[Auth] Sign-in attempt {attempt + 1}/{RetryDelaysMs.Length} failed: {e.Message}");
+                }
             }
-            catch (Exception e)
-            {
-                Debug.LogWarning($"[Auth] Sign-in failed: {e.Message}");
-                OnSignInFailed?.Invoke(e.Message);
-            }
+
+            // All attempts exhausted — game continues offline
+            Debug.LogWarning($"[Auth] All sign-in attempts failed. Continuing offline. Last error: {lastError?.Message}");
+            OnSignInFailed?.Invoke(lastError?.Message ?? "unknown");
         }
 
         private async Task TryLinkGooglePlayAsync()

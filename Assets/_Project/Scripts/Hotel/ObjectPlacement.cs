@@ -383,6 +383,7 @@ namespace CatHotel.Hotel
             var placedCategory = _currentData.category;
             CleanupPlacement();
             Debug.Log($"[Placement] Placed {placedName} at {placedPos}");
+            CatHotel.Audio.CatSoundManager.Instance?.PlayItemDrop();
             Tutorial.TutorialManager.Instance?.NotifyEvent(
                 Tutorial.TutorialTrigger.WaitForObjectPlaced, placedCategory);
 

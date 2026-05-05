@@ -275,6 +275,10 @@ namespace CatHotel.Cats
             ReleaseCurrentObject();
             ReleaseBedIfClaimed();
 
+            // Purr while being petted (only if visible on screen)
+            if (_canPlaySfx)
+                CatSoundManager.Instance?.PlayPurring();
+
             _currentDir = CatDirection.Front;
             PlayAnimState("Pet_Front");
 

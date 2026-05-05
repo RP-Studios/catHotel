@@ -260,6 +260,7 @@ namespace CatHotel.Hotel
 
             int sellPrice = _movingObject.Data.SellPrice;
             _economy.AddCoins(sellPrice);
+            CatHotel.Audio.CatSoundManager.Instance?.PlayItemDelete();
 
             // Destroy the object
             var obj = _movingObject;

@@ -19,6 +19,13 @@ namespace CatHotel.Audio
         private AudioClip[] _litterClips;
         private AudioClip[] _meowNeutralClips;
         private AudioClip[] _meowSadClips;
+        private AudioClip[] _arrivalClips;
+        private AudioClip[] _shelterArrivalClips;
+        private AudioClip[] _departureClips;
+        private AudioClip[] _escapeClips;
+        private AudioClip[] _purringClips;
+        private AudioClip[] _itemDropClips;
+        private AudioClip[] _itemDeleteClips;
 
         private AudioSource _source;
 
@@ -59,6 +66,13 @@ namespace CatHotel.Audio
                 _litterClips = bank.litterClips;
                 _meowNeutralClips = bank.meowNeutralClips;
                 _meowSadClips = bank.meowSadClips;
+                _arrivalClips = bank.arrivalClips;
+                _shelterArrivalClips = bank.shelterArrivalClips;
+                _departureClips = bank.departureClips;
+                _escapeClips = bank.escapeClips;
+                _purringClips = bank.purringClips;
+                _itemDropClips = bank.itemDropClips;
+                _itemDeleteClips = bank.itemDeleteClips;
                 return;
             }
 
@@ -68,6 +82,16 @@ namespace CatHotel.Audio
             _litterClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Litter-{0}.ogg", 2);
             _meowNeutralClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Meow_Neutral-{0}.ogg", 7);
             _meowSadClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Meow_Sad-{0}.ogg", 4);
+            _arrivalClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Arrival ST-{0}.ogg", 4);
+            _shelterArrivalClips = new[] {
+                UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(
+                    "Assets/_Project/Audio/SFX/Cats/Chelter_Arrival ST.ogg")
+            };
+            _departureClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Departure ST-{0}.ogg", 2);
+            _escapeClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Escape ST-{0}.ogg", 3);
+            _purringClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Cat_Purring-{0}.ogg", 6);
+            _itemDropClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Item_Drop-{0}.ogg", 5);
+            _itemDeleteClips = LoadEditorClips("Assets/_Project/Audio/SFX/Cats/Item_Delete-{0}.ogg", 5);
 #else
             Debug.LogError("[CatSoundManager] CatSoundBank not found in Resources/. " +
                 "Create one via Cat Hotel > Audio > Create Cat Sound Bank.");
@@ -135,6 +159,27 @@ namespace CatHotel.Audio
 
         /// <summary>Play a random litter/clean sound.</summary>
         public void PlayLitter() => PlayRandom(_litterClips);
+
+        /// <summary>Play a random pension-arrival sound (cat arriving at the pension entrance).</summary>
+        public void PlayArrival() => PlayRandom(_arrivalClips);
+
+        /// <summary>Play the shelter-arrival sound (cat arriving at the refuge entrance).</summary>
+        public void PlayShelterArrival() => PlayRandom(_shelterArrivalClips);
+
+        /// <summary>Play a random pension-departure sound (cat leaving happy after a normal stay).</summary>
+        public void PlayDeparture() => PlayRandom(_departureClips);
+
+        /// <summary>Play a random escape sound (unhappy cat leaves through the right exit).</summary>
+        public void PlayEscape() => PlayRandom(_escapeClips);
+
+        /// <summary>Play a random purring sound (used while petting a cat).</summary>
+        public void PlayPurring() => PlayRandom(_purringClips);
+
+        /// <summary>Play a random item-drop sound (object placed on the grid).</summary>
+        public void PlayItemDrop() => PlayRandom(_itemDropClips);
+
+        /// <summary>Play a random item-delete sound (object sold via the sell zone).</summary>
+        public void PlayItemDelete() => PlayRandom(_itemDeleteClips);
 
         /// <summary>Play a random neutral meow. Respects cooldown.</summary>
         public void PlayMeow()

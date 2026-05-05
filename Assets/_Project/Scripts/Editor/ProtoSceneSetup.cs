@@ -2495,74 +2495,74 @@ namespace CatHotel.Editor
             CreateObjectAsset($"{D}/Obj_Frame01.asset", "Cadre 1",
                 ObjectCategory.Decoration, 60, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/FRAME_01.png", size: Vector2Int.one, wallMount: true,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/FRAME_01_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/FRAME_01_SELEC.png", comfortBonus: 3);
             CreateObjectAsset($"{D}/Obj_Frame02.asset", "Cadre 2",
                 ObjectCategory.Decoration, 60, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/FRAME_02.png", size: Vector2Int.one, wallMount: true,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/FRAME_02_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/FRAME_02_SELEC.png", comfortBonus: 3);
             CreateObjectAsset($"{D}/Obj_Frame03.asset", "Cadre 3",
                 ObjectCategory.Decoration, 60, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/FRAME_03.png", size: Vector2Int.one, wallMount: true,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/FRAME_03_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/FRAME_03_SELEC.png", comfortBonus: 3);
             CreateObjectAsset($"{D}/Obj_FramePainting.asset", "Peinture",
                 ObjectCategory.Decoration, 120, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/FRAME_PAINTING.png", size: Vector2Int.one, wallMount: true,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/PAINTING_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/PAINTING_SELEC.png", comfortBonus: 6);
 
             // --- Decorations: Lamps ---
             CreateObjectAsset($"{D}/Obj_LampBig.asset", "Grande lampe",
                 ObjectCategory.Decoration, 100, 0f, 0f, maxUsers: 0,
-                spritePath: $"{ObjectsRoot}/Deco/LAMP_BIG.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Deco/LAMP_BIG.png", size: Vector2Int.one, comfortBonus: 5);
 
             // --- Decorations: Tables ---
             CreateObjectAsset($"{D}/Obj_TableCoffee.asset", "Table basse",
                 ObjectCategory.Decoration, 80, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/TABLE_COFFEE_TABLE.png", size: Vector2Int.one, visualScale: 2f,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/COFFEE_TABLE_SELEC.png", isTable: true);
+                selectedSpritePath: $"{ObjectsRoot}/Deco/COFFEE_TABLE_SELEC.png", isTable: true, comfortBonus: 3);
             CreateObjectAsset($"{D}/Obj_TableDrawer.asset", "Commode",
                 ObjectCategory.Decoration, 90, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/TABLE_DRAWER_Small.png", size: Vector2Int.one, visualScale: 1f,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/DRAWER_Small_SELEC.png", isTable: true);
+                selectedSpritePath: $"{ObjectsRoot}/Deco/DRAWER_Small_SELEC.png", isTable: true, comfortBonus: 4);
 
             // --- Decorations: Plants ---
             CreateObjectAsset($"{D}/Obj_PlantBig.asset", "Grande plante",
                 ObjectCategory.Decoration, 50, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/PLANT_BIG.png", size: Vector2Int.one,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/PLANT_BIG_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/PLANT_BIG_SELEC.png", comfortBonus: 5);
             CreateObjectAsset($"{D}/Obj_PlantSmall.asset", "Petite plante",
                 ObjectCategory.Decoration, 30, 0f, 0f, maxUsers: 0,
-                spritePath: $"{ObjectsRoot}/Deco/PLANT_SMALL.png", size: Vector2Int.one);
+                spritePath: $"{ObjectsRoot}/Deco/PLANT_SMALL.png", size: Vector2Int.one, comfortBonus: 3);
 
             // --- Decorations: Shelves (wall-mount) ---
             CreateObjectAsset($"{D}/Obj_Shelf0.asset", "Étagère",
                 ObjectCategory.Decoration, 70, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/SHELF_0.png", size: new Vector2Int(2, 1), wallMount: true,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/SHELF_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/SHELF_SELEC.png", comfortBonus: 4);
             CreateObjectAsset($"{D}/Obj_ShelfVar01.asset", "Étagère var.",
                 ObjectCategory.Decoration, 70, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01.png", size: new Vector2Int(2, 1), wallMount: true,
-                selectedSpritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Deco/SHELF_Var_01_SELEC.png", comfortBonus: 4);
 
-            // --- Decorations: Aquarium (static sprite only — spritesheet removed) ---
+            // --- Decorations: Aquarium (premium piece) ---
             CreateObjectAsset($"{D}/Obj_Aquarium.asset", "Aquarium",
                 ObjectCategory.Decoration, 200, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Deco/Aquarium.png", size: Vector2Int.one,
-                visualScale: 2f, requiresTable: true);
+                visualScale: 2f, requiresTable: true, comfortBonus: 12);
 
             // --- Carpets ---
             CreateObjectAsset($"{D}/Obj_CarpetConfort.asset", "Tapis Confort",
                 ObjectCategory.Decoration, 120, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Carpets/CARPET_CONFORT.png", size: new Vector2Int(2, 2),
-                selectedSpritePath: $"{ObjectsRoot}/Carpets/CARPET_CONFORT_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Carpets/CARPET_CONFORT_SELEC.png", comfortBonus: 6);
             CreateObjectAsset($"{D}/Obj_CarpetPlay.asset", "Tapis Jeu",
                 ObjectCategory.Decoration, 120, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Carpets/CARPET_PLAY.png", size: new Vector2Int(2, 2),
-                selectedSpritePath: $"{ObjectsRoot}/Carpets/CARPET_PLAY_SELEC.png");
+                selectedSpritePath: $"{ObjectsRoot}/Carpets/CARPET_PLAY_SELEC.png", comfortBonus: 5);
             var carpetCosmicCtrl = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(CarpetCosmicControllerPath);
             CreateObjectAsset($"{D}/Obj_CarpetCosmic.asset", "Tapis Cosmique",
                 ObjectCategory.Decoration, 250, 0f, 0f, maxUsers: 0,
                 spritePath: $"{ObjectsRoot}/Carpets/CARPET_COSMIC.png", size: new Vector2Int(2, 2),
-                animController: carpetCosmicCtrl);
+                comfortBonus: 10, animController: carpetCosmicCtrl);
 
             // --- Stairs (special object: blocks pathfinding, not in shop, not selectable) ---
             var stairsData = CreateObjectAsset($"{D}/Obj_Stairs.asset", "Escalier",
@@ -2595,7 +2595,8 @@ namespace CatHotel.Editor
             int maxUsers = 1, string spritePath = null, Vector2Int? size = null,
             float visualScale = 1f, bool wallMount = false, bool requiresTable = false,
             RuntimeAnimatorController animController = null, Sprite iconOverride = null,
-            string selectedSpritePath = null, bool isTable = false, bool isStairs = false)
+            string selectedSpritePath = null, bool isTable = false, bool isStairs = false,
+            int comfortBonus = 0)
         {
             var data = CreateOrLoadAsset<HotelObjectData>(path);
             var so = new SerializedObject(data);
@@ -2610,6 +2611,7 @@ namespace CatHotel.Editor
             so.FindProperty("requiresTable").boolValue = requiresTable;
             so.FindProperty("isTable").boolValue = isTable;
             so.FindProperty("isStairs").boolValue = isStairs;
+            so.FindProperty("comfortBonus").intValue = comfortBonus;
             so.FindProperty("worldAnimController").objectReferenceValue = animController;
 
             if (spritePath != null)
