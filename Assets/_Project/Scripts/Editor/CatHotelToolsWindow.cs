@@ -31,6 +31,14 @@ namespace CatHotel.Editor
                 "ScriptableObjects et cablage de toutes les references.",
                 "Apres un changement de structure de scene, ou pour repartir d'un etat propre.");
 
+            Tool("Setup Safe Area",
+                "Cree un container 'SafeArea' sous le Canvas principal et y reparente " +
+                "automatiquement tous les enfants HUD. Le container ajuste ses anchors " +
+                "sur Screen.safeArea (horizontal uniquement par defaut) pour tenir " +
+                "compte des cameras / encoches / gestes des bords. Les calques full-screen " +
+                "(Fade, Loading, Background) restent siblings et continuent de couvrir tout l'ecran.",
+                "Une fois apres setup de scene, ou apres ajout de nouveaux groupes HUD direct enfants du Canvas.");
+
             // ── Build ──
             Section("Build");
 
