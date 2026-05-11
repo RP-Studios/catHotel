@@ -33,7 +33,7 @@ namespace CatHotel.Core
         /// <summary>Fired when language changes. UI should subscribe to refresh labels.</summary>
         public static event System.Action OnLanguageChanged;
 
-        /// <summary>Current language key ("fr", "en" or "de").</summary>
+        /// <summary>Current language key ("fr", "en", "de", "es" or "pt").</summary>
         public static string CurrentLanguage { get; private set; } = "fr";
 
         private const string PrefKey = "Param_Language";
@@ -44,6 +44,8 @@ namespace CatHotel.Core
             {
                 "en" => English,
                 "de" => German,
+                "es" => Spanish,
+                "pt" => Portuguese,
                 _ => French,
             };
         }
@@ -103,6 +105,16 @@ namespace CatHotel.Core
             {
                 CurrentLanguage = "de";
                 _current = German;
+            }
+            else if (sysLang == UnityEngine.SystemLanguage.Spanish)
+            {
+                CurrentLanguage = "es";
+                _current = Spanish;
+            }
+            else if (sysLang == UnityEngine.SystemLanguage.Portuguese)
+            {
+                CurrentLanguage = "pt";
+                _current = Portuguese;
             }
             else
             {
@@ -1007,6 +1019,598 @@ namespace CatHotel.Core
 
             // --- Cat Names ---
             { "names.pool", "Mieze,Felix,Karamell,Luna,Tiger,Haselnuss,Schnurri,Pascha,Zimt,Krickel,Kätzchen,Kuschel,Schlingel,Frechdachs,Lakritze,Perle,Simba,Feder,Keks,Cookie,Praline,Nougat,Macaron,Brioche,Muffin,Crumble,Tiramisu,Baiser,Brownie,Fudge,Kosmos,Mond,Stern,Komet,Nova,Nebula,Sonne,Aurora,Eclipse,Galaxie,Astro,Pluto,Rubin,Saphir,Smaragd,Jade,Opal,Bernstein,Topas,Diamant,Kristall,Onyx,Elfenbein,Koralle,Ninja,Pixel,Wifi,Sushi,Tofu,Wasabi,Mozart,Picasso,Darwin,Merlin,Zorro,Gatsby,Eule,Schmetterling,Kolibri,Schatten,Fuchs,Otter,Odyssee,Belle,Romeo,Vanille,Zucker,Kakao,Latte,Madeleine,Vega,Sirius,Andromeda,Apollo,Atlas,Mars,Indigo,Amethyst,Türkis,Quarz,Voltaire,Hugo,Tesla,Curie,Athena,Hermes,Iris,Pandora,Schmunzel,Hase,Wiesel,Biber,Vortex,Matrix" },
+        };
+
+        // ==================== SPANISH ====================
+        public static readonly Dictionary<string, string> Spanish = new()
+        {
+            // --- Cat Info Panel ---
+            { "cat.kitten", "Gatito" },
+            { "cat.adult", "Gato adulto" },
+            { "cat.stay.pension", "En pensión" },
+            { "cat.stay.refuge", "En el refugio" },
+            { "cat.likes", "Le gustan {0}" },
+            { "cat.dislikes", "No le gustan {0}" },
+            { "cat.time.none", "--:--:--" },
+
+            // --- End Pension Panel ---
+            { "pension.bye", "¡Adiós {0}!" },
+
+            // --- Loading ---
+            { "ui.loading", "Cargando" },
+            { "loading.tip.0", "Acaricia a tus gatos para hacerlos felices." },
+            { "loading.tip.1", "Un gato infeliz puede irse sin pagar." },
+            { "loading.tip.2", "Toca dos veces un objeto para moverlo." },
+            { "loading.tip.3", "Las alfombras dan un bonus de confort a la zona." },
+            { "loading.tip.4", "Algunas razas no se llevan bien — vigílalas." },
+            { "loading.tip.5", "Cuanta más reputación, más exigentes los gatos." },
+            { "loading.tip.6", "Las escaleras llevan a los pisos superiores." },
+            { "loading.tip.7", "Recoge tus monedas rápido antes de que desaparezcan." },
+
+            // --- Tutorial (Narration) ---
+            { "tuto.speaker.jasper", "Jasper" },
+            { "tuto.speaker.winston", "Winston" },
+            { "tuto.skip.link", "Saltar tutorial" },
+            { "tuto.skip.ask", "¿Saltar tutorial?" },
+            { "tuto.skip.yes", "Sí" },
+            { "tuto.skip.no", "No" },
+            { "tuto.welcome", "¡Bienvenido a <b>Meowtel</b>!\nSoy Jasper, el conserje." },
+            { "tuto.explain", "Aquí recibes gatos en pensión y refugio. ¡Cuídalos y te recompensarán!" },
+            { "tuto.floors", "El hotel tiene <b>10 pisos</b> que desbloquear sobre la planta baja. ¡Cuanto más crezca, más gatos podrás acoger!" },
+            { "tuto.levelup.intro", "Para desbloquear un piso nuevo, debes <b>subir tu nivel de reputación</b>." },
+            { "tuto.levelup.xp", "Gana <b>XP</b> haciendo felices a los gatos. Cada pensión exitosa y cada adopción otorgan XP." },
+            { "tuto.levelup.cond", "Para subir de nivel necesitas: suficiente <b>XP</b>, suficientes <b>gatos con más del 75% de felicidad</b>, y pagar en <b>Cat Coins</b>." },
+            { "tuto.levelup.tap", "Toca la <b>barra de nivel</b> de arriba para ver tus condiciones actuales." },
+            { "tuto.levelup.done", "¡Perfecto! Vuelve aquí regularmente para hacer crecer el hotel. Cierra el panel para continuar." },
+            { "tuto.coins", "La <b>moneda</b> aquí es el Cat Coin. ¡Compra objetos para tus gatos... y paga las subidas de nivel!" },
+            // --- HUD elements walkthrough ---
+            { "tuto.hud.coins", "Esta es tu <b>reserva de Cat Coins</b>. Se llena al recoger las monedas de los gatos felices. Sirve para comprar y subir de nivel." },
+            { "tuto.hud.purrls", "Los <b>Puurls</b> son la moneda premium. Más adelante podrás comprar objetos especiales con grandes bonus o activar boosts de ingresos." },
+            { "tuto.hud.capacity", "La <b>capacidad</b> del hotel: porcentaje de plazas ocupadas respecto al máximo de tu nivel." },
+            { "tuto.hud.comfort", "El <b>confort medio</b> del hotel. Base 50%, +5% si está poco lleno (<20%), sube con la decoración y baja si está saturado (>80%)." },
+            { "tuto.hud.floors", "El <b>piso</b> mostrado actualmente. Usa las flechas para subir y bajar cuando los desbloquees." },
+            { "tuto.hud.system", "El <b>menú de pausa</b>. Ajustes, idioma, sonido y opciones." },
+            { "tuto.hud.collectall", "<b>Recoger todas las monedas</b> de una vez. Coste: 5 Cat Coins. ¡Útil cuando el hotel se llena!" },
+            { "tuto.hud.addboost", "Ve un anuncio para <b>duplicar tus ingresos durante 60s</b>. Cooldown: 120s entre activaciones." },
+            { "tuto.hud.nextcat", "La <b>cuenta atrás</b> hasta el próximo gato. Cuanto más crezca tu hotel, más rápido el ritmo." },
+            { "tuto.hud.shop", "La <b>tienda de objetos</b>. Compra aquí todo lo que tus gatos necesitan." },
+            { "tuto.pension", "Los gatos llegan en <b>pensión</b> por un tiempo determinado. ¡Mantén su felicidad alta para ganar el máximo de Cat Coins!" },
+            { "tuto.refuge", "Gatos tristes llegan por el <b>refugio</b>. ¡Hazlos felices para que puedan ser adoptados!" },
+            { "tuto.unhappy", "Atención: un gato cuya felicidad baje del <b>25%</b> querrá irse. ¡No lo dejes escapar!" },
+            { "tuto.firstcat", "¡Oh! ¡Llega tu primer huésped! Obsérvalo..." },
+            { "tuto.selectcat", "Toca al gato para seleccionarlo." },
+            { "tuto.catinfo", "Aquí tienes su info: nombre, raza, humor y necesidades. ¡Vigílalo!" },
+            { "tuto.pensiontime", "Mira el tiempo restante en pensión. Cuando termine, el gato se irá. ¡Cuanto más feliz, más ganas!" },
+            { "tuto.refugecat", "¡Llega un gato del refugio! Tiene hambre... Mira sus indicadores: necesita comida." },
+            { "tuto.buyfood", "Abre la tienda y compra un <b>comedero</b>, luego colócalo en la habitación." },
+            { "tuto.waiteat", "¡Bien! Espera a que el gato coma..." },
+            { "tuto.collectcoin", "¡Apareció una moneda! Tócala para recoger tus <b>Cat Coins</b>." },
+            { "tuto.thirsty", "¡Ahora tiene sed! Compra <b>agua</b> y colócala." },
+            { "tuto.waitdrink", "Déjalo beber tranquilo..." },
+            { "tuto.sleepy", "El gato está cansado. ¡Dale una <b>cama</b> o un <b>cojín</b>!" },
+            { "tuto.waitsleep", "Está descansando... ¡shh!" },
+            { "tuto.dirty", "¡Necesita un <b>arenero</b>! Compra uno." },
+            { "tuto.waitclean", "Se está aseando..." },
+            { "tuto.bored", "¡Quiere jugar! Compra un <b>ovillo de lana</b>." },
+            { "tuto.waitplay", "¡Míralo divertirse!" },
+            { "tuto.complete", "¡Bravo! Ya conoces lo básico. ¡El hotel es tuyo, suerte!" },
+
+            // --- Sound ---
+            { "sound.on", "Sonido activado" },
+            { "sound.off", "Sonido desactivado" },
+
+            // --- Mood ---
+            { "mood.happy", "Contento" },
+            { "mood.ecstatic", "Entusiasta" },
+            { "mood.depressed", "Deprimido" },
+            { "mood.aggressive", "Agresivo" },
+            { "mood.angry", "Enfadado" },
+
+            // --- Needs ---
+            { "need.hungry", "Hambriento" },
+            { "need.thirsty", "Sediento" },
+            { "need.tired", "Cansado" },
+            { "need.bored", "Aburrido" },
+            { "need.dirty", "Sucio" },
+
+            // --- HUD ---
+            { "hud.floor.ground", "PB" },
+            { "hud.floor", "Piso {0}" },
+            { "hud.level", "Nivel {0}" },
+            { "levelup.title.current", "Nivel {0}" },
+            { "levelup.title.next", "Nivel {0}" },
+            { "levelup.newstuff", "Novedades" },
+            { "levelup.condition.xp", "{0} / {1} XP" },
+            { "levelup.condition.happycats", "{0} gatos > 75% de felicidad de {1}" },
+            { "levelup.newfloor", "Piso {0} desbloqueado" },
+            { "levelup.capacity.title", "Capacidad del hotel" },
+            { "levelup.go.next", "Pasar al siguiente nivel" },
+            { "hud.level.max", "MÁX" },
+            { "hud.level.max.reached", "¡Nivel máximo alcanzado!" },
+            { "hud.level.objective", "{0}/{1} gatos con +{2}% de felicidad" },
+            { "hud.boost.active", "¡Boost x2 activo! {0}s" },
+
+            // --- Reputation Level Names ---
+            { "rep.0", "Principiante" },
+            { "rep.1", "Aficionado" },
+            { "rep.2", "Competente" },
+            { "rep.3", "Profesional" },
+            { "rep.4", "Experto" },
+            { "rep.5", "Renombrado" },
+            { "rep.6", "Famoso" },
+            { "rep.7", "Prestigioso" },
+            { "rep.8", "Élite" },
+            { "rep.9", "Legendario" },
+            { "rep.10", "Maestro Felino" },
+
+            // --- Shop Categories ---
+            { "shop.beds", "Camas" },
+            { "shop.pillows", "Cojines" },
+            { "shop.croquettes", "Comederos" },
+            { "shop.water", "Agua" },
+            { "shop.balls", "Pelotas" },
+            { "shop.scratchers", "Rascadores" },
+            { "shop.litters", "Areneros" },
+            { "shop.frames", "Cuadros" },
+            { "shop.lamps", "Lámparas" },
+            { "shop.tables", "Mesas" },
+            { "shop.plants", "Plantas" },
+            { "shop.shelves", "Estantes" },
+            { "shop.aquariums", "Acuarios" },
+            { "shop.carpets", "Alfombras" },
+            { "shop.trees", "Árboles para gatos" },
+
+            // --- Breed Names ---
+            { "breed.europeen", "Europeo" },
+            { "breed.siamois", "Siamés" },
+            { "breed.ragdoll", "Ragdoll" },
+            { "breed.siberien", "Siberiano" },
+            { "breed.chartreux", "Cartujo" },
+
+            // --- Personality: Race Traits ---
+            { "trait.hunger", "Glotón" },
+            { "trait.thirst", "Sediento" },
+            { "trait.sleep", "Dormilón" },
+            { "trait.play", "Juguetón" },
+            { "trait.clean", "Maniático" },
+            { "trait.aggressive", "Peleón" },
+            { "trait.big", "Imponente" },
+            { "trait.small", "Pequeño" },
+            { "trait.fast", "Rápido" },
+            { "trait.slow", "Tranquilo" },
+
+            // --- Personality: Personality Pool ---
+            { "personality.cuddly", "Mimoso" },
+            { "personality.independent", "Independiente" },
+            { "personality.curious", "Curioso" },
+            { "personality.fearful", "Miedoso" },
+            { "personality.affectionate", "Cariñoso" },
+            { "personality.observer", "Observador" },
+            { "personality.discreet", "Discreto" },
+            { "personality.clingy", "Pegajoso" },
+            { "personality.adventurer", "Aventurero" },
+            { "personality.territorial", "Territorial" },
+            { "personality.sociable", "Sociable" },
+            { "personality.solitary", "Solitario" },
+            { "personality.clever", "Astuto" },
+            { "personality.lazy", "Perezoso" },
+            { "personality.loyal", "Fiel" },
+            { "personality.capricious", "Caprichoso" },
+
+            // --- Personality: Quirky Pool ---
+            { "quirk.grudge", "Rencoroso" },
+            { "quirk.touchy", "Susceptible" },
+            { "quirk.dumb", "Despistado" },
+            { "quirk.big_eater", "Comilón" },
+            { "quirk.drinker", "Bebedor" },
+            { "quirk.food_thief", "Ladrón de comida" },
+            { "quirk.snorer", "Roncador" },
+            { "quirk.litter_fear", "Miedo al arenero" },
+            { "quirk.jealous", "Celoso" },
+            { "quirk.show_off", "Presumido" },
+            { "quirk.drama_queen", "Drama queen" },
+            { "quirk.hair_collector", "Coleccionista de pelos" },
+            { "quirk.grumpy", "Gruñón" },
+            { "quirk.clumsy", "Torpe" },
+            { "quirk.hypochondriac", "Hipocondríaco" },
+            { "quirk.couch_king", "Rey del sofá" },
+            { "quirk.snob", "Esnob" },
+            { "quirk.pilferer", "Hurtador" },
+
+            // --- Scene Labels ---
+            // Boot scene
+            { "ui.play", "Jugar" },
+            { "ui.continue", "Continuar partida" },
+            { "ui.new_game", "Nueva partida" },
+
+            // Credits panel
+            { "credits.title", "Créditos" },
+            { "credits.gameby", "un juego de" },
+            { "credits.direction", "Dirección / desarrollo" },
+            { "credits.disclaimer", "Este juego fue creado con el motor Unity, propiedad de Unity Technologies. Unity y el logo de Unity son marcas registradas de Unity Technologies en los Estados Unidos de América y en otros países" },
+            { "ui.credits", "Créditos" },
+            { "ui.parameters", "Ajustes" },
+
+            // Options panel
+            { "ui.resume", "Reanudar" },
+            { "ui.main_menu", "Menú principal" },
+            { "ui.meowdex", "Meowdex" },
+
+            // Parameters panel
+            { "param.languages", "Idiomas" },
+            { "param.notifications", "Notificaciones push" },
+            { "param.battery", "Ahorro de batería" },
+            { "param.music_volume", "Volumen de música" },
+            { "param.effects_volume", "Volumen de efectos" },
+
+            // Shop
+            { "ui.shop", "Tienda" },
+            { "shop.category.food", "Comida" },
+            { "shop.category.drink", "Bebida" },
+            { "shop.category.sleep", "Sueño" },
+            { "shop.category.play", "Juego" },
+            { "shop.category.clean", "Higiene" },
+            { "shop.category.comfort", "Confort" },
+            { "shop.category.deco", "Decoración" },
+            { "shop.double_gains", "Duplicar ganancias" },
+
+            // Cat Info Panel
+            { "cat.name_label", "Nombre del gato" },
+            { "cat.race_label", "Raza" },
+            { "cat.age_label", "Edad" },
+            { "cat.character_label", "Carácter" },
+            { "cat.affinity_label", "Afinidades" },
+            { "cat.needs_label", "Necesidades" },
+            { "cat.need.hunger", "Hambre" },
+            { "cat.need.thirst", "Sed" },
+            { "cat.need.sleep", "Sueño" },
+            { "cat.need.play", "Juego" },
+            { "cat.need.clean", "Higiene" },
+            { "cat.need.happiness", "Felicidad" },
+
+            // End Pension Panel
+            { "pension.title", "¡Fin de la estancia en pensión!" },
+            { "pension.happiness", "Felicidad media durante la estancia:" },
+            { "pension.details", "Detalles del pago" },
+            { "pension.base", "Base" },
+            { "pension.tip", "Propina" },
+            { "pension.total", "Total" },
+            { "pension.time_remaining", "Tiempo restante en pensión" },
+
+            // HUD
+            { "hud.boost.label", "¡Boost x2 de recolección de cat coins activo!" },
+
+            // Object display names (shop items)
+            { "obj.bed", "Cama" },
+            { "obj.luxury_bed", "Cama de lujo" },
+            { "obj.pillow", "Cojín" },
+            { "obj.food_bowl", "Comedero" },
+            { "obj.food_bowl_v2", "Comedero var. 2" },
+            { "obj.food_bowl_v3", "Comedero var. 3" },
+            { "obj.food_bowl_v4", "Comedero var. 4" },
+            { "obj.water_bowl", "Bebedero" },
+            { "obj.water_bowl_04", "Bebedero moderno" },
+            { "obj.water_bowl_v2", "Bebedero var. 2" },
+            { "obj.water_bowl_v3", "Bebedero var. 3" },
+            { "obj.wool_ball", "Ovillo de lana" },
+            { "obj.cat_tree", "Árbol para gatos" },
+            { "obj.scratcher", "Rascador" },
+            { "obj.litter", "Arenero" },
+            { "obj.litter_v1", "Arenero var." },
+            { "obj.frame_1", "Cuadro 1" },
+            { "obj.frame_2", "Cuadro 2" },
+            { "obj.frame_3", "Cuadro 3" },
+            { "obj.painting", "Pintura" },
+            { "obj.lamp", "Lámpara de pie" },
+            { "obj.coffee_table", "Mesa de centro" },
+            { "obj.drawer", "Cómoda" },
+            { "obj.plant_big", "Planta grande" },
+            { "obj.plant_small", "Planta pequeña" },
+            { "obj.shelf", "Estante" },
+            { "obj.shelf_v1", "Estante var." },
+            { "obj.aquarium", "Acuario" },
+            { "obj.carpet_confort", "Alfombra Confort" },
+            { "obj.carpet_play", "Alfombra Juego" },
+            { "obj.carpet_cosmic", "Alfombra Cósmica" },
+
+            // --- Cat Names ---
+            { "names.pool", "Michi,Felix,Caramelo,Luna,Tigre,Avellana,Bigotes,Pacha,Canela,Garabato,Gatito,Mimoso,Pillo,Traviesa,Regaliz,Perla,Simba,Pluma,Galleta,Cookie,Praliné,Turrón,Macaron,Brioche,Muffin,Crumble,Tiramisú,Merengue,Brownie,Toffee,Cosmos,Lunita,Estrella,Cometa,Nova,Nebula,Sol,Aurora,Eclipse,Galaxia,Astro,Plutón,Rubí,Zafiro,Esmeralda,Jade,Ópalo,Ámbar,Topacio,Diamante,Cristal,Ónix,Marfil,Coral,Ninja,Pixel,Wifi,Sushi,Tofu,Wasabi,Mozart,Picasso,Darwin,Merlín,Zorro,Gatsby,Búho,Mariposa,Colibrí,Sombra,Zorrito,Nutria,Odisea,Belle,Romeo,Vainilla,Azúcar,Cacao,Latte,Madeleine,Vega,Sirio,Andrómeda,Apolo,Atlas,Marte,Índigo,Amatista,Turquesa,Cuarzo,Voltaire,Hugo,Tesla,Curie,Atenea,Hermes,Iris,Pandora,Bombón,Conejito,Comadreja,Castor,Vortex,Matrix" },
+        };
+
+        // ==================== PORTUGUESE (BR) ====================
+        public static readonly Dictionary<string, string> Portuguese = new()
+        {
+            // --- Cat Info Panel ---
+            { "cat.kitten", "Gatinho" },
+            { "cat.adult", "Gato adulto" },
+            { "cat.stay.pension", "Em hospedagem" },
+            { "cat.stay.refuge", "No abrigo" },
+            { "cat.likes", "Gosta de {0}" },
+            { "cat.dislikes", "Não gosta de {0}" },
+            { "cat.time.none", "--:--:--" },
+
+            // --- End Pension Panel ---
+            { "pension.bye", "Tchau {0}!" },
+
+            // --- Loading ---
+            { "ui.loading", "Carregando" },
+            { "loading.tip.0", "Faça carinho nos seus gatos para deixá-los felizes." },
+            { "loading.tip.1", "Um gato infeliz pode ir embora sem pagar." },
+            { "loading.tip.2", "Toque duas vezes em um objeto para movê-lo." },
+            { "loading.tip.3", "Os tapetes dão um bônus de conforto à zona." },
+            { "loading.tip.4", "Algumas raças não se dão bem — fique de olho." },
+            { "loading.tip.5", "Quanto mais famoso seu hotel, mais exigentes os gatos." },
+            { "loading.tip.6", "As escadas levam aos andares superiores." },
+            { "loading.tip.7", "Pegue suas moedas rápido antes que elas sumam." },
+
+            // --- Tutorial (Narration) ---
+            { "tuto.speaker.jasper", "Jasper" },
+            { "tuto.speaker.winston", "Winston" },
+            { "tuto.skip.link", "Pular tutorial" },
+            { "tuto.skip.ask", "Pular tutorial?" },
+            { "tuto.skip.yes", "Sim" },
+            { "tuto.skip.no", "Não" },
+            { "tuto.welcome", "Bem-vindo ao <b>Meowtel</b>!\nEu sou Jasper, o concierge." },
+            { "tuto.explain", "Aqui, você recebe gatos para hospedagem e abrigo. Cuide bem deles e eles vão te recompensar!" },
+            { "tuto.floors", "O hotel tem <b>10 andares</b> para desbloquear acima do térreo. Quanto maior o hotel, mais gatos você pode hospedar!" },
+            { "tuto.levelup.intro", "Para desbloquear um novo andar, você precisa <b>subir de nível de reputação</b>." },
+            { "tuto.levelup.xp", "Ganhe <b>XP</b> deixando os gatos felizes. Cada hospedagem bem-sucedida e cada adoção rendem XP." },
+            { "tuto.levelup.cond", "Para subir de nível você precisa: <b>XP</b> suficiente, <b>gatos com mais de 75% de felicidade</b> suficientes, e pagar em <b>Cat Coins</b>." },
+            { "tuto.levelup.tap", "Toque na <b>barra de nível</b> no topo para ver suas condições atuais." },
+            { "tuto.levelup.done", "Perfeito! Volte aqui regularmente para fazer o hotel crescer. Feche o painel para continuar." },
+            { "tuto.coins", "A <b>moeda</b> aqui é o Cat Coin. Compre objetos para seus gatos... e pague as subidas de nível!" },
+            // --- HUD elements walkthrough ---
+            { "tuto.hud.coins", "Esta é sua <b>reserva de Cat Coins</b>. Ela enche quando você recolhe as moedas deixadas pelos gatos felizes. Serve para comprar e subir de nível." },
+            { "tuto.hud.purrls", "<b>Puurls</b> são a moeda premium. Mais tarde, eles permitirão comprar objetos especiais com grandes bônus, ou ativar boosts de ganhos." },
+            { "tuto.hud.capacity", "A <b>capacidade</b> do hotel: porcentagem das vagas ocupadas em relação ao máximo permitido pelo seu nível." },
+            { "tuto.hud.comfort", "O <b>conforto médio</b> do hotel. Base 50%, +5% se o hotel está pouco cheio (<20%), sobe com a decoração e cai quando lotado (>80%)." },
+            { "tuto.hud.floors", "O <b>andar</b> exibido atualmente. Use as setas para subir e descer quando tiver desbloqueado." },
+            { "tuto.hud.system", "O <b>menu de pausa</b>. Configurações, idioma, som e opções." },
+            { "tuto.hud.collectall", "<b>Recolher todas as moedas</b> de uma vez. Custo: 5 Cat Coins. Útil quando o hotel está cheio!" },
+            { "tuto.hud.addboost", "Veja um anúncio para <b>dobrar seus ganhos por 60s</b>. Cooldown: 120s entre ativações." },
+            { "tuto.hud.nextcat", "A <b>contagem regressiva</b> até o próximo gato. Quanto maior seu hotel, mais rápido o ritmo." },
+            { "tuto.hud.shop", "A <b>loja de objetos</b>. Compre aqui tudo que seus gatos precisam." },
+            { "tuto.pension", "Gatos chegam em <b>hospedagem</b> por um tempo determinado. Mantenha a felicidade deles alta para ganhar o máximo de Cat Coins!" },
+            { "tuto.refuge", "Gatos tristes chegam pelo <b>abrigo</b>. Deixe-os felizes para que possam ser adotados!" },
+            { "tuto.unhappy", "Atenção: um gato cuja felicidade cair abaixo de <b>25%</b> vai querer ir embora. Não deixe escapar!" },
+            { "tuto.firstcat", "Oh! Seu primeiro cliente está chegando! Observe-o..." },
+            { "tuto.selectcat", "Toque no gato para selecioná-lo." },
+            { "tuto.catinfo", "Aqui estão suas informações: nome, raça, humor e necessidades. Fique de olho!" },
+            { "tuto.pensiontime", "Veja o tempo restante de hospedagem. Quando acabar, o gato vai embora. Quanto mais feliz, mais você ganha!" },
+            { "tuto.refugecat", "Um gato do abrigo chegou! Ele está com fome... Olhe os indicadores: ele precisa de comida." },
+            { "tuto.buyfood", "Abra a loja e compre um <b>comedouro</b>, depois coloque no quarto." },
+            { "tuto.waiteat", "Ótimo! Espere o gato comer..." },
+            { "tuto.collectcoin", "Uma moeda apareceu! Toque nela para recolher seus <b>Cat Coins</b>." },
+            { "tuto.thirsty", "Agora ele está com sede! Compre <b>água</b> e coloque." },
+            { "tuto.waitdrink", "Deixe ele beber em paz..." },
+            { "tuto.sleepy", "O gato está cansado. Dê uma <b>cama</b> ou um <b>travesseiro</b>!" },
+            { "tuto.waitsleep", "Ele está descansando... shh!" },
+            { "tuto.dirty", "Ele precisa de uma <b>caixa de areia</b>! Compre uma." },
+            { "tuto.waitclean", "Ele está se limpando..." },
+            { "tuto.bored", "Ele quer brincar! Compre uma <b>bola de lã</b>." },
+            { "tuto.waitplay", "Veja ele se divertir!" },
+            { "tuto.complete", "Parabéns! Você conhece o básico. O hotel é seu, boa sorte!" },
+
+            // --- Sound ---
+            { "sound.on", "Som ligado" },
+            { "sound.off", "Som desligado" },
+
+            // --- Mood ---
+            { "mood.happy", "Contente" },
+            { "mood.ecstatic", "Entusiasmado" },
+            { "mood.depressed", "Deprimido" },
+            { "mood.aggressive", "Agressivo" },
+            { "mood.angry", "Bravo" },
+
+            // --- Needs ---
+            { "need.hungry", "Com fome" },
+            { "need.thirsty", "Com sede" },
+            { "need.tired", "Cansado" },
+            { "need.bored", "Entediado" },
+            { "need.dirty", "Sujo" },
+
+            // --- HUD ---
+            { "hud.floor.ground", "Térreo" },
+            { "hud.floor", "Andar {0}" },
+            { "hud.level", "Nível {0}" },
+            { "levelup.title.current", "Nível {0}" },
+            { "levelup.title.next", "Nível {0}" },
+            { "levelup.newstuff", "Novidades" },
+            { "levelup.condition.xp", "{0} / {1} XP" },
+            { "levelup.condition.happycats", "{0} gatos > 75% de felicidade de {1}" },
+            { "levelup.newfloor", "Andar {0} desbloqueado" },
+            { "levelup.capacity.title", "Capacidade do hotel" },
+            { "levelup.go.next", "Ir para o próximo nível" },
+            { "hud.level.max", "MAX" },
+            { "hud.level.max.reached", "Nível máximo alcançado!" },
+            { "hud.level.objective", "{0}/{1} gatos com +{2}% de felicidade" },
+            { "hud.boost.active", "Boost x2 ativo! {0}s" },
+
+            // --- Reputation Level Names ---
+            { "rep.0", "Iniciante" },
+            { "rep.1", "Amador" },
+            { "rep.2", "Competente" },
+            { "rep.3", "Profissional" },
+            { "rep.4", "Especialista" },
+            { "rep.5", "Renomado" },
+            { "rep.6", "Famoso" },
+            { "rep.7", "Prestigiado" },
+            { "rep.8", "Elite" },
+            { "rep.9", "Lendário" },
+            { "rep.10", "Mestre dos Gatos" },
+
+            // --- Shop Categories ---
+            { "shop.beds", "Camas" },
+            { "shop.pillows", "Travesseiros" },
+            { "shop.croquettes", "Comedouros" },
+            { "shop.water", "Água" },
+            { "shop.balls", "Bolas" },
+            { "shop.scratchers", "Arranhadores" },
+            { "shop.litters", "Caixas de areia" },
+            { "shop.frames", "Quadros" },
+            { "shop.lamps", "Lâmpadas" },
+            { "shop.tables", "Mesas" },
+            { "shop.plants", "Plantas" },
+            { "shop.shelves", "Prateleiras" },
+            { "shop.aquariums", "Aquários" },
+            { "shop.carpets", "Tapetes" },
+            { "shop.trees", "Árvores para gatos" },
+
+            // --- Breed Names ---
+            { "breed.europeen", "Europeu" },
+            { "breed.siamois", "Siamês" },
+            { "breed.ragdoll", "Ragdoll" },
+            { "breed.siberien", "Siberiano" },
+            { "breed.chartreux", "Chartreux" },
+
+            // --- Personality: Race Traits ---
+            { "trait.hunger", "Guloso" },
+            { "trait.thirst", "Sedento" },
+            { "trait.sleep", "Dorminhoco" },
+            { "trait.play", "Brincalhão" },
+            { "trait.clean", "Higiênico" },
+            { "trait.aggressive", "Brigão" },
+            { "trait.big", "Imponente" },
+            { "trait.small", "Pequeno" },
+            { "trait.fast", "Rápido" },
+            { "trait.slow", "Tranquilo" },
+
+            // --- Personality: Personality Pool ---
+            { "personality.cuddly", "Carinhoso" },
+            { "personality.independent", "Independente" },
+            { "personality.curious", "Curioso" },
+            { "personality.fearful", "Medroso" },
+            { "personality.affectionate", "Afetuoso" },
+            { "personality.observer", "Observador" },
+            { "personality.discreet", "Discreto" },
+            { "personality.clingy", "Grudento" },
+            { "personality.adventurer", "Aventureiro" },
+            { "personality.territorial", "Territorial" },
+            { "personality.sociable", "Sociável" },
+            { "personality.solitary", "Solitário" },
+            { "personality.clever", "Esperto" },
+            { "personality.lazy", "Preguiçoso" },
+            { "personality.loyal", "Fiel" },
+            { "personality.capricious", "Caprichoso" },
+
+            // --- Personality: Quirky Pool ---
+            { "quirk.grudge", "Rancoroso" },
+            { "quirk.touchy", "Sensível" },
+            { "quirk.dumb", "Desligado" },
+            { "quirk.big_eater", "Comilão" },
+            { "quirk.drinker", "Bebedor" },
+            { "quirk.food_thief", "Ladrão de ração" },
+            { "quirk.snorer", "Roncador" },
+            { "quirk.litter_fear", "Medo da caixa" },
+            { "quirk.jealous", "Ciumento" },
+            { "quirk.show_off", "Exibido" },
+            { "quirk.drama_queen", "Drama queen" },
+            { "quirk.hair_collector", "Colecionador de pelos" },
+            { "quirk.grumpy", "Rabugento" },
+            { "quirk.clumsy", "Desajeitado" },
+            { "quirk.hypochondriac", "Hipocondríaco" },
+            { "quirk.couch_king", "Rei do sofá" },
+            { "quirk.snob", "Esnobe" },
+            { "quirk.pilferer", "Furtador" },
+
+            // --- Scene Labels ---
+            // Boot scene
+            { "ui.play", "Jogar" },
+            { "ui.continue", "Continuar jogo" },
+            { "ui.new_game", "Novo jogo" },
+
+            // Credits panel
+            { "credits.title", "Créditos" },
+            { "credits.gameby", "um jogo de" },
+            { "credits.direction", "Direção / desenvolvimento" },
+            { "credits.disclaimer", "Este jogo foi criado usando o motor Unity, propriedade da Unity Technologies. Unity e o logotipo Unity são marcas registradas da Unity Technologies nos Estados Unidos da América e em outros países" },
+            { "ui.credits", "Créditos" },
+            { "ui.parameters", "Configurações" },
+
+            // Options panel
+            { "ui.resume", "Continuar" },
+            { "ui.main_menu", "Menu principal" },
+            { "ui.meowdex", "Meowdex" },
+
+            // Parameters panel
+            { "param.languages", "Idiomas" },
+            { "param.notifications", "Notificações push" },
+            { "param.battery", "Economia de bateria" },
+            { "param.music_volume", "Volume da música" },
+            { "param.effects_volume", "Volume dos efeitos" },
+
+            // Shop
+            { "ui.shop", "Loja" },
+            { "shop.category.food", "Comida" },
+            { "shop.category.drink", "Bebida" },
+            { "shop.category.sleep", "Sono" },
+            { "shop.category.play", "Brincadeira" },
+            { "shop.category.clean", "Higiene" },
+            { "shop.category.comfort", "Conforto" },
+            { "shop.category.deco", "Decoração" },
+            { "shop.double_gains", "Dobrar ganhos" },
+
+            // Cat Info Panel
+            { "cat.name_label", "Nome do gato" },
+            { "cat.race_label", "Raça" },
+            { "cat.age_label", "Idade" },
+            { "cat.character_label", "Personalidade" },
+            { "cat.affinity_label", "Afinidades" },
+            { "cat.needs_label", "Necessidades" },
+            { "cat.need.hunger", "Fome" },
+            { "cat.need.thirst", "Sede" },
+            { "cat.need.sleep", "Sono" },
+            { "cat.need.play", "Brincadeira" },
+            { "cat.need.clean", "Higiene" },
+            { "cat.need.happiness", "Felicidade" },
+
+            // End Pension Panel
+            { "pension.title", "Fim da hospedagem!" },
+            { "pension.happiness", "Felicidade média durante a estadia:" },
+            { "pension.details", "Detalhes do pagamento" },
+            { "pension.base", "Base" },
+            { "pension.tip", "Gorjeta" },
+            { "pension.total", "Total" },
+            { "pension.time_remaining", "Tempo restante de hospedagem" },
+
+            // HUD
+            { "hud.boost.label", "Boost x2 de coleta de cat coins ativo!" },
+
+            // Object display names (shop items)
+            { "obj.bed", "Cama" },
+            { "obj.luxury_bed", "Cama de luxo" },
+            { "obj.pillow", "Travesseiro" },
+            { "obj.food_bowl", "Comedouro" },
+            { "obj.food_bowl_v2", "Comedouro var. 2" },
+            { "obj.food_bowl_v3", "Comedouro var. 3" },
+            { "obj.food_bowl_v4", "Comedouro var. 4" },
+            { "obj.water_bowl", "Bebedouro" },
+            { "obj.water_bowl_04", "Bebedouro moderno" },
+            { "obj.water_bowl_v2", "Bebedouro var. 2" },
+            { "obj.water_bowl_v3", "Bebedouro var. 3" },
+            { "obj.wool_ball", "Bola de lã" },
+            { "obj.cat_tree", "Árvore para gatos" },
+            { "obj.scratcher", "Arranhador" },
+            { "obj.litter", "Caixa de areia" },
+            { "obj.litter_v1", "Caixa de areia var." },
+            { "obj.frame_1", "Quadro 1" },
+            { "obj.frame_2", "Quadro 2" },
+            { "obj.frame_3", "Quadro 3" },
+            { "obj.painting", "Pintura" },
+            { "obj.lamp", "Luminária" },
+            { "obj.coffee_table", "Mesa de centro" },
+            { "obj.drawer", "Cômoda" },
+            { "obj.plant_big", "Planta grande" },
+            { "obj.plant_small", "Planta pequena" },
+            { "obj.shelf", "Prateleira" },
+            { "obj.shelf_v1", "Prateleira var." },
+            { "obj.aquarium", "Aquário" },
+            { "obj.carpet_confort", "Tapete Conforto" },
+            { "obj.carpet_play", "Tapete Brincadeira" },
+            { "obj.carpet_cosmic", "Tapete Cósmico" },
+
+            // --- Cat Names ---
+            { "names.pool", "Mingau,Felix,Caramelo,Luna,Tigrão,Avelã,Bigode,Pachá,Canela,Rabisco,Gatinho,Chamego,Pilantra,Travessa,Alcaçuz,Pérola,Simba,Pena,Biscoito,Cookie,Praliné,Nougat,Macaron,Brioche,Muffin,Crumble,Tiramisù,Suspiro,Brownie,Toffee,Cosmos,Lua,Estrela,Cometa,Nova,Nebula,Sol,Aurora,Eclipse,Galáxia,Astro,Plutão,Rubi,Safira,Esmeralda,Jade,Opala,Âmbar,Topázio,Diamante,Cristal,Ônix,Marfim,Coral,Ninja,Pixel,Wifi,Sushi,Tofu,Wasabi,Mozart,Picasso,Darwin,Merlin,Zorro,Gatsby,Coruja,Borboleta,Beija-flor,Sombra,Raposa,Lontra,Odisseia,Belle,Romeu,Baunilha,Açúcar,Cacau,Latte,Madeleine,Vega,Sirius,Andrômeda,Apolo,Atlas,Marte,Índigo,Ametista,Turquesa,Quartzo,Voltaire,Hugo,Tesla,Curie,Atena,Hermes,Íris,Pandora,Bombom,Coelho,Doninha,Castor,Vortex,Matrix" },
         };
     }
 }

@@ -39,6 +39,10 @@ namespace CatHotel.UI
         private RectTransform _frInactiveRect;
         private RectTransform _deActiveRect;
         private RectTransform _deInactiveRect;
+        private RectTransform _esActiveRect;
+        private RectTransform _esInactiveRect;
+        private RectTransform _ptActiveRect;
+        private RectTransform _ptInactiveRect;
 
         // Music slider
         private RectTransform _musicControl;
@@ -164,13 +168,21 @@ namespace CatHotel.UI
             _frInactiveRect = FindRect("FRInactiveAction");
             _deActiveRect = FindRect("DEActiveAction");
             _deInactiveRect = FindRect("DEInactiveAction");
+            _esActiveRect = FindRect("ESActiveAction");
+            _esInactiveRect = FindRect("ESInactiveAction");
+            _ptActiveRect = FindRect("PTActiveAction");
+            _ptInactiveRect = FindRect("PTInactiveAction");
             AddJuice(_enActiveRect);
             AddJuice(_enInactiveRect);
             AddJuice(_frActiveRect);
             AddJuice(_frInactiveRect);
             AddJuice(_deActiveRect);
             AddJuice(_deInactiveRect);
-            Debug.Log($"[Params] Lang buttons: ENActive={_enActiveRect != null}, ENInactive={_enInactiveRect != null}, FRActive={_frActiveRect != null}, FRInactive={_frInactiveRect != null}, DEActive={_deActiveRect != null}, DEInactive={_deInactiveRect != null}");
+            AddJuice(_esActiveRect);
+            AddJuice(_esInactiveRect);
+            AddJuice(_ptActiveRect);
+            AddJuice(_ptInactiveRect);
+            Debug.Log($"[Params] Lang buttons: EN={_enActiveRect != null}/{_enInactiveRect != null}, FR={_frActiveRect != null}/{_frInactiveRect != null}, DE={_deActiveRect != null}/{_deInactiveRect != null}, ES={_esActiveRect != null}/{_esInactiveRect != null}, PT={_ptActiveRect != null}/{_ptInactiveRect != null}");
 
             // Music slider
             var musicT = FindInChildren(_panelObj.transform, "MusicControl");
@@ -260,34 +272,24 @@ namespace CatHotel.UI
                 return;
             }
 
-            // Language: tap any language button that is currently active (visible)
-            if (_enActiveRect != null && _enActiveRect.gameObject.activeSelf &&
-                RectTransformUtility.RectangleContainsScreenPoint(_enActiveRect, screenPos, null))
-                return; // already EN, do nothing
-            if (_frActiveRect != null && _frActiveRect.gameObject.activeSelf &&
-                RectTransformUtility.RectangleContainsScreenPoint(_frActiveRect, screenPos, null))
-                return; // already FR, do nothing
-            if (_deActiveRect != null && _deActiveRect.gameObject.activeSelf &&
-                RectTransformUtility.RectangleContainsScreenPoint(_deActiveRect, screenPos, null))
-                return; // already DE, do nothing
-            if (_enInactiveRect != null && _enInactiveRect.gameObject.activeSelf &&
-                RectTransformUtility.RectangleContainsScreenPoint(_enInactiveRect, screenPos, null))
-            {
-                SetLanguage("en");
-                return;
-            }
-            if (_frInactiveRect != null && _frInactiveRect.gameObject.activeSelf &&
-                RectTransformUtility.RectangleContainsScreenPoint(_frInactiveRect, screenPos, null))
-            {
-                SetLanguage("fr");
-                return;
-            }
-            if (_deInactiveRect != null && _deInactiveRect.gameObject.activeSelf &&
-                RectTransformUtility.RectangleContainsScreenPoint(_deInactiveRect, screenPos, null))
-            {
-                SetLanguage("de");
-                return;
-            }
+            // Language: tap any language button that is currently active (visible) → no-op
+            if (IsTapOn(_enActiveRect, screenPos)) return; // already EN
+            if (IsTapOn(_frActiveRect, screenPos)) return; // already FR
+            if (IsTapOn(_deActiveRect, screenPos)) return; // already DE
+            if (IsTapOn(_esActiveRect, screenPos)) return; // already ES
+            if (IsTapOn(_ptActiveRect, screenPos)) return; // already PT
+            // Tap on an inactive language → switch to it
+            if (IsTapOn(_enInactiveRect, screenPos)) { SetLanguage("en"); return; }
+            if (IsTapOn(_frInactiveRect, screenPos)) { SetLanguage("fr"); return; }
+            if (IsTapOn(_deInactiveRect, screenPos)) { SetLanguage("de"); return; }
+            if (IsTapOn(_esInactiveRect, screenPos)) { SetLanguage("es"); return; }
+            if (IsTapOn(_ptInactiveRect, screenPos)) { SetLanguage("pt"); return; }
+        }
+
+        private static bool IsTapOn(RectTransform rect, Vector2 screenPos)
+        {
+            return rect != null && rect.gameObject.activeSelf &&
+                   RectTransformUtility.RectangleContainsScreenPoint(rect, screenPos, null);
         }
 
         private static void SetMusicVolume(float vol)
@@ -305,16 +307,17 @@ namespace CatHotel.UI
         private void UpdateLanguageToggles()
         {
             string lang = CatHotel.Core.LocalizedStrings.CurrentLanguage;
-            bool isEN = lang == "en";
-            bool isFR = lang == "fr";
-            bool isDE = lang == "de";
+            SetLangToggle(_enActiveRect, _enInactiveRect, lang == "en");
+            SetLangToggle(_frActiveRect, _frInactiveRect, lang == "fr");
+            SetLangToggle(_deActiveRect, _deInactiveRect, lang == "de");
+            SetLangToggle(_esActiveRect, _esInactiveRect, lang == "es");
+            SetLangToggle(_ptActiveRect, _ptInactiveRect, lang == "pt");
+        }
 
-            if (_enActiveRect != null) _enActiveRect.gameObject.SetActive(isEN);
-            if (_enInactiveRect != null) _enInactiveRect.gameObject.SetActive(!isEN);
-            if (_frActiveRect != null) _frActiveRect.gameObject.SetActive(isFR);
-            if (_frInactiveRect != null) _frInactiveRect.gameObject.SetActive(!isFR);
-            if (_deActiveRect != null) _deActiveRect.gameObject.SetActive(isDE);
-            if (_deInactiveRect != null) _deInactiveRect.gameObject.SetActive(!isDE);
+        private static void SetLangToggle(RectTransform activeRect, RectTransform inactiveRect, bool isCurrent)
+        {
+            if (activeRect != null) activeRect.gameObject.SetActive(isCurrent);
+            if (inactiveRect != null) inactiveRect.gameObject.SetActive(!isCurrent);
         }
 
         private void TogglePush()
