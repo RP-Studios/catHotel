@@ -124,7 +124,9 @@
       "WebFetch(domain:developers.is.com)",
       "WebSearch",
       "Bash(awk '/m_Name: CoinsCounter|m_Name: PurrlsCounter|m_Name: CapacityPct|m_Name: ComfortLevel|m_Name: CollectAllAction|m_Name: AddBoost/ { print NR\": \"$0 }' \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Proto.unity\")",
-      "Bash(awk 'BEGIN{find=0} /m_GameObject:.*615067865/{find=1} find && /m_Name:/{print; exit}' \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Proto.unity\")"
+      "Bash(awk 'BEGIN{find=0} /m_GameObject:.*615067865/{find=1} find && /m_Name:/{print; exit}' \"d:/Unity/catHotel_github/Assets/_Project/Scenes/_Test/Proto.unity\")",
+      "Bash('D:\\\\Unity\\\\_Hub\\\\Editor\\\\6000.3.5f2\\\\Editor\\\\Data\\\\PlaybackEngines\\\\AndroidPlayer\\\\OpenJDK\\\\bin\\\\javap.exe' -p '/tmp/check_sdk/com/unity3d/mediation/LevelPlayPrivacySettings.class')",
+      "Bash(git diff *)"
     ]
   }
 }
