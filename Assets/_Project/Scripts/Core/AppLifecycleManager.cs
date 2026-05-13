@@ -27,20 +27,26 @@ namespace CatHotel.Core
 
         private void Update()
         {
+            // Battery saver overrides our fps targets when active
+            bool battery = BatterySaverController.Instance != null
+                        && BatterySaverController.Instance.IsActive;
+            int activeFps = battery ? BatterySaverController.Instance.BatteryFps : _activeFrameRate;
+            int idleFps = battery ? BatterySaverController.Instance.BatteryIdleFps : _idleFrameRate;
+
             // Detect any input to switch back to active framerate
             if (UnityEngine.InputSystem.Pointer.current != null &&
                 UnityEngine.InputSystem.Pointer.current.press.isPressed)
             {
                 _lastInputTime = Time.unscaledTime;
 
-                if (Application.targetFrameRate != _activeFrameRate)
-                    Application.targetFrameRate = _activeFrameRate;
+                if (Application.targetFrameRate != activeFps)
+                    Application.targetFrameRate = activeFps;
             }
-            else if (Application.targetFrameRate != _idleFrameRate &&
+            else if (Application.targetFrameRate != idleFps &&
                      Time.unscaledTime - _lastInputTime > _idleTimeout)
             {
                 // No input for a while — drop to idle framerate to save battery
-                Application.targetFrameRate = _idleFrameRate;
+                Application.targetFrameRate = idleFps;
             }
         }
 

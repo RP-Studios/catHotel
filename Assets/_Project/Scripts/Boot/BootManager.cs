@@ -55,6 +55,13 @@ namespace CatHotel.Boot
                 csGo.AddComponent<CloudSaveManager>();
             }
 
+            // Create persistent battery saver controller (subscribes to ParametersPanel)
+            if (BatterySaverController.Instance == null)
+            {
+                var bsGo = new GameObject("[BatterySaverController]");
+                bsGo.AddComponent<BatterySaverController>();
+            }
+
             // Initialize Addressables (loads catalog, required before any breed loading)
             yield return Addressables.InitializeAsync();
 

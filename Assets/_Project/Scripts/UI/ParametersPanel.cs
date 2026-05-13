@@ -83,6 +83,15 @@ namespace CatHotel.UI
         /// </summary>
         public static event System.Action<float> OnMusicVolumeChanged;
 
+        // --- Battery saving ---
+        private static bool _batterySaving;
+
+        /// <summary>Current battery saving state. True = caps fps and slows passive anims.</summary>
+        public static bool BatterySaving => _batterySaving;
+
+        /// <summary>Fired when battery saving toggle changes. Subscribers apply their own effects.</summary>
+        public static event System.Action<bool> OnBatterySavingChanged;
+
         // Saved volumes before mute (to restore on unmute)
         private float _preMuteMusic = 1f;
         private float _preMuteEffects = 1f;
@@ -341,9 +350,12 @@ namespace CatHotel.UI
             _batteryToggleOn.SetActive(!wasOn);
             _batteryToggleOff.SetActive(wasOn);
 
+            _batterySaving = !wasOn;
+            OnBatterySavingChanged?.Invoke(_batterySaving);
+
             if (CloudSaveManager.Instance != null)
             {
-                CloudSaveManager.Instance.Settings.batterySaving = !wasOn;
+                CloudSaveManager.Instance.Settings.batterySaving = _batterySaving;
                 CloudSaveManager.Instance.SaveSettings();
             }
         }
@@ -421,6 +433,8 @@ namespace CatHotel.UI
                 bool batteryOn = settings.batterySaving;
                 if (_batteryToggleOn != null) _batteryToggleOn.SetActive(batteryOn);
                 if (_batteryToggleOff != null) _batteryToggleOff.SetActive(!batteryOn);
+                _batterySaving = batteryOn;
+                OnBatterySavingChanged?.Invoke(batteryOn);
 
                 // Music volume
                 SetMusicVolume(settings.musicVolume);
@@ -440,6 +454,8 @@ namespace CatHotel.UI
                 bool batteryOn = PlayerPrefs.GetInt(PrefBattery, 0) == 1;
                 if (_batteryToggleOn != null) _batteryToggleOn.SetActive(batteryOn);
                 if (_batteryToggleOff != null) _batteryToggleOff.SetActive(!batteryOn);
+                _batterySaving = batteryOn;
+                OnBatterySavingChanged?.Invoke(batteryOn);
 
                 float musicVol = PlayerPrefs.GetFloat(PrefMusic, 1f);
                 SetMusicVolume(musicVol);
