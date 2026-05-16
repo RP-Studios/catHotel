@@ -106,6 +106,17 @@ namespace CatHotel.Boot
                 LogSaveState(CloudSaveManager.Instance);
             }
 
+            // Wait for GDPR consent choice (popup in Boot scene) before initializing ads
+            if (!ConsentManager.HasMadeChoice)
+            {
+                Debug.Log("[Boot] Waiting for user GDPR consent choice...");
+                while (!ConsentManager.HasMadeChoice)
+                {
+                    yield return null;
+                }
+                Debug.Log($"[Boot] Consent received: {(ConsentManager.ConsentGiven ? "accepted" : "refused")}");
+            }
+
             // Initialize Ads (non-blocking)
             var adManager = AdManager.Instance ?? FindAnyObjectByType<AdManager>();
             if (adManager != null)

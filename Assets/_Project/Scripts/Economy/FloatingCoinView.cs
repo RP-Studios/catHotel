@@ -3,9 +3,11 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 using DG.Tweening;
 using CatHotel.Audio;
 using CatHotel.Cats;
+using CatHotel.Core;
 using CatHotel.UI;
 
 namespace CatHotel.Economy
@@ -84,6 +86,16 @@ namespace CatHotel.Economy
                 var pigTransform = collectAllObj.transform.Find("Pig");
                 if (pigTransform != null)
                     _pigIcon = pigTransform.GetComponent<Image>();
+
+                // Localized label "Tout collecter" (inactive-aware: include hidden children)
+                foreach (var tmp in collectAllObj.GetComponentsInChildren<TMP_Text>(true))
+                {
+                    if (tmp.name == "CollectCoinsLabel")
+                    {
+                        tmp.text = LocalizedStrings.Get("hud.collect.label");
+                        break;
+                    }
+                }
 
                 if (collectAllObj.GetComponent<ButtonJuice>() == null)
                     collectAllObj.AddComponent<ButtonJuice>();

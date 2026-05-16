@@ -40,6 +40,7 @@ namespace CatHotel.UI
         private bool _initialized;
         private bool _collected;
         private bool _adInProgress;
+        private bool _panelReady;
 
         // UI elements
         private Image _catImage;
@@ -158,8 +159,9 @@ namespace CatHotel.UI
                 return;
             }
 
-            // Double gains via rewarded ad (only after coins collected)
-            if (_collected && _doubleRect != null && _doubleRect.gameObject.activeSelf &&
+            // Double gains via rewarded ad — available as soon as the panel is
+            // in place, no need to wait for the number animation / auto-collect.
+            if (_panelReady && !_adInProgress && _doubleRect != null && _doubleRect.gameObject.activeSelf &&
                 RectTransformUtility.RectangleContainsScreenPoint(_doubleRect, screenPos, null))
             {
                 TryDoubleGains();
@@ -187,6 +189,7 @@ namespace CatHotel.UI
             _collected = false;
             _bonusCoins = 0;
             _adInProgress = false;
+            _panelReady = false;
 
             UISoundManager.Instance?.PlayOpenSection();
             _panelObj.SetActive(true);
@@ -219,7 +222,7 @@ namespace CatHotel.UI
 
             // Slide in to rest position
             _slideTween?.Kill();
-            _slideTween = _panel.DOAnchorPosX(_panelRestX, 0.7f)
+            _slideTween = _panel.DOAnchorPosX(_panelRestX, 0.45f)
                 .SetEase(Ease.OutCubic)
                 .OnComplete(() =>
                 {
@@ -227,6 +230,10 @@ namespace CatHotel.UI
                     var p = _panel.anchoredPosition;
                     p.x = _panelRestX;
                     _panel.anchoredPosition = p;
+
+                    // Panel is now interactive: X2 can be chosen immediately,
+                    // even while the numbers are still animating.
+                    _panelReady = true;
 
                     if (_animCoroutine != null) StopCoroutine(_animCoroutine);
                     _animCoroutine = StartCoroutine(AnimateNumbersThenCollect());
@@ -295,28 +302,28 @@ namespace CatHotel.UI
         private IEnumerator AnimateNumbersThenCollect()
         {
             yield return StartCoroutine(AnimateValue(
-                _happinessRecap, 0f, _data.AvgHappiness, 0.6f, v => $"{v:0}%"));
+                _happinessRecap, 0f, _data.AvgHappiness, 0.35f, v => $"{v:0}%"));
 
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.08f);
 
             yield return StartCoroutine(AnimateValue(
-                _baseValue, 0f, _data.BaseCoins, 0.5f, v => $"{v:0}"));
+                _baseValue, 0f, _data.BaseCoins, 0.3f, v => $"{v:0}"));
 
             if (_data.TipCoins > 0)
             {
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.06f);
                 yield return StartCoroutine(AnimateValue(
-                    _tipValue, 0f, _data.TipCoins, 0.4f, v => $"+{v:0}"));
+                    _tipValue, 0f, _data.TipCoins, 0.25f, v => $"+{v:0}"));
             }
             else
             {
                 if (_tipValue != null) _tipValue.text = "-";
             }
 
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.08f);
 
             yield return StartCoroutine(AnimateValue(
-                _totalValue, 0f, _data.TotalCoins, 0.6f, v => $"{v:0}"));
+                _totalValue, 0f, _data.TotalCoins, 0.35f, v => $"{v:0}"));
 
             if (_totalValue != null)
             {
@@ -327,7 +334,7 @@ namespace CatHotel.UI
 
             _animCoroutine = null;
 
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.2f);
             AutoCollect();
         }
 
@@ -374,7 +381,7 @@ namespace CatHotel.UI
 
         private void TryDoubleGains()
         {
-            if (!_isOpen || !_collected) return;
+            if (!_isOpen || !_panelReady || _adInProgress) return;
 
             var ads = AdManager.Instance;
             if (ads == null || !ads.IsAdReady)
@@ -383,12 +390,30 @@ namespace CatHotel.UI
                 return;
             }
 
+            // Stop the number animation and snap to final values so the ad
+            // launches instantly with no visual lag.
+            if (_animCoroutine != null)
+            {
+                StopCoroutine(_animCoroutine);
+                _animCoroutine = null;
+            }
+            SnapNumbersToFinal();
+
             _adInProgress = true;
             StopAutoCloseTimer(); // don't close while ad is playing
 
             ads.OnPensionAdCompleted += OnPensionAdSuccess;
             ads.OnPensionAdFailed += OnPensionAdFail;
             ads.ShowPensionAd();
+        }
+
+        private void SnapNumbersToFinal()
+        {
+            if (_happinessRecap != null) _happinessRecap.text = $"{_data.AvgHappiness:0}%";
+            if (_baseValue != null) _baseValue.text = $"{_data.BaseCoins:0}";
+            if (_tipValue != null)
+                _tipValue.text = _data.TipCoins > 0 ? $"+{_data.TipCoins:0}" : "-";
+            if (_totalValue != null) _totalValue.text = $"{_data.TotalCoins:0}";
         }
 
         private void OnPensionAdSuccess()

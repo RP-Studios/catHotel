@@ -132,6 +132,12 @@ namespace CatHotel.Core
         // ==================== FRENCH ====================
         public static readonly Dictionary<string, string> French = new()
         {
+            // --- Consent / RGPD ---
+            { "consent.title", "Confidentialité & publicités" },
+            { "consent.body", "Pour soutenir le développement du jeu, Meowtel propose des publicités optionnelles avec récompenses. Acceptez-vous l'utilisation de votre identifiant publicitaire afin d'afficher des publicités personnalisées ? Vous pourrez modifier ce choix à tout moment dans les paramètres." },
+            { "consent.accept", "Accepter" },
+            { "consent.refuse", "Refuser" },
+
             // --- Cat Info Panel ---
             { "cat.kitten", "Chaton" },
             { "cat.adult", "Chat adulte" },
@@ -237,6 +243,8 @@ namespace CatHotel.Core
             { "hud.level.max.reached", "Niveau maximum atteint !" },
             { "hud.level.objective", "{0}/{1} chats à +{2}% de bonheur" },
             { "hud.boost.active", "Boost x2 actif ! {0}s" },
+            { "hud.boost.button", "Gains doublés" },
+            { "hud.collect.label", "Tout collecter" },
 
             // --- Reputation Level Names ---
             { "rep.0", "Débutant" },
@@ -430,6 +438,12 @@ namespace CatHotel.Core
         // ==================== ENGLISH ====================
         public static readonly Dictionary<string, string> English = new()
         {
+            // --- Consent / GDPR ---
+            { "consent.title", "Privacy & Ads" },
+            { "consent.body", "To support the game's development, Meowtel offers optional rewarded ads. Do you agree to the use of your advertising ID to display personalized ads? You can change this choice at any time in the settings." },
+            { "consent.accept", "Accept" },
+            { "consent.refuse", "Decline" },
+
             // --- Cat Info Panel ---
             { "cat.kitten", "Kitten" },
             { "cat.adult", "Adult cat" },
@@ -535,6 +549,8 @@ namespace CatHotel.Core
             { "hud.level.max.reached", "Maximum level reached!" },
             { "hud.level.objective", "{0}/{1} cats at +{2}% happiness" },
             { "hud.boost.active", "x2 Boost active! {0}s" },
+            { "hud.boost.button", "Double earnings" },
+            { "hud.collect.label", "Collect all" },
 
             // --- Reputation Level Names ---
             { "rep.0", "Beginner" },
@@ -728,6 +744,12 @@ namespace CatHotel.Core
         // ==================== GERMAN ====================
         public static readonly Dictionary<string, string> German = new()
         {
+            // --- Consent / DSGVO ---
+            { "consent.title", "Datenschutz & Werbung" },
+            { "consent.body", "Zur Unterstützung der Spielentwicklung bietet Meowtel optionale Belohnungswerbung an. Stimmen Sie der Nutzung Ihrer Werbe-ID zur Anzeige personalisierter Werbung zu? Sie können diese Wahl jederzeit in den Einstellungen ändern." },
+            { "consent.accept", "Akzeptieren" },
+            { "consent.refuse", "Ablehnen" },
+
             // --- Cat Info Panel ---
             { "cat.kitten", "Kätzchen" },
             { "cat.adult", "Erwachsene Katze" },
@@ -833,6 +855,8 @@ namespace CatHotel.Core
             { "hud.level.max.reached", "Maximalstufe erreicht!" },
             { "hud.level.objective", "{0}/{1} Katzen mit +{2}% Glück" },
             { "hud.boost.active", "x2 Boost aktiv! {0}s" },
+            { "hud.boost.button", "Doppelte Einnahmen" },
+            { "hud.collect.label", "Alles einsammeln" },
 
             // --- Reputation Level Names ---
             { "rep.0", "Anfänger" },
@@ -1024,6 +1048,12 @@ namespace CatHotel.Core
         // ==================== SPANISH ====================
         public static readonly Dictionary<string, string> Spanish = new()
         {
+            // --- Consent / RGPD ---
+            { "consent.title", "Privacidad y anuncios" },
+            { "consent.body", "Para apoyar el desarrollo del juego, Meowtel ofrece anuncios opcionales con recompensa. ¿Aceptas el uso de tu identificador publicitario para mostrar anuncios personalizados? Puedes cambiar esta elección en cualquier momento en los ajustes." },
+            { "consent.accept", "Aceptar" },
+            { "consent.refuse", "Rechazar" },
+
             // --- Cat Info Panel ---
             { "cat.kitten", "Gatito" },
             { "cat.adult", "Gato adulto" },
@@ -1129,6 +1159,8 @@ namespace CatHotel.Core
             { "hud.level.max.reached", "¡Nivel máximo alcanzado!" },
             { "hud.level.objective", "{0}/{1} gatos con +{2}% de felicidad" },
             { "hud.boost.active", "¡Boost x2 activo! {0}s" },
+            { "hud.boost.button", "Ganancias dobladas" },
+            { "hud.collect.label", "Recoger todo" },
 
             // --- Reputation Level Names ---
             { "rep.0", "Principiante" },
@@ -1320,6 +1352,12 @@ namespace CatHotel.Core
         // ==================== PORTUGUESE (BR) ====================
         public static readonly Dictionary<string, string> Portuguese = new()
         {
+            // --- Consent / LGPD ---
+            { "consent.title", "Privacidade e anúncios" },
+            { "consent.body", "Para apoiar o desenvolvimento do jogo, o Meowtel oferece anúncios opcionais com recompensa. Você aceita o uso do seu identificador de publicidade para exibir anúncios personalizados? Você pode alterar esta escolha a qualquer momento nas configurações." },
+            { "consent.accept", "Aceitar" },
+            { "consent.refuse", "Recusar" },
+
             // --- Cat Info Panel ---
             { "cat.kitten", "Gatinho" },
             { "cat.adult", "Gato adulto" },
@@ -1425,6 +1463,8 @@ namespace CatHotel.Core
             { "hud.level.max.reached", "Nível máximo alcançado!" },
             { "hud.level.objective", "{0}/{1} gatos com +{2}% de felicidade" },
             { "hud.boost.active", "Boost x2 ativo! {0}s" },
+            { "hud.boost.button", "Ganhos dobrados" },
+            { "hud.collect.label", "Coletar tudo" },
 
             // --- Reputation Level Names ---
             { "rep.0", "Iniciante" },

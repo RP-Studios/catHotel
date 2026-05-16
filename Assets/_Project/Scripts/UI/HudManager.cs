@@ -54,6 +54,8 @@ namespace CatHotel.UI
         private Button _addBoostButton;
         private TMP_Text _cooldownTimeValue;
         private TMP_Text _remainingAds;
+        private TMP_Text _doubleGainsLabel;
+        private GameObject _doubleGainLockObj;
         private RectTransform _starRt;
         private GameObject _x2BoostActiveObj;
         private TMP_Text _x2BoostActiveText;
@@ -123,8 +125,22 @@ namespace CatHotel.UI
                 if (starObj != null)
                     _starRt = starObj.GetComponent<RectTransform>();
             }
-            _cooldownTimeValue = FindText("CooldownTimeValue");
+            // Inactive-aware: these may live under objects that start hidden,
+            // so GameObject.Find would miss them.
+            var cooldownObj = FindInactiveByName("CooldownTimeValue");
+            if (cooldownObj != null) _cooldownTimeValue = cooldownObj.GetComponent<TMP_Text>();
+
             _remainingAds = FindText("RemainingAds");
+
+            var doubleGainsObj = FindInactiveByName("DoubleGainsLabel");
+            if (doubleGainsObj != null)
+            {
+                _doubleGainsLabel = doubleGainsObj.GetComponent<TMP_Text>();
+                if (_doubleGainsLabel != null)
+                    _doubleGainsLabel.text = LocalizedStrings.Get("hud.boost.button");
+            }
+
+            _doubleGainLockObj = FindInactiveByName("DoubleGainLockObject");
 
             // Find X2BoostActive even if inactive (GameObject.Find won't find inactive objects)
             _x2BoostActiveObj = FindInactiveByName("X2BoostActive");
@@ -421,13 +437,17 @@ namespace CatHotel.UI
                 }
             }
 
-            // Enable/disable button (blocked during active boost)
+            // Boost availability: can the player trigger a new boost right now?
+            bool canWatch = ads != null && ads.IsAdReady && !ads.HasReachedDailyCap
+                && (boost == null || !boost.IsBoosted);
+
+            // Enable/disable button (blocked during active boost / no ad / cap)
             if (_addBoostButton != null)
-            {
-                bool canWatch = ads != null && ads.IsAdReady && !ads.HasReachedDailyCap
-                    && (boost == null || !boost.IsBoosted);
                 _addBoostButton.interactable = canWatch;
-            }
+
+            // Lock overlay: visible when boost NOT available, hidden when available
+            if (_doubleGainLockObj != null && _doubleGainLockObj.activeSelf != !canWatch)
+                _doubleGainLockObj.SetActive(!canWatch);
         }
 
         private static TMP_Text FindText(string name)

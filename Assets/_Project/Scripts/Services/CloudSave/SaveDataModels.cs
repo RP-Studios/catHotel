@@ -16,7 +16,7 @@ namespace CatHotel.Services
         public float effectsVolume;      // 0-1
         public bool soundEnabled = true;
         public bool pushNotifications;
-        public bool batterySaving;
+        public bool batterySaving = false;
     }
 
     [Serializable]

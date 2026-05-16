@@ -165,10 +165,12 @@ namespace CatHotel.UI
             _pushToggleOn = FindGO("PushToggleOn");
             _pushToggleOff = FindGO("PushToggleOff");
 
-            // Battery Saving toggle
+            // Battery Saving toggle — default OFF until LoadSavedValues overrides
             _batteryRect = FindRect("BatterySavingAction");
             _batteryToggleOn = FindGO("BatteryToggleOn");
             _batteryToggleOff = FindGO("BatteryToggleOff");
+            if (_batteryToggleOn != null) _batteryToggleOn.SetActive(false);
+            if (_batteryToggleOff != null) _batteryToggleOff.SetActive(true);
 
             // Language toggles
             _enActiveRect = FindRect("ENActiveAction");

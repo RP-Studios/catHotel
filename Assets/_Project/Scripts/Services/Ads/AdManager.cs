@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Unity.Services.LevelPlay;
 
@@ -16,6 +17,8 @@ namespace CatHotel.Services
         private bool _sdkReady;
         private bool _adLoaded;
         private AdRewardType _pendingReward = AdRewardType.None;
+        private Coroutine _retryCoroutine;
+        private const float RetryDelaySeconds = 30f;
 
         // Daily tracking
         private int _adsWatchedToday;
@@ -63,6 +66,17 @@ namespace CatHotel.Services
                 OnAdAvailabilityChanged?.Invoke();
                 return;
             }
+
+            // Apply GDPR / privacy settings BEFORE LevelPlay.Init()
+            bool consent = ConsentManager.ConsentGiven;
+            var networkConsents = new Dictionary<string, bool>
+            {
+                { "UnityAds", consent },
+                { "IronSource", consent }
+            };
+            LevelPlayPrivacySettings.SetGDPRConsents(networkConsents);
+            LevelPlayPrivacySettings.SetCOPPA(false); // Meowtel n'est pas destine aux enfants
+            Debug.Log($"[Ads] GDPR consent applied: {(consent ? "accepted" : "refused")}");
 
             if (_config.testMode)
             {
@@ -114,14 +128,20 @@ namespace CatHotel.Services
             {
                 Debug.Log("[Ads] Rewarded ad loaded");
                 _adLoaded = true;
+                if (_retryCoroutine != null)
+                {
+                    StopCoroutine(_retryCoroutine);
+                    _retryCoroutine = null;
+                }
                 OnAdAvailabilityChanged?.Invoke();
             };
 
             _rewardedAd.OnAdLoadFailed += error =>
             {
-                Debug.LogWarning($"[Ads] Rewarded ad load failed: {error.ErrorMessage}");
+                Debug.LogWarning($"[Ads] Rewarded ad load failed: {error.ErrorMessage} — scheduling retry");
                 _adLoaded = false;
                 OnAdAvailabilityChanged?.Invoke();
+                ScheduleReload();
             };
 
             _rewardedAd.OnAdRewarded += (info, reward) =>
@@ -174,6 +194,32 @@ namespace CatHotel.Services
             if (HasReachedDailyCap) return;
 
             _rewardedAd.LoadAd();
+        }
+
+        /// <summary>
+        /// After a load failure (e.g. LevelPlay pacing window blocking fill),
+        /// retry periodically until the ad loads. Without this the ad would
+        /// never reload after the first paced failure → button stays dead.
+        /// </summary>
+        private void ScheduleReload()
+        {
+            if (_retryCoroutine != null) return;       // already retrying
+            if (!_sdkReady || _rewardedAd == null) return;
+            if (HasReachedDailyCap) return;
+
+            _retryCoroutine = StartCoroutine(RetryLoadLoop());
+        }
+
+        private System.Collections.IEnumerator RetryLoadLoop()
+        {
+            while (!_adLoaded && _sdkReady && _rewardedAd != null && !HasReachedDailyCap)
+            {
+                yield return new WaitForSecondsRealtime(RetryDelaySeconds);
+                if (_adLoaded) break;
+                Debug.Log("[Ads] Retrying rewarded ad load...");
+                _rewardedAd.LoadAd();
+            }
+            _retryCoroutine = null;
         }
 
         public bool ShowRewardedAd()
